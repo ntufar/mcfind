@@ -7,29 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1234567890123456789012A /* McFindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012B /* McFindApp.swift */; };
-		A1234567890123456789012C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012D /* ContentView.swift */; };
-		A1234567890123456789012E /* FileIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012F /* FileIndexer.swift */; };
-		A1234567890123456789013A /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013B /* SearchViewModel.swift */; };
-		A1234567890123456789013C /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013D /* FileItem.swift */; };
-		A1234567890123456789013E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013F /* Assets.xcassets */; };
-		A1234567890123456789014A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789014B /* Preview Assets.xcassets */; };
+		AA0000000000000000000001 /* McFindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000002 /* McFindApp.swift */; };
+		AA0000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000004 /* ContentView.swift */; };
+		AA0000000000000000000005 /* FileIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* FileIndexer.swift */; };
+		AA0000000000000000000007 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000008 /* SearchViewModel.swift */; };
+		AA0000000000000000000009 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* FileItem.swift */; };
+		AA000000000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* Assets.xcassets */; };
+		AA000000000000000000000D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000E /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A1234567890123456789012A /* McFind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = McFind.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1234567890123456789012B /* McFindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McFindApp.swift; sourceTree = "<group>"; };
-		A1234567890123456789012D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1234567890123456789012F /* FileIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIndexer.swift; sourceTree = "<group>"; };
-		A1234567890123456789013B /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
-		A1234567890123456789013D /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
-		A1234567890123456789013F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A1234567890123456789014B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		A1234567890123456789014D /* McFind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = McFind.entitlements; sourceTree = "<group>"; };
+		AA000000000000000000000F /* McFind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = McFind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000002 /* McFindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McFindApp.swift; sourceTree = "<group>"; };
+		AA0000000000000000000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000006 /* FileIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIndexer.swift; sourceTree = "<group>"; };
+		AA0000000000000000000008 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000000A /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
+		AA000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000000000000000000000E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA0000000000000000000010 /* McFind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = McFind.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A1234567890123456789012C /* Frameworks */ = {
+		AA0000000000000000000011 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -39,55 +39,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A1234567890123456789012E /* McFind */ = {
+		AA0000000000000000000012 /* McFind */ = {
 			isa = PBXGroup;
 			children = (
-				A1234567890123456789012B /* McFindApp.swift */,
-				A1234567890123456789012D /* ContentView.swift */,
-				A1234567890123456789012F /* FileIndexer.swift */,
-				A1234567890123456789013B /* SearchViewModel.swift */,
-				A1234567890123456789013D /* FileItem.swift */,
-				A1234567890123456789013F /* Assets.xcassets */,
-				A1234567890123456789014D /* McFind.entitlements */,
-				A1234567890123456789014C /* Preview Content */,
+				AA0000000000000000000002 /* McFindApp.swift */,
+				AA0000000000000000000004 /* ContentView.swift */,
+				AA0000000000000000000006 /* FileIndexer.swift */,
+				AA0000000000000000000008 /* SearchViewModel.swift */,
+				AA000000000000000000000A /* FileItem.swift */,
+				AA000000000000000000000C /* Assets.xcassets */,
+				AA0000000000000000000010 /* McFind.entitlements */,
+				AA0000000000000000000013 /* Preview Content */,
 			);
 			path = McFind;
 			sourceTree = "<group>";
 		};
-		A1234567890123456789014C /* Preview Content */ = {
+		AA0000000000000000000013 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				A1234567890123456789014B /* Preview Assets.xcassets */,
+				AA000000000000000000000E /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		A1234567890123456789014E /* Products */ = {
+		AA0000000000000000000014 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1234567890123456789012A /* McFind.app */,
+				AA000000000000000000000F /* McFind.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A1234567890123456789014F = {
+		AA0000000000000000000015 = {
 			isa = PBXGroup;
 			children = (
-				A1234567890123456789012E /* McFind */,
-				A1234567890123456789014E /* Products */,
+				AA0000000000000000000012 /* McFind */,
+				AA0000000000000000000014 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1234567890123456789012B /* McFind */ = {
+		AA0000000000000000000016 /* McFind */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A1234567890123456789015A /* Build configuration list for PBXNativeTarget "McFind" */;
+			buildConfigurationList = AA0000000000000000000017 /* Build configuration list for PBXNativeTarget "McFind" */;
 			buildPhases = (
-				A1234567890123456789015B /* Sources */,
-				A1234567890123456789012C /* Frameworks */,
-				A1234567890123456789015C /* Resources */,
+				AA0000000000000000000018 /* Sources */,
+				AA0000000000000000000011 /* Frameworks */,
+				AA0000000000000000000019 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -95,25 +95,25 @@
 			);
 			name = McFind;
 			productName = McFind;
-			productReference = A1234567890123456789012A /* McFind.app */;
+			productReference = AA000000000000000000000F /* McFind.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A1234567890123456789015D /* Project object */ = {
+		AA000000000000000000001A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					A1234567890123456789012B = {
+					AA0000000000000000000016 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
-			buildConfigurationList = A1234567890123456789015E /* Build configuration list for PBXProject "McFind" */;
+			buildConfigurationList = AA000000000000000000001B /* Build configuration list for PBXProject "McFind" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -121,45 +121,45 @@
 				en,
 				Base,
 			);
-			mainGroup = A1234567890123456789014F;
-			productRefGroup = A1234567890123456789014E /* Products */;
+			mainGroup = AA0000000000000000000015;
+			productRefGroup = AA0000000000000000000014 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1234567890123456789012B /* McFind */,
+				AA0000000000000000000016 /* McFind */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A1234567890123456789015C /* Resources */ = {
+		AA0000000000000000000019 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1234567890123456789014A /* Preview Assets.xcassets in Resources */,
-				A1234567890123456789013E /* Assets.xcassets in Resources */,
+				AA000000000000000000000D /* Preview Assets.xcassets in Resources */,
+				AA000000000000000000000B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A1234567890123456789015B /* Sources */ = {
+		AA0000000000000000000018 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1234567890123456789012C /* ContentView.swift in Sources */,
-				A1234567890123456789012E /* FileIndexer.swift in Sources */,
-				A1234567890123456789013A /* SearchViewModel.swift in Sources */,
-				A1234567890123456789013C /* FileItem.swift in Sources */,
-				A1234567890123456789012A /* McFindApp.swift in Sources */,
+				AA0000000000000000000003 /* ContentView.swift in Sources */,
+				AA0000000000000000000005 /* FileIndexer.swift in Sources */,
+				AA0000000000000000000007 /* SearchViewModel.swift in Sources */,
+				AA0000000000000000000009 /* FileItem.swift in Sources */,
+				AA0000000000000000000001 /* McFindApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		A1234567890123456789015F /* Debug */ = {
+		AA000000000000000000001C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -222,7 +222,7 @@
 			};
 			name = Debug;
 		};
-		A1234567890123456789016A /* Release */ = {
+		AA000000000000000000001D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -277,7 +277,7 @@
 			};
 			name = Release;
 		};
-		A1234567890123456789016B /* Debug */ = {
+		AA000000000000000000001E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -302,7 +302,7 @@
 			};
 			name = Debug;
 		};
-		A1234567890123456789016C /* Release */ = {
+		AA000000000000000000001F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -330,25 +330,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1234567890123456789015A /* Build configuration list for PBXNativeTarget "McFind" */ = {
+		AA0000000000000000000017 /* Build configuration list for PBXNativeTarget "McFind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1234567890123456789016B /* Debug */,
-				A1234567890123456789016C /* Release */,
+				AA000000000000000000001E /* Debug */,
+				AA000000000000000000001F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A1234567890123456789015E /* Build configuration list for PBXProject "McFind" */ = {
+		AA000000000000000000001B /* Build configuration list for PBXProject "McFind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1234567890123456789015F /* Debug */,
-				A1234567890123456789016A /* Release */,
+				AA000000000000000000001C /* Debug */,
+				AA000000000000000000001D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = A1234567890123456789015D /* Project object */;
+	rootObject = AA000000000000000000001A /* Project object */;
 }
