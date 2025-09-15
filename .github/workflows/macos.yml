@@ -24,6 +24,33 @@ jobs:
           xcodebuild build \
             -project McFind.xcodeproj \
             -scheme McFind \
-            -configuration Debug \
-            -destination "platform=macOS"
+            -configuration Release \
+            -destination "platform=macOS" \
+            -archivePath McFind.xcarchive
+      
+      - name: Create app bundle
+        run: |
+          # Create a clean app bundle
+          mkdir -p McFind-Distribution
+          cp -R build/Release/McFind.app McFind-Distribution/
+          
+          # Create a simple installer script
+          cat > McFind-Distribution/Install.command << 'EOF'
+          #!/bin/bash
+          echo "Installing McFind..."
+          sudo cp -R McFind.app /Applications/
+          echo "McFind has been installed to /Applications/"
+          echo "You can now find McFind in your Applications folder."
+          EOF
+          chmod +x McFind-Distribution/Install.command
+          
+          # Create a DMG (optional - requires additional tools)
+          # hdiutil create -volname "McFind" -srcfolder McFind-Distribution -ov -format UDZO McFind.dmg
+      
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: McFind-macOS
+          path: McFind-Distribution/
+          retention-days: 30
 

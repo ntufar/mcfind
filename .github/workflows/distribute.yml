@@ -1,0 +1,130 @@
+name: Build and Distribute
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_dmg:
+        description: 'Create DMG installer'
+        required: true
+        default: 'true'
+        type: boolean
+      create_pkg:
+        description: 'Create PKG installer'
+        required: true
+        default: 'true'
+        type: boolean
+
+jobs:
+  build-and-distribute:
+    name: Build and Distribute macOS app
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      
+      - name: Build macOS app
+        run: |
+          xcodebuild build \
+            -project McFind.xcodeproj \
+            -scheme McFind \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -archivePath McFind.xcarchive
+      
+      - name: Create distribution package
+        run: |
+          # Create app bundle directory
+          mkdir -p McFind-Distribution
+          cp -R build/Release/McFind.app McFind-Distribution/
+          
+          # Create README for distribution
+          cat > McFind-Distribution/README.txt << 'EOF'
+          McFind - macOS File Search Utility
+          ===================================
+          
+          Installation:
+          1. Drag McFind.app to your Applications folder
+          2. Or run Install.command for automatic installation
+          
+          Usage:
+          1. Launch McFind from Applications
+          2. Wait for initial indexing to complete
+          3. Start typing to search your files
+          4. Use arrow keys to navigate results
+          5. Press Enter to open selected file
+          
+          Features:
+          - Lightning-fast file search
+          - Real-time filtering
+          - Keyboard navigation
+          - File type icons
+          - Context menu support
+          
+          Requirements:
+          - macOS 14.0 or later
+          EOF
+          
+          # Create installer script
+          cat > McFind-Distribution/Install.command << 'EOF'
+          #!/bin/bash
+          echo "McFind Installer"
+          echo "================"
+          echo ""
+          echo "This will install McFind to your Applications folder."
+          echo "You may be prompted for your password."
+          echo ""
+          read -p "Continue? (y/N): " -n 1 -r
+          echo
+          if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Installing McFind..."
+            sudo cp -R McFind.app /Applications/
+            if [ $? -eq 0 ]; then
+              echo "✅ McFind has been successfully installed!"
+              echo "You can now find McFind in your Applications folder."
+              echo "Launch it to start searching your files!"
+            else
+              echo "❌ Installation failed. Please try again."
+            fi
+          else
+            echo "Installation cancelled."
+          fi
+          EOF
+          chmod +x McFind-Distribution/Install.command
+      
+      - name: Create DMG (if requested)
+        if: ${{ github.event.inputs.create_dmg == 'true' }}
+        run: |
+          # Create DMG with custom background and icon
+          hdiutil create -volname "McFind" -srcfolder McFind-Distribution -ov -format UDZO McFind.dmg
+          
+          # Optional: Mount DMG and customize appearance
+          # hdiutil attach McFind.dmg
+          # # Add custom background, icon positioning, etc.
+          # hdiutil detach /Volumes/McFind
+      
+      - name: Create PKG (if requested)
+        if: ${{ github.event.inputs.create_pkg == 'true' }}
+        run: |
+          # Create installer package
+          pkgbuild --root McFind-Distribution \
+                   --identifier com.mcfind.McFind \
+                   --version 1.0 \
+                   --install-location /Applications \
+                   --scripts scripts \
+                   McFind.pkg
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: McFind-Distribution-${{ github.run_number }}
+          path: |
+            McFind-Distribution/
+            McFind.dmg
+            McFind.pkg
+          retention-days: 90

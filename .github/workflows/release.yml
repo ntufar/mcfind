@@ -1,0 +1,52 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: Build and Release macOS app
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      
+      - name: Build macOS app
+        run: |
+          xcodebuild build \
+            -project McFind.xcodeproj \
+            -scheme McFind \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -archivePath McFind.xcarchive
+      
+      - name: Create DMG
+        run: |
+          # Create app bundle directory
+          mkdir -p McFind-Release
+          cp -R build/Release/McFind.app McFind-Release/
+          
+          # Create DMG
+          hdiutil create -volname "McFind" -srcfolder McFind-Release -ov -format UDZO McFind.dmg
+          
+          # Create installer package (optional)
+          pkgbuild --root McFind-Release --identifier com.mcfind.McFind --version 1.0 --install-location /Applications McFind.pkg
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            McFind.dmg
+            McFind.pkg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
