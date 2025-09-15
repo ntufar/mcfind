@@ -25,14 +25,17 @@ jobs:
             -project McFind.xcodeproj \
             -scheme McFind \
             -configuration Release \
-            -destination "platform=macOS" \
-            -archivePath McFind.xcarchive
+            -destination "platform=macOS"
       
       - name: Create app bundle
         run: |
+          # Find the actual build output directory
+          BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
+          echo "Build directory: $BUILD_DIR"
+          
           # Create a clean app bundle
           mkdir -p McFind-Distribution
-          cp -R build/Release/McFind.app McFind-Distribution/
+          cp -R "$BUILD_DIR/McFind.app" McFind-Distribution/
           
           # Create a simple installer script
           cat > McFind-Distribution/Install.command << 'EOF'

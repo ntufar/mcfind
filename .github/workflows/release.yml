@@ -26,14 +26,17 @@ jobs:
             -project McFind.xcodeproj \
             -scheme McFind \
             -configuration Release \
-            -destination "platform=macOS" \
-            -archivePath McFind.xcarchive
+            -destination "platform=macOS"
       
       - name: Create DMG
         run: |
+          # Find the actual build output directory
+          BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
+          echo "Build directory: $BUILD_DIR"
+          
           # Create app bundle directory
           mkdir -p McFind-Release
-          cp -R build/Release/McFind.app McFind-Release/
+          cp -R "$BUILD_DIR/McFind.app" McFind-Release/
           
           # Create DMG
           hdiutil create -volname "McFind" -srcfolder McFind-Release -ov -format UDZO McFind.dmg
