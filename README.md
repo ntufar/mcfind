@@ -1,5 +1,12 @@
 # McFind - macOS File Search Utility
 
+[![macOS Build](https://github.com/ntufar/mcfind/actions/workflows/macos.yml/badge.svg)](https://github.com/ntufar/mcfind/actions/workflows/macos.yml)
+[![Release](https://github.com/ntufar/mcfind/actions/workflows/release.yml/badge.svg)](https://github.com/ntufar/mcfind/actions/workflows/release.yml)
+[![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
+[![macOS](https://img.shields.io/badge/macOS-14.0+-blue.svg)](https://www.apple.com/macos)
+[![Xcode](https://img.shields.io/badge/Xcode-15.0+-blue.svg)](https://developer.apple.com/xcode)
+[![License](https://img.shields.io/badge/License-Open%20Source-green.svg)](https://github.com/ntufar/mcfind)
+
 A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows.
 
 ## Features
@@ -14,7 +21,7 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.0.2)
+### Latest Release (v0.0.3)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
 
