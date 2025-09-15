@@ -12,6 +12,19 @@ A fast, modern macOS application for searching files in your home directory, ins
 - **Context menu**: Right-click for additional options like "Reveal in Finder"
 - **Background indexing**: Non-blocking file indexing with progress indicator
 
+## Download
+
+### Latest Release
+- **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
+- **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
+
+### Installation Instructions
+1. **DMG**: Download the DMG file, open it, and drag McFind.app to your Applications folder
+2. **PKG**: Download the PKG file and double-click to run the installer
+
+### All Releases
+View all available releases and download previous versions: [Releases Page](https://github.com/ntufar/mcfind/releases)
+
 ## Requirements
 
 - macOS 14.0 or later
