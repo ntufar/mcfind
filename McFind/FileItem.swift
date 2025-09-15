@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import UniformTypeIdentifiers
 
 struct FileItem: Identifiable, Hashable {
     let id = UUID()
@@ -18,6 +19,12 @@ struct FileItem: Identifiable, Hashable {
         if isDirectory {
             return NSImage(named: NSImage.folderName) ?? NSImage()
         } else {
+            if #available(macOS 12.0, *) {
+                if let fileExtension = fileExtension,
+                   let contentType = UTType(filenameExtension: fileExtension) {
+                    return NSWorkspace.shared.icon(forContentType: contentType)
+                }
+            }
             return NSWorkspace.shared.icon(forFileType: fileExtension ?? "")
         }
     }

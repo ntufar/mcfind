@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AppKit
 
 class SearchViewModel: ObservableObject {
     @Published var searchText = ""
