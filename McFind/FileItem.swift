@@ -22,7 +22,7 @@ struct FileItem: Identifiable, Hashable {
             if #available(macOS 12.0, *) {
                 if let fileExtension = fileExtension,
                    let contentType = UTType(filenameExtension: fileExtension) {
-                    return NSWorkspace.shared.icon(forContentType: contentType)
+                    return NSWorkspace.shared.icon(for: contentType)
                 }
             }
             return NSWorkspace.shared.icon(forFileType: fileExtension ?? "")
