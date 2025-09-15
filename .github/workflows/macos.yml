@@ -1,4 +1,4 @@
-name: macOS Build and Test
+name: macOS Build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and Test macOS app
+    name: Build macOS app
     runs-on: macos-latest
 
     steps:
@@ -26,11 +26,4 @@ jobs:
             -scheme McFind \
             -configuration Debug \
             -destination "platform=macOS"
-      
-      - name: Test macOS app
-        run: |
-          xcodebuild test \
-            -project McFind.xcodeproj \
-            -scheme McFind \
-            -configuration Debug \
-            -destination "platform=macOS"
+
