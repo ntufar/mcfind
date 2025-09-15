@@ -34,7 +34,7 @@ class FileIndexer: ObservableObject {
         let enumerator = fileManager.enumerator(
             at: url,
             includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
-            options: [.skipsHiddenFiles, .skipsPackageContents]
+            options: [.skipsHiddenFiles]
         )
         
         guard let enumerator = enumerator else { return }
@@ -82,7 +82,16 @@ class FileIndexer: ObservableObject {
             "/Library/Developer/CoreSimulator"
         ]
         
-        return skipPaths.contains { path.hasPrefix($0) }
+        // Skip if path matches any skip pattern
+        if skipPaths.contains(where: { path.hasPrefix($0) }) {
+            return true
+        }
+        
+        // Skip package contents (manually check for .app, .bundle, .framework, etc.)
+        let pathExtension = url.pathExtension.lowercased()
+        let packageExtensions = ["app", "bundle", "framework", "plugin", "kext"]
+        
+        return packageExtensions.contains(pathExtension)
     }
     
     func search(_ query: String) {
