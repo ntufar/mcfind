@@ -44,7 +44,7 @@ jobs:
           
           # Create app bundle directory
           mkdir -p McFind-Distribution
-          cp -R "$BUILD_DIR/McFind.app" McFind-Distribution/
+          cp -R "$BUILD_DIR/Release/McFind.app" McFind-Distribution/
           
           # Create README for distribution
           cat > McFind-Distribution/README.txt << 'EOF'

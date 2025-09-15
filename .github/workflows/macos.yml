@@ -35,7 +35,7 @@ jobs:
           
           # Create a clean app bundle
           mkdir -p McFind-Distribution
-          cp -R "$BUILD_DIR/McFind.app" McFind-Distribution/
+          cp -R "$BUILD_DIR/Release/McFind.app" McFind-Distribution/
           
           # Create a simple installer script
           cat > McFind-Distribution/Install.command << 'EOF'

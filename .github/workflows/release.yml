@@ -36,7 +36,7 @@ jobs:
           
           # Create app bundle directory
           mkdir -p McFind-Release
-          cp -R "$BUILD_DIR/McFind.app" McFind-Release/
+          cp -R "$BUILD_DIR/Release/McFind.app" McFind-Release/
           
           # Create DMG
           hdiutil create -volname "McFind" -srcfolder McFind-Release -ov -format UDZO McFind.dmg
