@@ -10,6 +10,8 @@ jobs:
   build-and-release:
     name: Build and Release macOS app
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -44,12 +46,20 @@ jobs:
           # Create installer package (optional)
           pkgbuild --root McFind-Release --identifier com.mcfind.McFind --version 1.0 --install-location /Applications McFind.pkg
       
+      - name: List files for release
+        run: |
+          echo "Files to be uploaded:"
+          ls -la McFind.dmg McFind.pkg || echo "Some files not found"
+          echo "File sizes:"
+          du -h McFind.dmg McFind.pkg 2>/dev/null || echo "Some files not found"
+      
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             McFind.dmg
             McFind.pkg
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
