@@ -90,7 +90,7 @@ struct ContentView: View {
                     .onTapGesture {
                         viewModel.selectFile(at: index)
                     }
-                    .onDoubleClick {
+                    .onTapGesture(count: 2) {
                         viewModel.openSelectedFile()
                     }
                     .contextMenu {

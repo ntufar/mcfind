@@ -40,7 +40,6 @@ class FileIndexer: ObservableObject {
         guard let enumerator = enumerator else { return }
         
         var fileCount = 0
-        let startTime = Date()
         
         for case let fileURL as URL in enumerator {
             // Skip system directories and hidden files
