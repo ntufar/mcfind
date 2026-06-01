@@ -12,6 +12,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [0.1.2] - 2026-06-02
+
+### Added
+- Professional website with GitHub Pages deployment (docs/index.html)
+- Application icon with magnifying glass design (SVG + all PNG sizes)
+- Icon generation scripts (generate_icons.py, generate_icons_simple.py)
+- Ad-hoc code signing in CI/CD workflows to prevent Gatekeeper warnings
+- Comprehensive documentation:
+  - DEPLOYMENT.md - GitHub Pages deployment guide
+  - CODE_SIGNING.md - Complete code signing guide
+  - ICONS.md - Icon generation guide
+- Website features:
+  - Modern responsive design with macOS-inspired styling
+  - Feature highlights and download links
+  - Keyboard shortcuts reference
+  - Performance metrics section
+  - Favicon and header logo
+
+### Changed
+- Updated CI/CD workflows (macos.yml, release.yml) to include automatic ad-hoc signing
+- Website now auto-deploys on push to master via GitHub Actions
+
 ## [0.1.1] - 2026-06-02
 
 ### Fixed
