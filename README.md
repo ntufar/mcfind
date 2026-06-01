@@ -24,15 +24,12 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.1.0)
+### Latest Release (v0.1.1)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
 
-**What's New in v0.1.0:**
-- Hierarchical settings - control Library/CloudStorage/iCloud separately
-- Search by file path, not just filename
-- Fixed infinite loop bugs
-- Comprehensive documentation
+**What's New in v0.1.1:**
+- Performance improvements for large database initialization
 
 ### Installation Instructions
 1. **DMG**: Download the DMG file, open it, and drag McFind.app to your Applications folder
