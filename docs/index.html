@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McFind - Lightning-Fast macOS File Search</title>
+    <meta name="description" content="A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #007AFF;
+            --primary-dark: #0051D5;
+            --secondary: #5AC8FA;
+            --background: #FFFFFF;
+            --surface: #F5F5F7;
+            --text: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --border: #D2D2D7;
+            --success: #34C759;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--background);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .badges img {
+            height: 20px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 4rem 2rem;
+        }
+
+        section:nth-child(even) {
+            background: var(--surface);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        .download-section {
+            text-align: center;
+        }
+
+        .download-options {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .download-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            min-width: 250px;
+        }
+
+        .download-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .version-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .keyboard-shortcuts {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcut:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-key {
+            background: var(--surface);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .requirements {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .requirements ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .requirements li {
+            padding: 0.8rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .requirements li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            header p {
+                font-size: 1.1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .download-options {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>McFind</h1>
+        <p>Lightning-fast file search for macOS. Find anything, instantly.</p>
+
+        <div class="badges">
+            <img src="https://github.com/ntufar/mcfind/actions/workflows/macos.yml/badge.svg" alt="macOS Build">
+            <img src="https://github.com/ntufar/mcfind/actions/workflows/release.yml/badge.svg" alt="Release">
+            <img src="https://img.shields.io/badge/Swift-5.9+-orange.svg" alt="Swift">
+            <img src="https://img.shields.io/badge/macOS-14.0+-blue.svg" alt="macOS">
+        </div>
+
+        <div class="cta-buttons">
+            <a href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg" class="btn btn-primary">Download DMG</a>
+            <a href="https://github.com/ntufar/mcfind" class="btn btn-secondary">View on GitHub</a>
+        </div>
+    </header>
+
+    <section>
+        <div class="container">
+            <h2>Features</h2>
+            <p class="section-subtitle">Everything you need for fast file searching on macOS</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning-Fast Search</h3>
+                    <p>Indexes your home directory for instant file searching. Search results appear in under 50ms.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Modern UI</h3>
+                    <p>Clean, native macOS interface built with SwiftUI. Feels right at home on your Mac.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Cloud Integration</h3>
+                    <p>Index SharePoint, OneDrive, Google Drive, and iCloud Drive by default.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3>Keyboard Navigation</h3>
+                    <p>Use arrow keys to navigate, Enter to open files. No mouse needed.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Real-Time Monitoring</h3>
+                    <p>Automatically detects file system changes and keeps the index up to date.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>Hierarchical Settings</h3>
+                    <p>Control indexing per folder. Fine-grained control over what gets indexed.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="download-section">
+        <div class="container">
+            <h2>Download</h2>
+            <p class="section-subtitle">Choose your installation method</p>
+
+            <span class="version-badge">Latest v0.1.1</span>
+
+            <div class="download-options">
+                <div class="download-card">
+                    <h3>DMG Installer</h3>
+                    <p>Easy drag-and-drop installation</p>
+                    <a href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg" class="btn btn-primary">Download DMG</a>
+                </div>
+
+                <div class="download-card">
+                    <h3>PKG Installer</h3>
+                    <p>Professional installer package</p>
+                    <a href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg" class="btn btn-primary">Download PKG</a>
+                </div>
+            </div>
+
+            <div class="requirements">
+                <h3>Requirements</h3>
+                <ul>
+                    <li>macOS 13.0 or later (Ventura+)</li>
+                    <li>Xcode 14.0 or later (for building from source)</li>
+                    <li>~100MB disk space for typical index</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Keyboard Shortcuts</h2>
+            <p class="section-subtitle">Navigate with ease</p>
+
+            <div class="keyboard-shortcuts">
+                <div class="shortcut">
+                    <span>Open Settings</span>
+                    <span class="shortcut-key">Cmd+,</span>
+                </div>
+                <div class="shortcut">
+                    <span>Re-index all files</span>
+                    <span class="shortcut-key">Cmd+Shift+R</span>
+                </div>
+                <div class="shortcut">
+                    <span>Navigate results</span>
+                    <span class="shortcut-key">↑ / ↓</span>
+                </div>
+                <div class="shortcut">
+                    <span>Open selected file</span>
+                    <span class="shortcut-key">Enter</span>
+                </div>
+                <div class="shortcut">
+                    <span>Clear search</span>
+                    <span class="shortcut-key">Escape</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Performance</h2>
+            <p class="section-subtitle">Built for speed and efficiency</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>SQLite-based Indexing</h3>
+                    <p>Instant search results powered by a robust database engine</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Background Processing</h3>
+                    <p>Non-blocking file indexing with real-time progress indicator</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Smart Exclusions</h3>
+                    <p>Automatically skips caches, logs, and build artifacts</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Efficient Storage</h3>
+                    <p>Typical index size: 50-100MB for ~100k files</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 McFind. Open Source Project.</p>
+            <p>
+                <a href="https://github.com/ntufar/mcfind">GitHub</a> |
+                <a href="https://github.com/ntufar/mcfind/releases">Releases</a> |
+                <a href="https://github.com/ntufar/mcfind/issues">Issues</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
