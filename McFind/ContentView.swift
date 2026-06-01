@@ -3,164 +3,226 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = SearchViewModel()
     @FocusState private var isSearchFocused: Bool
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Search Bar
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                
-                TextField("Search files...", text: $viewModel.searchText)
+                    .font(.system(size: 14))
+
+                TextField("Search files...", text: $viewModel.searchText, onCommit: {
+                    viewModel.openSelectedFile()
+                })
                     .textFieldStyle(.plain)
+                    .font(.system(size: 14))
                     .focused($isSearchFocused)
-                    .onKeyPress(.return) {
-                        viewModel.openSelectedFile()
-                        return .handled
-                    }
-                    .onKeyPress(.upArrow) {
-                        viewModel.selectPrevious()
-                        return .handled
-                    }
-                    .onKeyPress(.downArrow) {
-                        viewModel.selectNext()
-                        return .handled
-                    }
-                
+
                 if !viewModel.searchText.isEmpty {
-                    Button("Clear") {
-                        viewModel.searchText = ""
+                    Button(action: { viewModel.searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 14))
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.plain)
                 }
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
-            .padding()
-            
-            // Progress Bar (when indexing)
-            if viewModel.isIndexing {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Indexing files...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(viewModel.indexedCount) files")
-                            .font(.caption)
+
+            Divider()
+
+            // Status Bar
+            HStack(spacing: 12) {
+                if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text("Loading index...")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                } else if viewModel.isIndexing {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text("Indexing: \(viewModel.indexedCount) files")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Button("Cancel") {
+                        viewModel.cancelIndexing()
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11))
+                    .foregroundColor(.blue)
+                } else {
+                    if !viewModel.files.isEmpty {
+                        Text("\(viewModel.files.count) results")
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     }
-                    
-                    ProgressView(value: viewModel.progress)
-                        .progressViewStyle(LinearProgressViewStyle())
+
+                    Spacer()
+
+                    if viewModel.totalFiles > 0 {
+                        Text("\(viewModel.totalFiles.formatted()) files indexed")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 8)
             }
-            
-            // Results List
-            if viewModel.files.isEmpty && !viewModel.isIndexing {
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+
+            Divider()
+
+            // Results List or Empty State
+            if viewModel.files.isEmpty && !viewModel.isIndexing && !viewModel.isLoadingFromDisk {
                 VStack(spacing: 16) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 48))
                         .foregroundColor(.secondary)
-                    
-                    Text("No files found")
-                        .font(.title2)
+
+                    Text(viewModel.searchText.isEmpty ? "Start typing to search" : "No files found")
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary)
-                    
-                    if viewModel.searchText.isEmpty {
-                        Text("Start typing to search your files")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    } else {
+
+                    if !viewModel.searchText.isEmpty {
                         Text("Try a different search term")
-                            .font(.body)
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(Array(viewModel.files.enumerated()), id: \.element.id) { index, file in
-                    FileRowView(
-                        file: file,
-                        isSelected: index == viewModel.selectedIndex
-                    )
-                    .onTapGesture {
+                // Resizable Table View
+                ResizableTableView(
+                    files: $viewModel.files,
+                    selectedIndex: $viewModel.selectedIndex,
+                    onDoubleClick: {
+                        viewModel.openSelectedFile()
+                    },
+                    onSelectionChange: { index in
                         viewModel.selectFile(at: index)
                     }
-                    .onTapGesture(count: 2) {
-                        viewModel.openSelectedFile()
-                    }
-                    .contextMenu {
-                        Button("Open") {
-                            viewModel.openSelectedFile()
-                        }
-                        
-                        Button("Reveal in Finder") {
-                            viewModel.revealInFinder()
-                        }
-                    }
-                }
-                .listStyle(.plain)
+                )
             }
         }
-        .frame(minWidth: 600, minHeight: 400)
+        .handleKeyEvents { event in
+            switch Int(event.keyCode) {
+            case 125: // Down arrow
+                viewModel.selectNext()
+                return true
+            case 126: // Up arrow
+                viewModel.selectPrevious()
+                return true
+            case 53: // Escape
+                if !viewModel.searchText.isEmpty {
+                    viewModel.searchText = ""
+                } else {
+                    NSApplication.shared.keyWindow?.close()
+                }
+                return true
+            default:
+                return false
+            }
+        }
         .onAppear {
             isSearchFocused = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ReindexFiles"))) { _ in
+            viewModel.startIndexing()
+        }
     }
 }
 
-struct FileRowView: View {
+struct CompactFileRowView: View {
     let file: FileItem
     let isSelected: Bool
-    
+
+    private var relativePath: String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        if file.path.hasPrefix(home) {
+            let relative = String(file.path.dropFirst(home.count))
+            if relative.hasPrefix("/") {
+                return "~" + relative
+            }
+            return "~/" + relative
+        }
+        return file.path
+    }
+
+    private var parentPath: String {
+        let url = URL(fileURLWithPath: file.path)
+        let parent = url.deletingLastPathComponent().path
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+
+        if parent.hasPrefix(home) {
+            let relative = String(parent.dropFirst(home.count))
+            if relative.isEmpty {
+                return "~"
+            }
+            if relative.hasPrefix("/") {
+                return "~" + relative
+            }
+            return "~/" + relative
+        }
+        return parent
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            // File Icon
-            Image(nsImage: file.fileIcon)
-                .resizable()
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                // File Name
-                Text(file.displayName)
-                    .font(.body)
+        HStack(spacing: 0) {
+            // Icon + Name
+            HStack(spacing: 6) {
+                Image(nsImage: file.fileIcon)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+
+                Text(file.name)
+                    .font(.system(size: 12))
                     .foregroundColor(.primary)
                     .lineLimit(1)
-                
-                // File Path
-                Text(file.path)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
             }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 2) {
-                // File Size
-                if !file.isDirectory {
-                    Text(file.formattedSize)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Date Modified
-                Text(file.formattedDate)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .frame(width: 200, alignment: .leading)
+
+            // Path
+            Text(parentPath)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Size
+            Text(file.isDirectory ? "" : file.formattedSize)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .frame(width: 80, alignment: .trailing)
+
+            // Modified Date
+            Text(file.formattedDate)
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .frame(width: 140, alignment: .trailing)
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
-        .background(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
-        .cornerRadius(6)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 3)
+        .background(isSelected ? Color.accentColor.opacity(0.2) : (file.id.hashValue % 2 == 0 ? Color.clear : Color(NSColor.controlBackgroundColor).opacity(0.3)))
+        .overlay(
+            Rectangle()
+                .fill(isSelected ? Color.accentColor : Color.clear)
+                .frame(width: 2)
+                .frame(maxHeight: .infinity)
+            , alignment: .leading
+        )
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }

@@ -12,18 +12,27 @@ A fast, modern macOS application for searching files in your home directory, ins
 ## Features
 
 - **Lightning-fast search**: Indexes your home directory for instant file searching
+- **Path and name search**: Search by filename or full path
 - **Modern UI**: Clean, native macOS interface with SwiftUI
 - **Smart filtering**: Intelligent search with exact matches prioritized
+- **Hierarchical settings**: Control indexing per folder, including cloud storage
+- **Cloud integration**: Index SharePoint, OneDrive, Google Drive, iCloud Drive by default
 - **Keyboard navigation**: Use arrow keys to navigate, Enter to open files
 - **File metadata**: Shows file size, modification date, and file type icons
-- **Context menu**: Right-click for additional options like "Reveal in Finder"
+- **Real-time monitoring**: Automatically detects file system changes
 - **Background indexing**: Non-blocking file indexing with progress indicator
 
 ## Download
 
-### Latest Release (v0.0.3)
+### Latest Release (v0.1.0)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
+
+**What's New in v0.1.0:**
+- Hierarchical settings - control Library/CloudStorage/iCloud separately
+- Search by file path, not just filename
+- Fixed infinite loop bugs
+- Comprehensive documentation
 
 ### Installation Instructions
 1. **DMG**: Download the DMG file, open it, and drag McFind.app to your Applications folder
@@ -34,38 +43,46 @@ View all available releases and download previous versions: [Releases Page](http
 
 ## Requirements
 
-- macOS 14.0 or later
-- Xcode 15.0 or later (for building from source)
+- macOS 13.0 or later (Ventura+)
+- Xcode 14.0 or later (for building from source)
 
-## Building the Application
+## Building from Source
 
-1. Open `McFind.xcodeproj` in Xcode
-2. Select your target device/simulator
-3. Press `Cmd+R` to build and run
+See [docs/SETUP.md](docs/SETUP.md) for detailed build instructions.
 
 ## Usage
 
 1. **Launch the app**: The application will automatically start indexing your home directory
-2. **Search**: Type in the search bar to find files instantly
-3. **Navigate**: Use arrow keys to navigate through results
-4. **Open files**: Press Enter or double-click to open the selected file
-5. **Reveal in Finder**: Right-click and select "Reveal in Finder" to show the file location
+2. **Configure settings** (optional): Press `Cmd+,` to customize which folders to index
+3. **Search**: Type in the search bar to find files instantly
+4. **Navigate**: Use arrow keys to navigate through results
+5. **Open files**: Press Enter or double-click to open the selected file
 
 ## Keyboard Shortcuts
 
+- `Cmd+,`: Open Settings
+- `Cmd+Shift+R`: Re-index all files
 - `↑` / `↓`: Navigate through search results
 - `Enter`: Open the selected file
-- `Escape`: Clear search (when search bar is focused)
+- `Escape`: Clear search or close window
 
-## Architecture
+## Settings
 
-The application is built with SwiftUI and follows MVVM architecture:
+McFind offers fine-grained control over what gets indexed:
 
-- **McFindApp**: Main app entry point
-- **ContentView**: Main UI view with search bar and results list
-- **FileItem**: Model representing file metadata
-- **FileIndexer**: Handles file system indexing and search
-- **SearchViewModel**: Manages search state and user interactions
+- **Top-level folders**: Desktop, Documents, Downloads, Movies, Music, etc.
+- **Library folder**: Excluded by default (contains system caches)
+- **Cloud Storage**: Library/CloudStorage is ON by default (OneDrive, SharePoint, Google Drive)
+- **iCloud Drive**: Library/Mobile Documents is ON by default
+
+See [docs/HIERARCHICAL_SETTINGS.md](docs/HIERARCHICAL_SETTINGS.md) for details.
+
+## Documentation
+
+- **[Setup Guide](docs/SETUP.md)** - Installation and configuration
+- **[Development Guide](docs/DEVELOPMENT.md)** - Architecture and development
+- **[Hierarchical Settings](docs/HIERARCHICAL_SETTINGS.md)** - Settings feature details
+- **[Features](docs/FEATURES.md)** - Complete feature list
 
 ## Privacy & Security
 
@@ -76,9 +93,11 @@ The app requests minimal file system permissions through sandboxing:
 
 ## Performance
 
-- Indexing runs in background to avoid blocking the UI
-- Search results are filtered and sorted in real-time
-- File system access is optimized to skip unnecessary directories (caches, logs, etc.)
+- SQLite-based indexing for instant search results
+- Background indexing with real-time file system monitoring
+- Smart exclusions: automatically skips caches, logs, build artifacts
+- Typical index size: 50-100MB for ~100k files
+- Search latency: <50ms for most queries
 
 ## License
 

@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9F0F79D02FCE2D76008D73C5 /* FileMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */; };
+		9F0F79D12FCE2D76008D73C5 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */; };
+		9F0F79D22FCE2D76008D73C5 /* IndexDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */; };
+		9F0F79D32FCE2D76008D73C5 /* KeyEventHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */; };
+		9F0F79D62FCE2DB9008D73C5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */; };
+		9F0F79D82FCE3509008D73C5 /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79D72FCE3509008D73C5 /* TableView.swift */; };
+		9F242A352FCE3CEA00039749 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A332FCE3CEA00039749 /* SettingsView.swift */; };
+		9F242A372FCE3DF500039749 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A362FCE3DF500039749 /* SettingsView.swift */; };
+		9F242A392FCE3EF000039749 /* IndexSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A382FCE3EF000039749 /* IndexSettings.swift */; };
 		AA0000000000000000000001 /* McFindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000002 /* McFindApp.swift */; };
 		AA0000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000004 /* ContentView.swift */; };
 		AA0000000000000000000005 /* FileIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* FileIndexer.swift */; };
@@ -17,7 +26,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		AA000000000000000000000F /* McFind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = McFind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMonitor.swift; sourceTree = "<group>"; };
+		9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexDatabase.swift; sourceTree = "<group>"; };
+		9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventHandling.swift; sourceTree = "<group>"; };
+		9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		9F0F79D72FCE3509008D73C5 /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
+		9F242A332FCE3CEA00039749 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9F242A362FCE3DF500039749 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9F242A382FCE3EF000039749 /* IndexSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexSettings.swift; sourceTree = "<group>"; };
 		AA0000000000000000000002 /* McFindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McFindApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* FileIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIndexer.swift; sourceTree = "<group>"; };
@@ -25,6 +42,7 @@
 		AA000000000000000000000A /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
 		AA000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000000000000000000000E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA000000000000000000000F /* McFind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = McFind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000010 /* McFind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = McFind.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -33,15 +51,32 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F0F79D62FCE2DB9008D73C5 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9F0F79D42FCE2DB9008D73C5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		AA0000000000000000000012 /* McFind */ = {
 			isa = PBXGroup;
 			children = (
+				9F242A382FCE3EF000039749 /* IndexSettings.swift */,
+				9F242A362FCE3DF500039749 /* SettingsView.swift */,
+				9F242A332FCE3CEA00039749 /* SettingsView.swift */,
+				9F0F79D72FCE3509008D73C5 /* TableView.swift */,
+				9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */,
+				9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */,
+				9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */,
+				9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */,
 				AA0000000000000000000002 /* McFindApp.swift */,
 				AA0000000000000000000004 /* ContentView.swift */,
 				AA0000000000000000000006 /* FileIndexer.swift */,
@@ -74,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000012 /* McFind */,
+				9F0F79D42FCE2DB9008D73C5 /* Frameworks */,
 				AA0000000000000000000014 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -149,10 +185,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000003 /* ContentView.swift in Sources */,
+				9F242A352FCE3CEA00039749 /* SettingsView.swift in Sources */,
+				9F0F79D82FCE3509008D73C5 /* TableView.swift in Sources */,
 				AA0000000000000000000005 /* FileIndexer.swift in Sources */,
 				AA0000000000000000000007 /* SearchViewModel.swift in Sources */,
 				AA0000000000000000000009 /* FileItem.swift in Sources */,
+				9F0F79D02FCE2D76008D73C5 /* FileMonitor.swift in Sources */,
+				9F0F79D12FCE2D76008D73C5 /* AppSettings.swift in Sources */,
+				9F0F79D22FCE2D76008D73C5 /* IndexDatabase.swift in Sources */,
+				9F0F79D32FCE2D76008D73C5 /* KeyEventHandling.swift in Sources */,
 				AA0000000000000000000001 /* McFindApp.swift in Sources */,
+				9F242A372FCE3DF500039749 /* SettingsView.swift in Sources */,
+				9F242A392FCE3EF000039749 /* IndexSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,7 +338,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -319,7 +363,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
