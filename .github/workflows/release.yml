@@ -29,7 +29,14 @@ jobs:
             -scheme McFind \
             -configuration Release \
             -destination "platform=macOS"
-      
+
+      - name: Ad-hoc sign the app
+        run: |
+          BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
+          echo "Signing app at: $BUILD_DIR/Release/McFind.app"
+          codesign --force --deep --sign - "$BUILD_DIR/Release/McFind.app"
+          codesign --verify --verbose "$BUILD_DIR/Release/McFind.app"
+
       - name: Create DMG
         run: |
           # Find the actual build output directory
