@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McFind - Lightning-Fast macOS File Search</title>
     <meta name="description" content="A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows.">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
     <style>
         * {
             margin: 0;
@@ -36,6 +38,13 @@
             color: white;
             padding: 4rem 2rem;
             text-align: center;
+        }
+
+        .app-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
         }
 
         header h1 {
@@ -298,6 +307,7 @@
 </head>
 <body>
     <header>
+        <img src="icon.svg" alt="McFind Icon" class="app-icon">
         <h1>McFind</h1>
         <p>Lightning-fast file search for macOS. Find anything, instantly.</p>
 
