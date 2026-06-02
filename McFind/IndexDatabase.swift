@@ -24,6 +24,20 @@ class IndexDatabase {
         }
     }
 
+    init(customPath: String) {
+        dbPath = customPath
+        let parentDir = (customPath as NSString).deletingLastPathComponent
+        try? FileManager.default.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+        print("📁 Database path: \(dbPath)")
+
+        openDatabase()
+        createTableIfNeeded()
+        migrateSchemaIfNeeded()
+        dbQueue.async { [weak self] in
+            self?.vacuumIfNeeded()
+        }
+    }
+
     deinit {
         closeDatabase()
     }
