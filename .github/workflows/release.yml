@@ -61,6 +61,7 @@ jobs:
           du -h McFind.dmg McFind.pkg 2>/dev/null || echo "Some files not found"
       
       - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
