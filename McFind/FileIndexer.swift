@@ -3,6 +3,8 @@ import Combine
 
 class FileIndexer: ObservableObject {
     @Published var isIndexing = false
+    @Published var isIncremental = false
+    @Published var statusMessage = ""
     @Published var progress: Double = 0.0
     @Published var indexedCount = 0
     @Published var totalFiles = 0
@@ -71,8 +73,10 @@ class FileIndexer: ObservableObject {
         guard !isIndexing else { return }
         isCancelled = false
         isIndexing = true
+        isIncremental = true
         progress = 0.0
         indexedCount = 0
+        statusMessage = "Scanning for file changes..."
 
         print("🔍 Starting incremental indexing")
         let estimatedTotal = database.getFileCount()
@@ -144,8 +148,10 @@ class FileIndexer: ObservableObject {
         guard !isIndexing else { return }
         isCancelled = false
         isIndexing = true
+        isIncremental = false
         progress = 0.0
         indexedCount = 0
+        statusMessage = "Scanning files..."
 
         print("🔍 Starting full reindex")
         database.clearDatabase()
@@ -171,7 +177,9 @@ class FileIndexer: ObservableObject {
         guard let enumerator = enumerator else {
             print("❌ Failed to create enumerator")
             DispatchQueue.main.async { [weak self] in
-                self?.isIndexing = false
+                guard let self = self else { return }
+                self.isIndexing = false
+                self.isIncremental = false
             }
             return
         }
@@ -186,7 +194,9 @@ class FileIndexer: ObservableObject {
         for case let fileURL as URL in enumerator {
             if isCancelled {
                 DispatchQueue.main.async { [weak self] in
-                    self?.isIndexing = false
+                    guard let self = self else { return }
+                    self.isIndexing = false
+                    self.isIncremental = false
                 }
                 return
             }
@@ -215,6 +225,16 @@ class FileIndexer: ObservableObject {
             batch.append(FileItem(url: fileURL))
             count += 1
 
+            // Update UI periodically (every 100 files) so users see progress
+            // before the first DB batch commit
+            if count % 100 == 0 {
+                let currentCount = count
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !self.isCancelled else { return }
+                    self.indexedCount = currentCount
+                }
+            }
+
             // Then check if this is a directory whose descendants we should skip
             var isDir: ObjCBool = false
             if fileManager.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
@@ -233,6 +253,7 @@ class FileIndexer: ObservableObject {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, !self.isCancelled else { return }
                     self.indexedCount = currentCount
+                    self.statusMessage = "Indexing \(currentCount) files..."
                     self.progress = min(Double(currentCount) / Double(estimatedFileCount), 0.95)
                 }
                 batch.removeAll(keepingCapacity: true)
@@ -245,6 +266,7 @@ class FileIndexer: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self, !self.isCancelled else { return }
                 self.indexedCount = currentCount
+                self.statusMessage = "Indexing \(currentCount) files..."
             }
         }
 
@@ -253,6 +275,7 @@ class FileIndexer: ObservableObject {
             print("✅ Indexing complete: \(count) files indexed")
 
             self.isIndexing = false
+            self.isIncremental = false
             self.progress = 1.0
             self.totalFiles = count
         }
@@ -272,7 +295,9 @@ class FileIndexer: ObservableObject {
         guard let enumerator = enumerator else {
             print("❌ Failed to create enumerator")
             DispatchQueue.main.async { [weak self] in
-                self?.isIndexing = false
+                guard let self = self else { return }
+                self.isIndexing = false
+                self.isIncremental = false
             }
             return
         }
@@ -335,11 +360,21 @@ class FileIndexer: ObservableObject {
                 count += 1
             }
 
+            // Update UI periodically so users see progress before first batch commit
+            if count > 0, count % 100 == 0 {
+                let currentCount = count
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !self.isCancelled else { return }
+                    self.indexedCount = currentCount
+                }
+            }
+
             if batch.count >= batchSize {
                 database.insertFiles(batch, generation: generation)
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, !self.isCancelled else { return }
                     self.indexedCount = count
+                    self.statusMessage = "Indexing \(count) changed files..."
                     self.progress = min(Double(count) / Double(max(estimatedTotal, 1)), 0.95)
                 }
                 batch.removeAll(keepingCapacity: true)
@@ -350,8 +385,16 @@ class FileIndexer: ObservableObject {
             database.insertFiles(batch, generation: generation)
         }
 
+        DispatchQueue.main.async { [weak self] in
+            self?.statusMessage = "Saving directory timestamps..."
+        }
+
         for (dirPath, mtime) in changedDirs {
             database.setDirMtime(dirPath, mtime: mtime)
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.statusMessage = "Cleaning up removed files..."
         }
 
         let deletedCount = database.deleteByGeneration(notEqual: generation)
@@ -368,6 +411,7 @@ class FileIndexer: ObservableObject {
             guard let self = self, !self.isCancelled else { return }
             print("✅ Incremental indexing finished: \(count) files processed")
             self.isIndexing = false
+            self.isIncremental = false
             self.progress = 1.0
             self.totalFiles = self.database.getFileCount()
         }

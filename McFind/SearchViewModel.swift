@@ -18,12 +18,20 @@ class SearchViewModel: ObservableObject {
         return fileIndexer.isIndexing
     }
 
+    var isIncremental: Bool {
+        return fileIndexer.isIncremental
+    }
+
     var isLoadingFromDisk: Bool {
         return fileIndexer.isLoadingFromDisk
     }
 
     var progress: Double {
         return fileIndexer.progress
+    }
+
+    var statusMessage: String {
+        return fileIndexer.statusMessage
     }
 
     var indexedCount: Int {

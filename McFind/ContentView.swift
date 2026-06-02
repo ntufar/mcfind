@@ -61,51 +61,6 @@ struct ContentView: View {
 
             Divider()
 
-            // Status Bar
-            HStack(spacing: 12) {
-                if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                    Text("Loading index...")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                } else if viewModel.isIndexing {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                    Text("Indexing: \(viewModel.indexedCount) files")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-
-                    Spacer()
-
-                    Button("Cancel") {
-                        viewModel.cancelIndexing()
-                    }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11))
-                    .foregroundColor(.blue)
-                } else {
-                    if !viewModel.files.isEmpty {
-                        Text("\(viewModel.files.count) results")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-
-                    Spacer()
-
-                    if viewModel.totalFiles > 0 {
-                        Text("\(viewModel.totalFiles.formatted()) files indexed")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-
-            Divider()
-
             // Results List or Empty State
             if viewModel.files.isEmpty && !viewModel.isIndexing && !viewModel.isLoadingFromDisk {
                 VStack(spacing: 16) {
@@ -149,6 +104,53 @@ struct ContentView: View {
                     }
                 )
             }
+
+            Divider()
+
+            // Status Bar
+            HStack(spacing: 12) {
+                if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text("Loading index...")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                } else if viewModel.isIndexing {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text(viewModel.statusMessage.isEmpty
+                         ? (viewModel.isIncremental ? "Updating index..." : "Indexing: \(viewModel.indexedCount) files")
+                         : viewModel.statusMessage)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Button("Cancel") {
+                        viewModel.cancelIndexing()
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11))
+                    .foregroundColor(.blue)
+                } else {
+                    if !viewModel.files.isEmpty {
+                        Text("\(viewModel.files.count) results")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    if viewModel.totalFiles > 0 {
+                        Text("\(viewModel.totalFiles.formatted()) files indexed")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
         .handleKeyEvents { event in
             switch Int(event.keyCode) {

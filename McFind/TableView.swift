@@ -21,6 +21,7 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
         tableView.allowsColumnResizing = true
         tableView.allowsColumnReordering = false
+        tableView.headerView = nil
         tableView.target = context.coordinator
         tableView.action = #selector(Coordinator.tableViewClicked(_:))
 
