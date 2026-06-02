@@ -105,6 +105,10 @@ The app requests minimal file system permissions through sandboxing:
 - Typical index size: 50-100MB for ~100k files
 - Search latency: <50ms for most queries
 
+## Author
+
+Created by **ntufar** — [github.com/ntufar](https://github.com/ntufar)
+
 ## License
 
 This project is open source. Feel free to modify and distribute according to your needs.

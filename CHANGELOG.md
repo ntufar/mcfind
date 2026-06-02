@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Arrow-key navigation with automatic table view focus
+- Author credit in README, website footer, and macOS About dialog
 
 ### Changed
 - `selectedFile` converted from stored `@Published` property to computed property, reducing redundant view updates
