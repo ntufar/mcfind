@@ -7,17 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-03
+
 ### Added
-- Arrow-key navigation with automatic table view focus
-- Author credit in README, website footer, and macOS About dialog
+- Drag-and-drop support: files can now be dragged from the result list to other applications (Finder, etc.)
+- Inline rename: right-click a file and select "Rename", or press Enter when the result list is focused
+- Enter key on a selected file in the result list now starts rename (instead of opening the file)
+- Escape key cancels inline rename and restores the original name
+- Visual feedback during rename: text field shows a background while editing
 
 ### Changed
 - `selectedFile` converted from stored `@Published` property to computed property, reducing redundant view updates
+- **Keyboard behavior**: Enter now triggers rename when the result list is focused; double-click still opens the file
 
 ### Fixed
 - "Modifying state during view update" warnings caused by mutating `@Binding` inside `NSViewRepresentable.updateNSView`
 - `tableViewSelectionDidChange` delegate no longer modifies `@Published` state synchronously during view update cycles
 - Intents framework `linkd` connection errors suppressed via Info.plist keys
+- Arrow-key navigation with automatic table view focus
+- Author credit in README, website footer, and macOS About dialog
 
 ### Removed
 - Direct `selectedFile` property writes — now derived from `files[selectedIndex]`

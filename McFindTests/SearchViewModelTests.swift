@@ -211,4 +211,41 @@ final class SearchViewModelTests: XCTestCase {
         viewModel.openSelectedFile()
         XCTAssertNil(viewModel.selectedFile)
     }
+
+    func testRenameFileInvalidIndexDoesNothing() {
+        let tmpDir = FileManager.default.temporaryDirectory
+        let originalURL = tmpDir.appendingPathComponent("mcfind-test-rename-\(UUID().uuidString).txt")
+        FileManager.default.createFile(atPath: originalURL.path, contents: "test".data(using: .utf8))
+        defer { try? FileManager.default.removeItem(at: originalURL) }
+
+        viewModel.files = [FileItem(url: originalURL)]
+        viewModel.selectedIndex = 0
+
+        viewModel.renameFile(at: -1, to: "new.txt")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: originalURL.path))
+        XCTAssertEqual(viewModel.files[0].name, originalURL.lastPathComponent)
+
+        viewModel.renameFile(at: 5, to: "new.txt")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: originalURL.path))
+    }
+
+    func testRenameFileRenamesOnDisk() {
+        let tmpDir = FileManager.default.temporaryDirectory
+        let originalURL = tmpDir.appendingPathComponent("mcfind-test-rename-\(UUID().uuidString).txt")
+        FileManager.default.createFile(atPath: originalURL.path, contents: "test".data(using: .utf8))
+        let newName = "mcfind-test-renamed-\(UUID().uuidString).txt"
+        let newURL = tmpDir.appendingPathComponent(newName)
+        defer {
+            try? FileManager.default.removeItem(at: originalURL)
+            try? FileManager.default.removeItem(at: newURL)
+        }
+
+        viewModel.files = [FileItem(url: originalURL)]
+        viewModel.selectedIndex = 0
+
+        viewModel.renameFile(at: 0, to: newName)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: originalURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: newURL.path))
+    }
 }

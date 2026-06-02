@@ -152,4 +152,16 @@ class SearchViewModel: ObservableObject {
             print("❌ Failed to move file to trash: \(error)")
         }
     }
+
+    func renameFile(at index: Int, to newName: String) {
+        guard index >= 0, index < files.count else { return }
+        let file = files[index]
+        let oldURL = URL(fileURLWithPath: file.path)
+        let newURL = oldURL.deletingLastPathComponent().appendingPathComponent(newName)
+        do {
+            try FileManager.default.moveItem(at: oldURL, to: newURL)
+        } catch {
+            print("❌ Failed to rename file: \(error)")
+        }
+    }
 }

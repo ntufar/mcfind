@@ -97,7 +97,8 @@
 ## Keyboard Navigation
 
 - [x] ↑/↓ navigate results
-- [x] Enter opens selected file
+- [x] Enter starts rename on selected file (when result list is focused)
+- [x] Escape cancels inline rename
 - [x] Escape clears search or closes window
 - [x] Cmd+Shift+R re-index
 - [x] Cmd+, opens settings
@@ -113,6 +114,11 @@
 - [x] Copy Path
 - [x] Copy File
 - [x] Share menu
+- [x] Rename (inline editing)
+
+## Drag & Drop
+
+- [x] Drag files from result list to external destinations (Finder, apps, etc.)
 
 ## Data Model
 

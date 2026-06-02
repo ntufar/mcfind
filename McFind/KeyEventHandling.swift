@@ -45,7 +45,12 @@ struct KeyEventHandler: NSViewRepresentable {
                     return nil
                 }
 
-                // For printable characters, redirect to search field
+                // If a text field is being edited (e.g., rename, search field), don't redirect
+                if window.firstResponder is NSTextView {
+                    return event
+                }
+
+                // Redirect printable character input to search field
                 if let searchField = self.findSearchField() {
                     let isActive = window.firstResponder === searchField ||
                         window.firstResponder === searchField.currentEditor()

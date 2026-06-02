@@ -103,6 +103,9 @@ struct ContentView: View {
                     },
                     onMoveToTrash: { index in
                         viewModel.moveToTrashFile(at: index)
+                    },
+                    onRenameFile: { index, newName in
+                        viewModel.renameFile(at: index, to: newName)
                     }
                 )
             }
@@ -165,6 +168,19 @@ struct ContentView: View {
                 if !viewModel.files.isEmpty { focusResults = true }
                 return true
             case 36: // Return
+                // If editing a text field in a table cell (rename mode), end editing
+                if let window = NSApp.keyWindow,
+                   let firstResponder = window.firstResponder as? NSTextView,
+                   let textField = firstResponder.delegate as? NSTextField,
+                   textField.superview is NSTableCellView {
+                    window.makeFirstResponder(nil)
+                    return true
+                }
+                // If table has focus, start renaming the selected file
+                if NSApp.keyWindow?.firstResponder is NSTableView {
+                    NotificationCenter.default.post(name: .mcfindRenameSelected, object: nil)
+                    return true
+                }
                 viewModel.openSelectedFile()
                 return true
             case 49: // Space
@@ -173,6 +189,14 @@ struct ContentView: View {
                 return true
             case 53: // Escape
                 if viewModel.isQuickLookVisible { return false }
+                // If editing a text field in a table cell (rename mode), cancel rename
+                if let window = NSApp.keyWindow,
+                   let firstResponder = window.firstResponder as? NSTextView,
+                   let textField = firstResponder.delegate as? NSTextField,
+                   textField.superview is NSTableCellView {
+                    NotificationCenter.default.post(name: .mcfindRenameCancel, object: nil)
+                    return true
+                }
                 if !viewModel.searchText.isEmpty {
                     viewModel.searchText = ""
                 } else {

@@ -1,6 +1,11 @@
 import SwiftUI
 import AppKit
 
+extension Notification.Name {
+    static let mcfindRenameSelected = Notification.Name("com.mcfind.renameSelected")
+    static let mcfindRenameCancel = Notification.Name("com.mcfind.renameCancel")
+}
+
 struct ResizableTableView: NSViewRepresentable {
     @Binding var files: [FileItem]
     @Binding var selectedIndex: Int
@@ -11,6 +16,7 @@ struct ResizableTableView: NSViewRepresentable {
     var onCopyPath: (() -> Void)?
     var onCopyFile: (() -> Void)?
     var onMoveToTrash: ((Int) -> Void)?
+    var onRenameFile: ((Int, String) -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -25,6 +31,7 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.headerView = nil
         tableView.target = context.coordinator
         tableView.action = #selector(Coordinator.tableViewClicked(_:))
+        tableView.setDraggingSourceOperationMask(.copy, forLocal: false)
 
         let menu = NSMenu()
         menu.delegate = context.coordinator
@@ -114,10 +121,10 @@ struct ResizableTableView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onMoveToTrash: onMoveToTrash)
+        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onMoveToTrash: onMoveToTrash, onRenameFile: onRenameFile)
     }
 
-    class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate {
+    class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate, NSTextFieldDelegate {
         var files: [FileItem] = []
         @Binding var selectedIndex: Int
         var onDoubleClick: () -> Void
@@ -126,12 +133,15 @@ struct ResizableTableView: NSViewRepresentable {
         var onCopyPath: (() -> Void)?
         var onCopyFile: (() -> Void)?
         var onMoveToTrash: ((Int) -> Void)?
+        var onRenameFile: ((Int, String) -> Void)?
         weak var tableView: NSTableView?
         var isProgrammaticSelection = false
         var lastKnownSelection = 0
         private var clickedRow: Int = -1
+        private var renamingRow: Int = -1
+        private var originalName: String = ""
 
-        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?) {
+        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?, onRenameFile: ((Int, String) -> Void)?) {
             self._selectedIndex = selectedIndex
             self.onDoubleClick = onDoubleClick
             self.onSelectionChange = onSelectionChange
@@ -139,6 +149,15 @@ struct ResizableTableView: NSViewRepresentable {
             self.onCopyPath = onCopyPath
             self.onCopyFile = onCopyFile
             self.onMoveToTrash = onMoveToTrash
+            self.onRenameFile = onRenameFile
+            super.init()
+            NotificationCenter.default.addObserver(self, selector: #selector(renameSelectedFile), name: .mcfindRenameSelected, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(cancelRenameNotification), name: .mcfindRenameCancel, object: nil)
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self, name: .mcfindRenameSelected, object: nil)
+            NotificationCenter.default.removeObserver(self, name: .mcfindRenameCancel, object: nil)
         }
 
         func menuNeedsUpdate(_ menu: NSMenu) {
@@ -169,6 +188,10 @@ struct ResizableTableView: NSViewRepresentable {
             let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
             shareItem.submenu = buildShareMenu()
             menu.addItem(shareItem)
+
+            let renameItem = NSMenuItem(title: "Rename", action: #selector(menuRenameFile(_:)), keyEquivalent: "")
+            renameItem.target = self
+            menu.addItem(renameItem)
 
             menu.addItem(NSMenuItem.separator())
 
@@ -239,6 +262,96 @@ struct ResizableTableView: NSViewRepresentable {
             service.perform(withItems: [url])
         }
 
+        @objc private func menuRenameFile(_ sender: Any?) {
+            beginRenaming(row: clickedRow)
+        }
+
+        @objc private func renameSelectedFile() {
+            beginRenaming(row: selectedIndex)
+        }
+
+        private func beginRenaming(row: Int) {
+            guard let tableView = tableView,
+                  row >= 0, row < files.count,
+                  let cellView = tableView.view(atColumn: 0, row: row, makeIfNecessary: true) as? NSTableCellView,
+                  let textField = cellView.textField else { return }
+            tableView.scrollRowToVisible(row)
+            renamingRow = row
+            originalName = files[row].name
+            textField.isEditable = true
+            textField.delegate = self
+            textField.drawsBackground = true
+            textField.backgroundColor = .controlBackgroundColor
+            textField.textColor = .controlTextColor
+            tableView.window?.makeFirstResponder(textField)
+            DispatchQueue.main.async {
+                textField.currentEditor()?.selectAll(nil)
+            }
+        }
+
+        // MARK: - Drag and Drop
+
+        func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+            guard row >= 0, row < files.count else { return nil }
+            return NSURL(fileURLWithPath: files[row].path)
+        }
+
+        // MARK: - NSTextFieldDelegate
+
+        func controlTextDidEndEditing(_ obj: Notification) {
+            guard let textField = obj.object as? NSTextField,
+                  let tableView = tableView,
+                  let cellView = textField.superview as? NSTableCellView else { return }
+            let row = tableView.row(for: cellView)
+            guard row >= 0, row == renamingRow, row < files.count else { return }
+
+            textField.isEditable = false
+            textField.drawsBackground = false
+            renamingRow = -1
+
+            let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !newName.isEmpty, newName != originalName else {
+                textField.stringValue = originalName
+                return
+            }
+
+            onRenameFile?(row, newName)
+            files[row] = FileItem(
+                path: (files[row].path as NSString).deletingLastPathComponent + "/" + newName,
+                name: newName,
+                isDirectory: files[row].isDirectory,
+                size: files[row].size,
+                dateModified: files[row].dateModified
+            )
+            tableView.reloadData(forRowIndexes: IndexSet(integer: row), columnIndexes: IndexSet(integersIn: 0..<tableView.tableColumns.count))
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            print("✏️ doCommandBy: \(commandSelector)")
+            if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+                cancelRename()
+                return true
+            }
+            return false
+        }
+
+        @objc private func cancelRenameNotification() {
+            cancelRename()
+        }
+
+        private func cancelRename() {
+            guard renamingRow >= 0, renamingRow < files.count else { return }
+            guard let tableView = tableView,
+                  let cellView = tableView.view(atColumn: 0, row: renamingRow, makeIfNecessary: false) as? NSTableCellView,
+                  let textField = cellView.textField else { return }
+            print("✏️ cancelRename: restoring '\(originalName)'")
+            textField.stringValue = originalName
+            textField.isEditable = false
+            textField.drawsBackground = false
+            renamingRow = -1
+            tableView.window?.makeFirstResponder(tableView)
+        }
+
         func numberOfRows(in tableView: NSTableView) -> Int {
             return files.count
         }
@@ -270,6 +383,8 @@ struct ResizableTableView: NSViewRepresentable {
                 // Setup based on column type
                 switch identifier.rawValue {
                 case "name":
+                    textField.delegate = self
+
                     let imageView = NSImageView()
                     imageView.imageScaling = .scaleProportionallyDown
                     imageView.translatesAutoresizingMaskIntoConstraints = false

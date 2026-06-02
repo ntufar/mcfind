@@ -33,7 +33,9 @@
 
 ### Keyboard Shortcuts
 - **↑/↓**: Navigate results (auto-focuses result list)
-- **Enter**: Open selected file
+- **Enter**: Rename selected file (when result list is focused)
+- **Enter**: Commit rename (during inline editing)
+- **Escape**: Cancel rename (during inline editing)
 - **Space**: Quick Look preview of selected file
 - **Escape**: Clear search (or deselect if search is empty)
 - **⌘⇧R**: Re-index files (menu command)
@@ -44,7 +46,11 @@
 - Copy Path
 - Copy File
 - Share (via macOS Share Sheet)
+- Rename (inline editing)
 - Move to Trash
+
+### Drag & Drop
+- Drag files from result list to any drag destination (Finder, other apps, etc.)
 
 ### Quick Look
 - Press Space to preview selected file
