@@ -70,6 +70,8 @@
 - [x] Compact mode toggle (UserDefaults)
 - [x] Show full path toggle (UserDefaults)
 - [x] Hidden title bar with transparent background
+- [x] Search cursor always active — typing works without clicking into search field
+- [x] Right-click context menu on results (Open, Reveal in Finder, Copy Path, Copy File, Share)
 - [ ] Advanced filters UI panel
 - [ ] Search history dropdown
 - [ ] File preview on selection
@@ -87,6 +89,7 @@
 - [x] Settings persistence via UserDefaults
 - [x] "Reset to Defaults" button
 - [x] Re-index prompt after settings change
+- [x] Index dot files and directories toggle (UserDefaults, default off)
 - [ ] User-customizable skip patterns
 - [ ] Import/export settings profiles
 - [ ] Show estimated index size per path
@@ -108,8 +111,8 @@
 - [x] Open in Default App
 - [x] Reveal in Finder
 - [x] Copy Path
-- [ ] Copy file
-- [ ] Share menu
+- [x] Copy File
+- [x] Share menu
 
 ## Data Model
 
