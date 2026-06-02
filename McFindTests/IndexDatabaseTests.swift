@@ -136,7 +136,9 @@ final class IndexDatabaseTests: XCTestCase {
         XCTAssertNil(db.getLastIndexedAt())
         let date = Date(timeIntervalSince1970: 1700000000)
         db.storeLastIndexedAt(date)
-        XCTAssertEqual(db.getLastIndexedAt()?.timeIntervalSince1970, date.timeIntervalSince1970, accuracy: 0.001)
+        let lastIndexed = db.getLastIndexedAt()
+        XCTAssertNotNil(lastIndexed)
+        XCTAssertEqual(lastIndexed!.timeIntervalSince1970, date.timeIntervalSince1970, accuracy: 0.001)
     }
 
     func testCurrentGeneration() {

@@ -41,7 +41,7 @@ class IndexSettings: ObservableObject {
     // Default paths to exclude (Library only, but not its important subfolders)
     static let defaultExcludedPaths: Set<String> = ["Library"]
 
-    private init() {
+    init() {
         if let saved = defaults.stringArray(forKey: excludedPathsKey) {
             self.excludedPaths = Set(saved)
         } else {
