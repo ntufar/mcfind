@@ -428,8 +428,8 @@ class FileIndexer: ObservableObject {
         return packageExtensions.contains(pathExtension)
     }
 
-    func search(_ query: String) -> [FileItem] {
-        return database.search(query, filterDotFiles: !indexDotFiles)
+    func search(_ query: String, sizeFilter: SizeFilter = .any) -> [FileItem] {
+        return database.search(query, filterDotFiles: !indexDotFiles, sizeFilter: sizeFilter)
     }
 
     func removeDotFilesFromIndex() {

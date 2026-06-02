@@ -109,3 +109,39 @@ struct FileItem: Identifiable, Hashable {
         self.fileExtension = url.pathExtension.isEmpty ? nil : url.pathExtension
     }
 }
+
+enum SizeFilter: String, CaseIterable, Identifiable {
+    case any
+    case under100KB
+    case under1MB
+    case under10MB
+    case under100MB
+    case over100MB
+    case over1GB
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .any: return "Any"
+        case .under100KB: return "<100 KB"
+        case .under1MB: return "<1 MB"
+        case .under10MB: return "<10 MB"
+        case .under100MB: return "<100 MB"
+        case .over100MB: return ">100 MB"
+        case .over1GB: return ">1 GB"
+        }
+    }
+
+    var sqlClause: String {
+        switch self {
+        case .any: return ""
+        case .under100KB: return "AND size < 102400"
+        case .under1MB: return "AND size < 1048576"
+        case .under10MB: return "AND size < 10485760"
+        case .under100MB: return "AND size < 104857600"
+        case .over100MB: return "AND size > 104857600 AND is_directory = 0"
+        case .over1GB: return "AND size > 1073741824 AND is_directory = 0"
+        }
+    }
+}

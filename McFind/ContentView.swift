@@ -32,6 +32,30 @@ struct ContentView: View {
 
             Divider()
 
+            // Size Filter Bar
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(SizeFilter.allCases) { filter in
+                        Button(action: {
+                            viewModel.selectedSizeFilter = filter
+                        }) {
+                            Text(filter.displayName)
+                                .font(.system(size: 10))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(viewModel.selectedSizeFilter == filter ? Color.accentColor : Color(NSColor.controlBackgroundColor))
+                                .foregroundColor(viewModel.selectedSizeFilter == filter ? .white : .secondary)
+                                .cornerRadius(4)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+            }
+
+            Divider()
+
             // Status Bar
             HStack(spacing: 12) {
                 if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
@@ -114,6 +138,9 @@ struct ContentView: View {
                     },
                     onCopyFile: {
                         viewModel.copyFile()
+                    },
+                    onMoveToTrash: { index in
+                        viewModel.moveToTrashFile(at: index)
                     }
                 )
             }

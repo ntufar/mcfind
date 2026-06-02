@@ -16,7 +16,7 @@
 - [x] Background search queue (`com.mcfind.search`)
 - [x] Advanced search syntax (wildcards, regex)
 - [ ] File type filters (images, documents, etc.)
-- [ ] Size filters (>1GB, <100KB, etc.)
+- [x] Size filters (>1GB, <100KB, etc.)
 - [ ] Date filters (modified in last week, month)
 - [ ] Search history
 - [ ] File content search (full-text indexing)

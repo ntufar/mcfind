@@ -363,8 +363,8 @@ class IndexDatabase {
         case regex(sqlFilter: String, regex: NSRegularExpression)
     }
 
-    func search(_ query: String, filterDotFiles: Bool = false) -> [FileItem] {
-        print("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles))")
+    func search(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
+        print("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles) sizeFilter: \(sizeFilter.displayName))")
         guard !query.isEmpty else {
             print("⚠️ Empty query, returning []")
             return []
@@ -374,7 +374,7 @@ class IndexDatabase {
         let startTime = Date()
         let results = dbQueue.sync {
             print("🔓 Database queue acquired")
-            return searchInternal(query, filterDotFiles: filterDotFiles)
+            return searchInternal(query, filterDotFiles: filterDotFiles, sizeFilter: sizeFilter)
         }
         let elapsed = Date().timeIntervalSince(startTime)
         print("✅ Search completed in \(String(format: "%.3f", elapsed))s - found \(results.count) results")
@@ -448,11 +448,17 @@ class IndexDatabase {
         return best.count >= 2 ? best : ""
     }
 
-    private func searchInternal(_ query: String, filterDotFiles: Bool = false) -> [FileItem] {
-        print("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles))")
+    private func searchInternal(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
+        print("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles), sizeFilter: \(sizeFilter.displayName))")
 
         let mode = parseSearchMode(query)
-        let filterClause = filterDotFiles ? "AND path_normalized NOT LIKE '%/.%'" : ""
+        var clauses: [String] = []
+        if filterDotFiles { clauses.append("path_normalized NOT LIKE '%/.%'") }
+        if !sizeFilter.sqlClause.isEmpty {
+            let sizeClause = String(sizeFilter.sqlClause.dropFirst(4))
+            clauses.append(sizeClause)
+        }
+        let filterClause = clauses.isEmpty ? "" : "AND " + clauses.joined(separator: " AND ")
 
         switch mode {
         case .simple(let normalizedQuery, let pattern, let prefixPattern, let pathPattern):

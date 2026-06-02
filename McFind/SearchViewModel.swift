@@ -7,6 +7,7 @@ class SearchViewModel: ObservableObject {
     @Published var selectedFile: FileItem?
     @Published var selectedIndex = 0
     @Published var files: [FileItem] = []
+    @Published var selectedSizeFilter: SizeFilter = .any
 
     private let fileIndexer = FileIndexer()
     private var cancellables = Set<AnyCancellable>()
@@ -37,22 +38,24 @@ class SearchViewModel: ObservableObject {
     }
 
     private func setupSearchBinding() {
-        $searchText
-            .debounce(for: .milliseconds(150), scheduler: RunLoop.main)
-            .sink { [weak self] query in
-                print("⌨️  SearchText changed to: '\(query)'")
-                self?.performSearch(query)
-            }
-            .store(in: &cancellables)
+        Publishers.CombineLatest(
+            $searchText.debounce(for: .milliseconds(150), scheduler: RunLoop.main),
+            $selectedSizeFilter
+        )
+        .sink { [weak self] query, sizeFilter in
+            print("⌨️  SearchText changed to: '\(query)' | sizeFilter: \(sizeFilter.displayName)")
+            self?.performSearch(query, sizeFilter: sizeFilter)
+        }
+        .store(in: &cancellables)
     }
 
-    private func performSearch(_ query: String) {
+    private func performSearch(_ query: String, sizeFilter: SizeFilter = .any) {
         print("🚀 performSearch() called on \(Thread.current)")
         searchQueue.async { [weak self] in
             print("  🔄 Search queue executing...")
             guard let self = self else { return }
-            print("  🔍 Calling fileIndexer.search() for: '\(query)'")
-            let results = self.fileIndexer.search(query)
+            print("  🔍 Calling fileIndexer.search() for: '\(query)' sizeFilter: \(sizeFilter.displayName)")
+            let results = self.fileIndexer.search(query, sizeFilter: sizeFilter)
             print("  ✅ fileIndexer.search() returned \(results.count) results")
 
             DispatchQueue.main.async {
@@ -111,5 +114,24 @@ class SearchViewModel: ObservableObject {
         guard let file = selectedFile else { return }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.writeObjects([NSURL(fileURLWithPath: file.path)])
+    }
+
+    func moveToTrashFile(at index: Int) {
+        guard index >= 0, index < files.count else { return }
+        let file = files[index]
+        let url = URL(fileURLWithPath: file.path)
+        do {
+            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            files.remove(at: index)
+            if files.isEmpty {
+                selectedFile = nil
+                selectedIndex = 0
+            } else {
+                selectedIndex = min(index, files.count - 1)
+                selectedFile = files[selectedIndex]
+            }
+        } catch {
+            print("❌ Failed to move file to trash: \(error)")
+        }
     }
 }

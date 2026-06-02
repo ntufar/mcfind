@@ -9,6 +9,7 @@ struct ResizableTableView: NSViewRepresentable {
     var onRevealInFinder: (() -> Void)?
     var onCopyPath: (() -> Void)?
     var onCopyFile: (() -> Void)?
+    var onMoveToTrash: ((Int) -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -102,7 +103,7 @@ struct ResizableTableView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile)
+        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onMoveToTrash: onMoveToTrash)
     }
 
     class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate {
@@ -113,18 +114,20 @@ struct ResizableTableView: NSViewRepresentable {
         var onRevealInFinder: (() -> Void)?
         var onCopyPath: (() -> Void)?
         var onCopyFile: (() -> Void)?
+        var onMoveToTrash: ((Int) -> Void)?
         weak var tableView: NSTableView?
         var isProgrammaticSelection = false
         var lastKnownSelection = 0
         private var clickedRow: Int = -1
 
-        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?) {
+        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?) {
             self._selectedIndex = selectedIndex
             self.onDoubleClick = onDoubleClick
             self.onSelectionChange = onSelectionChange
             self.onRevealInFinder = onRevealInFinder
             self.onCopyPath = onCopyPath
             self.onCopyFile = onCopyFile
+            self.onMoveToTrash = onMoveToTrash
         }
 
         func menuNeedsUpdate(_ menu: NSMenu) {
@@ -155,6 +158,12 @@ struct ResizableTableView: NSViewRepresentable {
             let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
             shareItem.submenu = buildShareMenu()
             menu.addItem(shareItem)
+
+            menu.addItem(NSMenuItem.separator())
+
+            let deleteItem = NSMenuItem(title: "Move to Trash", action: #selector(menuMoveToTrash(_:)), keyEquivalent: "")
+            deleteItem.target = self
+            menu.addItem(deleteItem)
         }
 
         private func buildShareMenu() -> NSMenu {
@@ -194,6 +203,22 @@ struct ResizableTableView: NSViewRepresentable {
             guard clickedRow >= 0, clickedRow < files.count else { return }
             onSelectionChange(clickedRow)
             onCopyFile?()
+        }
+
+        @objc private func menuMoveToTrash(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            let file = files[clickedRow]
+            let alert = NSAlert()
+            alert.messageText = "Are you sure you want to move \"\(file.name)\" to the Trash?"
+            alert.informativeText = "This action cannot be undone."
+            alert.addButton(withTitle: "Move to Trash")
+            alert.addButton(withTitle: "Cancel")
+            alert.alertStyle = .warning
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                onSelectionChange(clickedRow)
+                onMoveToTrash?(clickedRow)
+            }
         }
 
         @objc private func shareViaService(_ sender: NSMenuItem) {
