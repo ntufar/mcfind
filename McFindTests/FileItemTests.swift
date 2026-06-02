@@ -36,8 +36,8 @@ final class FileItemTests: XCTestCase {
     }
 
     func testFormattedDateThisYear() {
-        let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())!
-        let item = FileItem(path: "/tmp/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: sixMonthsAgo)
+        let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        let item = FileItem(path: "/tmp/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: thirtyDaysAgo)
         XCTAssertFalse(item.formattedDate.hasPrefix("Today"))
         XCTAssertFalse(item.formattedDate.hasPrefix("Yesterday"))
         XCTAssertTrue(item.formattedDate.contains(":"))
