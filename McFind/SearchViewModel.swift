@@ -52,6 +52,12 @@ class SearchViewModel: ObservableObject {
 
     init() {
         setupSearchBinding()
+        // Forward FileIndexer changes to SwiftUI so status bar updates properly
+        fileIndexer.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
 
     private func setupSearchBinding() {

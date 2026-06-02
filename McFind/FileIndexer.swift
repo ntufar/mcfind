@@ -304,10 +304,12 @@ class FileIndexer: ObservableObject {
 
         var batch: [FileItem] = []
         var count = 0
+        var checkedCount = 0
         let batchSize = 1000
         var changedDirs: [(path: String, mtime: Double)] = []
 
         for case let fileURL as URL in enumerator {
+            checkedCount += 1
             if isCancelled {
                 finishIndexing(count: count)
                 return
@@ -360,7 +362,17 @@ class FileIndexer: ObservableObject {
                 count += 1
             }
 
-            // Update UI periodically so users see progress before first batch commit
+            // Show enumeration progress even when no changes detected yet
+            if checkedCount % 1000 == 0 {
+                let currentChecked = checkedCount
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !self.isCancelled else { return }
+                    self.indexedCount = currentChecked
+                    self.statusMessage = ""
+                }
+            }
+
+            // Update changed file count when changes are found
             if count > 0, count % 100 == 0 {
                 let currentCount = count
                 DispatchQueue.main.async { [weak self] in

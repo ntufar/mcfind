@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-06-03
+
+### Fixed
+- Status bar not showing any content during indexing (SearchViewModel not forwarding FileIndexer's `objectWillChange`)
+- "Scanning for file changes..." showing indefinitely with no visible progress during incremental indexing
+- Flashing status messages caused by competing UI update blocks
+
+### Added
+- Real-time enumeration progress during incremental scanning — checked item count displayed every 1000 items
+
+### Changed
+- Simplified status bar fallback to always display the indexed item count regardless of indexing mode
+
 ## [0.2.2] - 2026-06-03
 
 ### Added

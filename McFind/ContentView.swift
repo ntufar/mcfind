@@ -124,7 +124,7 @@ struct ContentView: View {
                     ProgressView()
                         .scaleEffect(0.6)
                     Text(viewModel.statusMessage.isEmpty
-                         ? (viewModel.isIncremental ? "Updating index..." : "Indexing: \(viewModel.indexedCount) files")
+                         ? "Indexing: \(viewModel.indexedCount) files"
                          : viewModel.statusMessage)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)

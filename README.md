@@ -25,15 +25,15 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.2.2)
+### Latest Release (v0.2.3)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
 
-**What's New in v0.2.2:**
-- Drag-and-drop files from result list to other applications
-- Inline rename: right-click → Rename, or press Enter on a selected file
-- Escape cancels rename, Enter commits it
-- Visual feedback during inline editing
+**What's New in v0.2.3:**
+- Status bar now shows real-time progress during indexing (item count updates every 100 files)
+- Incremental scanning shows enumerated item count so you always see something moving
+- Fixed "Scanning for file changes..." getting stuck indefinitely with no visible feedback
+- Fixed status bar being completely invisible on first launch
 
 **What's New in v0.2.0:**
 - Quick Look integration: press Space to preview any file
