@@ -59,7 +59,7 @@
 | Real-time monitoring | ✅ | ✅ | ✅ Implemented |
 | Background indexing | ✅ | ✅ | ✅ Implemented |
 | Multiple drives | ✅ | ❌ | Home directory only |
-| Regex search | ✅ | ❌ | Future enhancement |
+| Regex search | ✅ | ✅ | ✅ Implemented |
 | Advanced filters | ✅ | ❌ | Future enhancement |
 | HTTP server | ✅ | ❌ | Not planned |
 | Network shares | ✅ | ❌ | Not planned |
@@ -67,7 +67,7 @@
 ## Future Enhancements 🚀
 
 ### Short Term
-- [ ] Advanced search syntax (wildcards, regex)
+- [x] Advanced search syntax (wildcards, regex)
 - [ ] File type filters (show only: images, documents, etc.)
 - [ ] Size filters (files > 1GB, < 100KB, etc.)
 - [ ] Date filters (modified in last week, month, etc.)

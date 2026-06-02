@@ -14,7 +14,7 @@
 - [x] SQLite indexes on normalized columns for performance
 - [x] 1000 result limit for UI responsiveness
 - [x] Background search queue (`com.mcfind.search`)
-- [ ] Advanced search syntax (wildcards, regex)
+- [x] Advanced search syntax (wildcards, regex)
 - [ ] File type filters (images, documents, etc.)
 - [ ] Size filters (>1GB, <100KB, etc.)
 - [ ] Date filters (modified in last week, month)
@@ -157,5 +157,5 @@
 - Full Disk Access must be granted manually
 - 1000 result cap
 - No file content search
-- No regex or advanced query syntax
+- No file content search
 - Incremental indexing relies on directory mtime changes; files content-modified in-place (no directory mtime change) are only caught on next full reindex

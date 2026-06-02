@@ -357,6 +357,12 @@ class IndexDatabase {
         }
     }
 
+    private enum SearchMode {
+        case simple(normalizedQuery: String, pattern: String, prefixPattern: String, pathPattern: String)
+        case wildcard(likePattern: String)
+        case regex(sqlFilter: String, regex: NSRegularExpression)
+    }
+
     func search(_ query: String) -> [FileItem] {
         print("🔍 IndexDatabase.search() called with: '\(query)'")
         guard !query.isEmpty else {
@@ -375,15 +381,90 @@ class IndexDatabase {
         return results
     }
 
-    private func searchInternal(_ query: String) -> [FileItem] {
-        print("  📊 searchInternal() starting...")
-        var files: [FileItem] = []
-
-        // Normalize query for Unicode-aware case-insensitive matching
+    private func parseSearchMode(_ query: String) -> SearchMode {
         let normalizedQuery = query.lowercased()
+
+        // Regex mode: /pattern/
+        if normalizedQuery.hasPrefix("/") && normalizedQuery.hasSuffix("/") && normalizedQuery.count > 2 {
+            let regexPattern = String(normalizedQuery.dropFirst().dropLast())
+            if let regex = try? NSRegularExpression(pattern: regexPattern, options: [.caseInsensitive]) {
+                let sqlFilter = extractLiteralForSQL(from: regexPattern)
+                return .regex(sqlFilter: sqlFilter, regex: regex)
+            }
+        }
+
+        // Wildcard mode: contains * or ?
+        if normalizedQuery.contains("*") || normalizedQuery.contains("?") {
+            var likePattern = normalizedQuery
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "%", with: "\\%")
+                .replacingOccurrences(of: "_", with: "\\_")
+                .replacingOccurrences(of: "*", with: "%")
+                .replacingOccurrences(of: "?", with: "_")
+            return .wildcard(likePattern: likePattern)
+        }
+
+        // Simple mode: existing substring behavior
         let pattern = "%\(normalizedQuery)%"
         let prefixPattern = "\(normalizedQuery)%"
         let pathPattern = "%/\(normalizedQuery)%"
+        return .simple(normalizedQuery: normalizedQuery, pattern: pattern, prefixPattern: prefixPattern, pathPattern: pathPattern)
+    }
+
+    private func containsAlternation(_ pattern: String) -> Bool {
+        var depth = 0
+        for char in pattern {
+            if char == "(" { depth += 1 }
+            else if char == ")" { depth -= 1 }
+            else if char == "|", depth > 0 { return true }
+        }
+        return false
+    }
+
+    /// Build a LIKE pre-filter string from a regex pattern.
+    /// Extracts the longest literal segment from the pattern.
+    /// Returns empty string if no usable literal found (caller falls back to `%`).
+    private func extractLiteralForSQL(from regexPattern: String) -> String {
+        // If the pattern contains alternation (|), fall back to broad search
+        guard !containsAlternation(regexPattern) else { return "" }
+
+        var best = ""
+        var current = ""
+        let special = CharacterSet(charactersIn: ".^$+?{}[]|()\\*")
+        for char in regexPattern {
+            if char.isLetter || char.isNumber || char == " " || char == "-" || char == "_" {
+                current.append(char)
+            } else if char == "." || char == "*" || char == "+" || char == "?" {
+                // Regex metacharacters — break the literal segment
+                if current.count > best.count { best = current }
+                current = ""
+            } else {
+                if current.count > best.count { best = current }
+                current = ""
+            }
+        }
+        if current.count > best.count { best = current }
+        // Require at least 2 characters for a useful filter
+        return best.count >= 2 ? best : ""
+    }
+
+    private func searchInternal(_ query: String) -> [FileItem] {
+        print("  📊 searchInternal() starting...")
+
+        let mode = parseSearchMode(query)
+
+        switch mode {
+        case .simple(let normalizedQuery, let pattern, let prefixPattern, let pathPattern):
+            return searchSimple(normalizedQuery: normalizedQuery, pattern: pattern, prefixPattern: prefixPattern, pathPattern: pathPattern)
+        case .wildcard(let likePattern):
+            return searchWildcard(likePattern: likePattern)
+        case .regex(let sqlFilter, let regex):
+            return searchRegex(sqlFilter: sqlFilter, regex: regex)
+        }
+    }
+
+    private func searchSimple(normalizedQuery: String, pattern: String, prefixPattern: String, pathPattern: String) -> [FileItem] {
+        var files: [FileItem] = []
 
         let searchQuery = """
         SELECT path, name, is_directory, size, modified_date FROM files
@@ -413,15 +494,12 @@ class IndexDatabase {
 
         let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-        // WHERE name_normalized LIKE ? OR path_normalized LIKE ?
         pattern.withCString { cString in
             _ = sqlite3_bind_text(stmt, 1, cString, -1, SQLITE_TRANSIENT)
         }
         pattern.withCString { cString in
             _ = sqlite3_bind_text(stmt, 2, cString, -1, SQLITE_TRANSIENT)
         }
-
-        // ORDER BY cases
         normalizedQuery.withCString { cString in
             _ = sqlite3_bind_text(stmt, 3, cString, -1, SQLITE_TRANSIENT)
         }
@@ -435,6 +513,97 @@ class IndexDatabase {
             _ = sqlite3_bind_text(stmt, 6, cString, -1, SQLITE_TRANSIENT)
         }
 
+        files = readSearchResults(stmt)
+        sqlite3_finalize(stmt)
+        print("  ✅ searchSimple() found \(files.count) files")
+        return files
+    }
+
+    private func searchWildcard(likePattern: String) -> [FileItem] {
+        var files: [FileItem] = []
+
+        let searchQuery = """
+        SELECT path, name, is_directory, size, modified_date FROM files
+        WHERE name_normalized LIKE ? ESCAPE '\\'
+           OR path_normalized LIKE ? ESCAPE '\\'
+        ORDER BY name_normalized COLLATE NOCASE
+        LIMIT 1000;
+        """
+
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, searchQuery, -1, &statement, nil) == SQLITE_OK else {
+            print("❌ Error preparing wildcard search statement")
+            return files
+        }
+
+        guard let stmt = statement else {
+            print("❌ Statement is nil")
+            return files
+        }
+
+        let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+        likePattern.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 1, cString, -1, SQLITE_TRANSIENT)
+        }
+        likePattern.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 2, cString, -1, SQLITE_TRANSIENT)
+        }
+
+        files = readSearchResults(stmt)
+        sqlite3_finalize(stmt)
+        print("  ✅ searchWildcard() found \(files.count) files")
+        return files
+    }
+
+    private func searchRegex(sqlFilter: String, regex: NSRegularExpression) -> [FileItem] {
+        var candidates: [FileItem] = []
+
+        let filterPattern = sqlFilter.isEmpty ? "%" : "%\(sqlFilter.lowercased())%"
+
+        let searchQuery = """
+        SELECT path, name, is_directory, size, modified_date FROM files
+        WHERE name_normalized LIKE ?
+           OR path_normalized LIKE ?
+        ORDER BY name_normalized COLLATE NOCASE
+        LIMIT 5000;
+        """
+
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, searchQuery, -1, &statement, nil) == SQLITE_OK else {
+            print("❌ Error preparing regex search statement")
+            return []
+        }
+
+        guard let stmt = statement else {
+            print("❌ Statement is nil")
+            return []
+        }
+
+        let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+        filterPattern.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 1, cString, -1, SQLITE_TRANSIENT)
+        }
+        filterPattern.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 2, cString, -1, SQLITE_TRANSIENT)
+        }
+
+        candidates = readSearchResults(stmt)
+        sqlite3_finalize(stmt)
+
+        let files = candidates.filter { item in
+            let range = NSRange(location: 0, length: (item.name as NSString).length)
+            return regex.firstMatch(in: item.name, options: [], range: range) != nil
+        }
+
+        print("  ✅ searchRegex() found \(files.count) files (from \(candidates.count) candidates)")
+        return Array(files.prefix(1000))
+    }
+
+    private func readSearchResults(_ stmt: OpaquePointer?) -> [FileItem] {
+        guard let stmt = stmt else { return [] }
+        var files: [FileItem] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             guard let pathPtr = sqlite3_column_text(stmt, 0),
                   let namePtr = sqlite3_column_text(stmt, 1) else {
@@ -456,10 +625,6 @@ class IndexDatabase {
                 dateModified: modifiedDate
             ))
         }
-
-        sqlite3_finalize(stmt)
-        print("  ✅ searchInternal() found \(files.count) files")
-
         return files
     }
 

@@ -213,4 +213,152 @@ final class IndexDatabaseTests: XCTestCase {
         let all = db.getAllFiles()
         XCTAssertEqual(all.first?.size, 999)
     }
+
+    // MARK: - Wildcard Search Tests
+
+    func testWildcardStarMatchesAnySequence() {
+        let file = FileItem(path: "/Documents/report_2024.pdf", name: "report_2024.pdf", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        let results = db.search("report*.pdf")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "report_2024.pdf")
+    }
+
+    func testWildcardStarMatchesPrefix() {
+        let pdf = FileItem(path: "/Docs/doc.pdf", name: "doc.pdf", isDirectory: false, size: 100, dateModified: Date())
+        let txt = FileItem(path: "/Docs/doc.txt", name: "doc.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(pdf)
+        db.insertFile(txt)
+        let results = db.search("*.pdf")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "doc.pdf")
+    }
+
+    func testWildcardQuestionMarkMatchesSingleChar() {
+        let file1 = FileItem(path: "/Docs/file1.txt", name: "file1.txt", isDirectory: false, size: 100, dateModified: Date())
+        let file2 = FileItem(path: "/Docs/fileA.txt", name: "fileA.txt", isDirectory: false, size: 100, dateModified: Date())
+        let file3 = FileItem(path: "/Docs/file12.txt", name: "file12.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file1)
+        db.insertFile(file2)
+        db.insertFile(file3)
+        let results = db.search("file?.txt")
+        XCTAssertEqual(results.count, 2)
+        let names = Set(results.map { $0.name })
+        XCTAssertTrue(names.contains("file1.txt"))
+        XCTAssertTrue(names.contains("fileA.txt"))
+        XCTAssertFalse(names.contains("file12.txt"))
+    }
+
+    func testWildcardMixed() {
+        let file1 = FileItem(path: "/Docs/photo_2024.jpg", name: "photo_2024.jpg", isDirectory: false, size: 100, dateModified: Date())
+        let file2 = FileItem(path: "/Docs/photo_2025.jpg", name: "photo_2025.jpg", isDirectory: false, size: 100, dateModified: Date())
+        let file3 = FileItem(path: "/Docs/photo_2024.png", name: "photo_2024.png", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file1)
+        db.insertFile(file2)
+        db.insertFile(file3)
+        let results = db.search("photo_202?.jpg")
+        XCTAssertEqual(results.count, 2)
+    }
+
+    func testWildcardMatchesPath() {
+        let file = FileItem(path: "/Users/test/work/project/main.swift", name: "main.swift", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        let results = db.search("*/work/*")
+        XCTAssertEqual(results.count, 1)
+    }
+
+    func testWildcardOnlyStarReturnsAll() {
+        let file1 = FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: Date())
+        let file2 = FileItem(path: "/b.txt", name: "b.txt", isDirectory: false, size: 20, dateModified: Date())
+        db.insertFile(file1)
+        db.insertFile(file2)
+        let results = db.search("*")
+        XCTAssertTrue(results.count >= 2)
+    }
+
+    func testSimpleQueryStillWorksWhenWildcardCharsPresentInFilename() {
+        let file = FileItem(path: "/Docs/readme_star.md", name: "readme_star.md", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        // A query without * or ? should use simple mode (substring match)
+        let results = db.search("readme")
+        XCTAssertEqual(results.count, 1)
+    }
+
+    // MARK: - Regex Search Tests
+
+    func testRegexBasicPattern() {
+        let pdf = FileItem(path: "/Docs/report.pdf", name: "report.pdf", isDirectory: false, size: 100, dateModified: Date())
+        let png = FileItem(path: "/Docs/report.png", name: "report.png", isDirectory: false, size: 100, dateModified: Date())
+        let txt = FileItem(path: "/Docs/notes.txt", name: "notes.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(pdf)
+        db.insertFile(png)
+        db.insertFile(txt)
+        let results = db.search("/\\.pdf$/")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "report.pdf")
+    }
+
+    func testRegexCaseInsensitive() {
+        let file = FileItem(path: "/Docs/HelloWorld.swift", name: "HelloWorld.swift", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        let results = db.search("/helloworld/")
+        XCTAssertEqual(results.count, 1)
+    }
+
+    func testRegexWithDotMatchesLiteralDot() {
+        let file = FileItem(path: "/Docs/index.html", name: "index.html", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        let results = db.search("/index\\.html/")
+        XCTAssertEqual(results.count, 1)
+    }
+
+    func testRegexAnchoredPattern() {
+        let a = FileItem(path: "/Docs/apple.txt", name: "apple.txt", isDirectory: false, size: 100, dateModified: Date())
+        let b = FileItem(path: "/Docs/pineapple.txt", name: "pineapple.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(a)
+        db.insertFile(b)
+        let results = db.search("/^apple/")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "apple.txt")
+    }
+
+    func testRegexReturnsNoMatchesForInvalidPattern() {
+        let file = FileItem(path: "/Docs/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        let results = db.search("/nomatch/")
+        XCTAssertTrue(results.isEmpty)
+    }
+
+    func testRegexNoResultsWhenNotRegexPattern() {
+        // Query with slashes but not a valid regex should fall back to simple search
+        let file = FileItem(path: "/Docs/slash/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        // This isn't a valid regex pattern (unbalanced), but search should still work
+        let results = db.search("/slash")
+        // Not matching regex mode (no trailing /), should fall to simple mode
+        XCTAssertEqual(results.count, 1)
+    }
+
+    func testRegexWithAlternation() {
+        let jpg = FileItem(path: "/Docs/photo.jpg", name: "photo.jpg", isDirectory: false, size: 100, dateModified: Date())
+        let png = FileItem(path: "/Docs/photo.png", name: "photo.png", isDirectory: false, size: 100, dateModified: Date())
+        let gif = FileItem(path: "/Docs/photo.gif", name: "photo.gif", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(jpg)
+        db.insertFile(png)
+        db.insertFile(gif)
+        let results = db.search("/\\.(jpg|png)$/")
+        XCTAssertEqual(results.count, 2)
+        let names = Set(results.map { $0.name })
+        XCTAssertTrue(names.contains("photo.jpg"))
+        XCTAssertTrue(names.contains("photo.png"))
+        XCTAssertFalse(names.contains("photo.gif"))
+    }
+
+    func testSimpleSearchStillWorksWithSlashInQuery() {
+        let file = FileItem(path: "/a/b/c/file.txt", name: "file.txt", isDirectory: false, size: 100, dateModified: Date())
+        db.insertFile(file)
+        // Query has slashes but not wrapped as /pattern/
+        let results = db.search("a/b")
+        XCTAssertEqual(results.count, 1)
+    }
 }
