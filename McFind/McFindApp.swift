@@ -5,7 +5,7 @@ struct McFindApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
+        Window("McFind", id: "main") {
             ContentView()
                 .background(WindowAccessor())
                 .frame(minWidth: 700, minHeight: 400)
@@ -13,9 +13,7 @@ struct McFindApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(replacing: .newItem) {}
-            CommandGroup(after: .appInfo) {
-                Divider()
-
+            CommandMenu("File") {
                 Button("Re-index Files") {
                     NotificationCenter.default.post(name: NSNotification.Name("ReindexFiles"), object: nil)
                 }
@@ -44,6 +42,12 @@ struct WindowAccessor: NSViewRepresentable {
                 window.titleVisibility = .hidden
                 window.isMovableByWindowBackground = true
                 window.styleMask.insert(.fullSizeContentView)
+                window.tabbingMode = .disallowed
+
+                // Hide the new tab button
+                if #available(macOS 10.12, *) {
+                    window.tabbingMode = .disallowed
+                }
             }
         }
         return view
