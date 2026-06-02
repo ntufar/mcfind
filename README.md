@@ -107,7 +107,7 @@ The app requests minimal file system permissions through sandboxing:
 
 ## Author
 
-Created by **ntufar** — [github.com/ntufar](https://github.com/ntufar)
+Created by **Nicolai Tufar** — [github.com/ntufar](https://github.com/ntufar) — ntufar@gmail.com
 
 ## License
 
