@@ -37,7 +37,6 @@ final class SearchViewModelTests: XCTestCase {
             FileItem(path: "/b.txt", name: "b.txt", isDirectory: false, size: 20, dateModified: Date()),
         ]
         viewModel.selectedIndex = 1
-        viewModel.selectedFile = viewModel.files[1]
         viewModel.selectNext()
         XCTAssertEqual(viewModel.selectedIndex, 0)
         XCTAssertEqual(viewModel.selectedFile?.name, "a.txt")
@@ -67,7 +66,6 @@ final class SearchViewModelTests: XCTestCase {
             FileItem(path: "/b.txt", name: "b.txt", isDirectory: false, size: 20, dateModified: Date()),
         ]
         viewModel.selectedIndex = 0
-        viewModel.selectedFile = viewModel.files[0]
         viewModel.selectPrevious()
         XCTAssertEqual(viewModel.selectedIndex, 1)
         XCTAssertEqual(viewModel.selectedFile?.name, "b.txt")
@@ -80,7 +78,6 @@ final class SearchViewModelTests: XCTestCase {
             FileItem(path: "/c.txt", name: "c.txt", isDirectory: false, size: 30, dateModified: Date()),
         ]
         viewModel.selectedIndex = 2
-        viewModel.selectedFile = viewModel.files[2]
         viewModel.selectPrevious()
         XCTAssertEqual(viewModel.selectedIndex, 1)
         XCTAssertEqual(viewModel.selectedFile?.name, "b.txt")
@@ -101,7 +98,6 @@ final class SearchViewModelTests: XCTestCase {
             FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: Date()),
         ]
         viewModel.selectedIndex = 0
-        viewModel.selectedFile = viewModel.files[0]
 
         viewModel.selectFile(at: -1)
         XCTAssertEqual(viewModel.selectedIndex, 0)
@@ -161,14 +157,13 @@ final class SearchViewModelTests: XCTestCase {
 
     func testCopyPathWritesToPasteboard() {
         viewModel.files = [testFile]
-        viewModel.selectedFile = testFile
+        viewModel.selectedIndex = 0
         viewModel.copyPath()
         XCTAssertEqual(NSPasteboard.general.string(forType: .string), testFile.path)
     }
 
     func testCopyPathWithNoSelectionDoesNothing() {
-        viewModel.files = [testFile]
-        viewModel.selectedFile = nil
+        viewModel.files = []
         NSPasteboard.general.setString("existing", forType: .string)
         viewModel.copyPath()
         XCTAssertEqual(NSPasteboard.general.string(forType: .string), "existing")
@@ -176,7 +171,7 @@ final class SearchViewModelTests: XCTestCase {
 
     func testCopyFileWritesURLToPasteboard() {
         viewModel.files = [testFile]
-        viewModel.selectedFile = testFile
+        viewModel.selectedIndex = 0
         viewModel.copyFile()
         guard let items = NSPasteboard.general.pasteboardItems else {
             XCTFail("Expected pasteboard items")
@@ -188,7 +183,7 @@ final class SearchViewModelTests: XCTestCase {
 
     func testCopyFileWithDirectoryWritesURL() {
         viewModel.files = [testDir]
-        viewModel.selectedFile = testDir
+        viewModel.selectedIndex = 0
         viewModel.copyFile()
         guard let items = NSPasteboard.general.pasteboardItems else {
             XCTFail("Expected pasteboard items")
@@ -199,20 +194,20 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func testCopyFileWithNoSelectionDoesNothing() {
-        viewModel.selectedFile = nil
+        viewModel.files = []
         NSPasteboard.general.setString("existing", forType: .string)
         viewModel.copyFile()
         XCTAssertEqual(NSPasteboard.general.string(forType: .string), "existing")
     }
 
     func testRevealInFinderWithNoSelectionDoesNothing() {
-        viewModel.selectedFile = nil
+        viewModel.files = []
         viewModel.revealInFinder()
         XCTAssertNil(viewModel.selectedFile)
     }
 
     func testOpenSelectedFileWithNoSelectionDoesNothing() {
-        viewModel.selectedFile = nil
+        viewModel.files = []
         viewModel.openSelectedFile()
         XCTAssertNil(viewModel.selectedFile)
     }

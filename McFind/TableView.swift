@@ -4,6 +4,7 @@ import AppKit
 struct ResizableTableView: NSViewRepresentable {
     @Binding var files: [FileItem]
     @Binding var selectedIndex: Int
+    @Binding var focusResults: Bool
     var onDoubleClick: () -> Void
     var onSelectionChange: (Int) -> Void
     var onRevealInFinder: (() -> Void)?
@@ -92,6 +93,15 @@ struct ResizableTableView: NSViewRepresentable {
                 tableView.selectRowIndexes(IndexSet(integer: selectedIndex), byExtendingSelection: false)
                 tableView.scrollRowToVisible(selectedIndex)
                 context.coordinator.isProgrammaticSelection = false
+            }
+        }
+
+        // Give keyboard focus to the table when user navigates with arrow keys
+        if focusResults {
+            tableView.window?.makeFirstResponder(tableView)
+            let binding = $focusResults
+            DispatchQueue.main.async {
+                binding.wrappedValue = false
             }
         }
     }
@@ -346,7 +356,10 @@ struct ResizableTableView: NSViewRepresentable {
             if row >= 0 && row < files.count && row != lastKnownSelection {
                 lastKnownSelection = row
                 selectedIndex = row
-                onSelectionChange(row)
+                // Defer to avoid modifying @Published/@State during view update
+                DispatchQueue.main.async { [weak self] in
+                    self?.onSelectionChange(row)
+                }
             }
         }
 

@@ -8,9 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Arrow-key navigation with automatic table view focus
+
 ### Changed
+- `selectedFile` converted from stored `@Published` property to computed property, reducing redundant view updates
+
 ### Fixed
+- "Modifying state during view update" warnings caused by mutating `@Binding` inside `NSViewRepresentable.updateNSView`
+- `tableViewSelectionDidChange` delegate no longer modifies `@Published` state synchronously during view update cycles
+- Intents framework `linkd` connection errors suppressed via Info.plist keys
+
 ### Removed
+- Direct `selectedFile` property writes — now derived from `files[selectedIndex]`
 
 ## [0.2.0] - 2026-06-02
 

@@ -9,6 +9,7 @@ private func isSearchFieldActive() -> Bool {
 
 struct ContentView: View {
     @StateObject private var viewModel = SearchViewModel()
+    @State private var focusResults = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,6 +85,7 @@ struct ContentView: View {
                 ResizableTableView(
                     files: $viewModel.files,
                     selectedIndex: $viewModel.selectedIndex,
+                    focusResults: $focusResults,
                     onDoubleClick: {
                         viewModel.openSelectedFile()
                     },
@@ -156,9 +158,11 @@ struct ContentView: View {
             switch Int(event.keyCode) {
             case 125: // Down arrow
                 viewModel.selectNext()
+                if !viewModel.files.isEmpty { focusResults = true }
                 return true
             case 126: // Up arrow
                 viewModel.selectPrevious()
+                if !viewModel.files.isEmpty { focusResults = true }
                 return true
             case 36: // Return
                 viewModel.openSelectedFile()

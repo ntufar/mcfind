@@ -4,10 +4,14 @@ import AppKit
 
 class SearchViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published var selectedFile: FileItem?
     @Published var selectedIndex = 0
     @Published var files: [FileItem] = []
     @Published var selectedSizeFilter: SizeFilter = .any
+
+    var selectedFile: FileItem? {
+        guard selectedIndex >= 0, selectedIndex < files.count else { return nil }
+        return files[selectedIndex]
+    }
 
     private let fileIndexer = FileIndexer()
     private var cancellables = Set<AnyCancellable>()
@@ -75,7 +79,6 @@ class SearchViewModel: ObservableObject {
                 print("  📝 Updating UI with \(results.count) results")
                 self.files = results
                 self.selectedIndex = 0
-                self.selectedFile = self.files.first
                 print("  ✅ UI updated")
             }
         }
@@ -98,19 +101,17 @@ class SearchViewModel: ObservableObject {
     func selectNext() {
         guard !files.isEmpty else { return }
         selectedIndex = (selectedIndex + 1) % files.count
-        selectedFile = files[selectedIndex]
     }
 
     func selectPrevious() {
         guard !files.isEmpty else { return }
         selectedIndex = selectedIndex == 0 ? files.count - 1 : selectedIndex - 1
-        selectedFile = files[selectedIndex]
     }
 
     func selectFile(at index: Int) {
         guard index >= 0 && index < files.count else { return }
+        guard selectedIndex != index else { return }
         selectedIndex = index
-        selectedFile = files[index]
     }
 
     func openSelectedFile() {
@@ -143,11 +144,9 @@ class SearchViewModel: ObservableObject {
             try FileManager.default.trashItem(at: url, resultingItemURL: nil)
             files.remove(at: index)
             if files.isEmpty {
-                selectedFile = nil
                 selectedIndex = 0
             } else {
                 selectedIndex = min(index, files.count - 1)
-                selectedFile = files[selectedIndex]
             }
         } catch {
             print("❌ Failed to move file to trash: \(error)")
