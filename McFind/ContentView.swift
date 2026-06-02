@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = SearchViewModel()
-    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,7 +16,6 @@ struct ContentView: View {
                 })
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
-                    .focused($isSearchFocused)
 
                 if !viewModel.searchText.isEmpty {
                     Button(action: { viewModel.searchText = "" }) {
@@ -107,6 +105,15 @@ struct ContentView: View {
                     },
                     onSelectionChange: { index in
                         viewModel.selectFile(at: index)
+                    },
+                    onRevealInFinder: {
+                        viewModel.revealInFinder()
+                    },
+                    onCopyPath: {
+                        viewModel.copyPath()
+                    },
+                    onCopyFile: {
+                        viewModel.copyFile()
                     }
                 )
             }
@@ -129,9 +136,6 @@ struct ContentView: View {
             default:
                 return false
             }
-        }
-        .onAppear {
-            isSearchFocused = true
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ReindexFiles"))) { _ in
             viewModel.startIndexing()

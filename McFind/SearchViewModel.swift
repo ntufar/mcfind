@@ -106,4 +106,10 @@ class SearchViewModel: ObservableObject {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(file.path, forType: .string)
     }
+
+    func copyFile() {
+        guard let file = selectedFile else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects([NSURL(fileURLWithPath: file.path)])
+    }
 }

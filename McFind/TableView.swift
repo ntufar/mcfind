@@ -6,6 +6,9 @@ struct ResizableTableView: NSViewRepresentable {
     @Binding var selectedIndex: Int
     var onDoubleClick: () -> Void
     var onSelectionChange: (Int) -> Void
+    var onRevealInFinder: (() -> Void)?
+    var onCopyPath: (() -> Void)?
+    var onCopyFile: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -19,6 +22,10 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.allowsColumnReordering = false
         tableView.target = context.coordinator
         tableView.doubleAction = #selector(Coordinator.tableViewDoubleClick(_:))
+
+        let menu = NSMenu()
+        menu.delegate = context.coordinator
+        tableView.menu = menu
 
         // Name column
         let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
@@ -95,22 +102,105 @@ struct ResizableTableView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange)
+        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile)
     }
 
-    class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
+    class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate {
         var files: [FileItem] = []
         @Binding var selectedIndex: Int
         var onDoubleClick: () -> Void
         var onSelectionChange: (Int) -> Void
+        var onRevealInFinder: (() -> Void)?
+        var onCopyPath: (() -> Void)?
+        var onCopyFile: (() -> Void)?
         weak var tableView: NSTableView?
         var isProgrammaticSelection = false
         var lastKnownSelection = 0
+        private var clickedRow: Int = -1
 
-        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void) {
+        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?) {
             self._selectedIndex = selectedIndex
             self.onDoubleClick = onDoubleClick
             self.onSelectionChange = onSelectionChange
+            self.onRevealInFinder = onRevealInFinder
+            self.onCopyPath = onCopyPath
+            self.onCopyFile = onCopyFile
+        }
+
+        func menuNeedsUpdate(_ menu: NSMenu) {
+            menu.removeAllItems()
+            clickedRow = tableView?.clickedRow ?? -1
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+
+            let openItem = NSMenuItem(title: "Open in Default App", action: #selector(menuOpenFile(_:)), keyEquivalent: "")
+            openItem.target = self
+            menu.addItem(openItem)
+
+            let revealItem = NSMenuItem(title: "Reveal in Finder", action: #selector(menuRevealInFinder(_:)), keyEquivalent: "")
+            revealItem.target = self
+            menu.addItem(revealItem)
+
+            menu.addItem(NSMenuItem.separator())
+
+            let copyPathItem = NSMenuItem(title: "Copy Path", action: #selector(menuCopyPath(_:)), keyEquivalent: "")
+            copyPathItem.target = self
+            menu.addItem(copyPathItem)
+
+            let copyFileItem = NSMenuItem(title: "Copy File", action: #selector(menuCopyFile(_:)), keyEquivalent: "")
+            copyFileItem.target = self
+            menu.addItem(copyFileItem)
+
+            menu.addItem(NSMenuItem.separator())
+
+            let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
+            shareItem.submenu = buildShareMenu()
+            menu.addItem(shareItem)
+        }
+
+        private func buildShareMenu() -> NSMenu {
+            let menu = NSMenu(title: "Share")
+            guard clickedRow >= 0, clickedRow < files.count else { return menu }
+            let url = URL(fileURLWithPath: files[clickedRow].path)
+            let services = NSSharingService.sharingServices(forItems: [url])
+            for service in services {
+                let item = NSMenuItem(title: service.title, action: #selector(shareViaService(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = service
+                item.image = service.image
+                menu.addItem(item)
+            }
+            return menu
+        }
+
+        @objc private func menuOpenFile(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onDoubleClick()
+        }
+
+        @objc private func menuRevealInFinder(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onRevealInFinder?()
+        }
+
+        @objc private func menuCopyPath(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onCopyPath?()
+        }
+
+        @objc private func menuCopyFile(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onCopyFile?()
+        }
+
+        @objc private func shareViaService(_ sender: NSMenuItem) {
+            guard let service = sender.representedObject as? NSSharingService,
+                  clickedRow >= 0, clickedRow < files.count else { return }
+            let url = URL(fileURLWithPath: files[clickedRow].path)
+            service.perform(withItems: [url])
         }
 
         func numberOfRows(in tableView: NSTableView) -> Int {

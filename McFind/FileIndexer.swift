@@ -16,6 +16,10 @@ class FileIndexer: ObservableObject {
     private var isCancelled = false
     private let settings = IndexSettings.shared
 
+    private var indexDotFiles: Bool {
+        UserDefaults.standard.bool(forKey: "indexDotFiles")
+    }
+
     init() {
         loadIndexFromDisk()
         startFileMonitoring()
@@ -94,6 +98,11 @@ class FileIndexer: ObservableObject {
 
         // Check if path should be indexed based on settings
         if !settings.shouldIndexPath(path, homeDirectory: homeDirectory.path) {
+            return
+        }
+
+        // Skip dot files/directories unless enabled in settings
+        if !indexDotFiles && URL(fileURLWithPath: path).lastPathComponent.hasPrefix(".") {
             return
         }
 
@@ -188,6 +197,15 @@ class FileIndexer: ObservableObject {
                 continue
             }
 
+            // Skip dot files/directories unless enabled in settings
+            if !indexDotFiles && fileURL.lastPathComponent.hasPrefix(".") {
+                var isDir: ObjCBool = false
+                if fileManager.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
+                    enumerator.skipDescendants()
+                }
+                continue
+            }
+
             // Add the file or directory to the index FIRST
             batch.append(FileItem(url: fileURL))
             count += 1
@@ -275,6 +293,12 @@ class FileIndexer: ObservableObject {
             let isPackage = resourceValues.isPackage ?? false
 
             if !settings.shouldIndexPath(path, homeDirectory: homeDirectory.path) {
+                if isDir { enumerator.skipDescendants() }
+                continue
+            }
+
+            // Skip dot files/directories unless enabled in settings
+            if !indexDotFiles && fileURL.lastPathComponent.hasPrefix(".") {
                 if isDir { enumerator.skipDescendants() }
                 continue
             }

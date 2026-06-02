@@ -3,6 +3,8 @@ import XCTest
 
 final class SearchViewModelTests: XCTestCase {
     var viewModel: SearchViewModel!
+    let testFile = FileItem(path: "/tmp/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: Date())
+    let testDir = FileItem(path: "/tmp/folder", name: "folder", isDirectory: true, size: 512, dateModified: Date())
 
     override func setUp() {
         super.setUp()
@@ -11,6 +13,7 @@ final class SearchViewModelTests: XCTestCase {
 
     override func tearDown() {
         viewModel = nil
+        NSPasteboard.general.clearContents()
         super.tearDown()
     }
 
@@ -154,5 +157,63 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.selectedIndex, 1)
         viewModel.selectPrevious()
         XCTAssertEqual(viewModel.selectedIndex, 0)
+    }
+
+    func testCopyPathWritesToPasteboard() {
+        viewModel.files = [testFile]
+        viewModel.selectedFile = testFile
+        viewModel.copyPath()
+        XCTAssertEqual(NSPasteboard.general.string(forType: .string), testFile.path)
+    }
+
+    func testCopyPathWithNoSelectionDoesNothing() {
+        viewModel.files = [testFile]
+        viewModel.selectedFile = nil
+        NSPasteboard.general.setString("existing", forType: .string)
+        viewModel.copyPath()
+        XCTAssertEqual(NSPasteboard.general.string(forType: .string), "existing")
+    }
+
+    func testCopyFileWritesURLToPasteboard() {
+        viewModel.files = [testFile]
+        viewModel.selectedFile = testFile
+        viewModel.copyFile()
+        guard let items = NSPasteboard.general.pasteboardItems else {
+            XCTFail("Expected pasteboard items")
+            return
+        }
+        let urls = items.compactMap { $0.propertyList(forType: .fileURL) as? String }
+        XCTAssertTrue(urls.contains(where: { $0.hasSuffix("/test.txt") }))
+    }
+
+    func testCopyFileWithDirectoryWritesURL() {
+        viewModel.files = [testDir]
+        viewModel.selectedFile = testDir
+        viewModel.copyFile()
+        guard let items = NSPasteboard.general.pasteboardItems else {
+            XCTFail("Expected pasteboard items")
+            return
+        }
+        let urls = items.compactMap { $0.propertyList(forType: .fileURL) as? String }
+        XCTAssertTrue(urls.contains(where: { $0.hasSuffix("/folder") }))
+    }
+
+    func testCopyFileWithNoSelectionDoesNothing() {
+        viewModel.selectedFile = nil
+        NSPasteboard.general.setString("existing", forType: .string)
+        viewModel.copyFile()
+        XCTAssertEqual(NSPasteboard.general.string(forType: .string), "existing")
+    }
+
+    func testRevealInFinderWithNoSelectionDoesNothing() {
+        viewModel.selectedFile = nil
+        viewModel.revealInFinder()
+        XCTAssertNil(viewModel.selectedFile)
+    }
+
+    func testOpenSelectedFileWithNoSelectionDoesNothing() {
+        viewModel.selectedFile = nil
+        viewModel.openSelectedFile()
+        XCTAssertNil(viewModel.selectedFile)
     }
 }

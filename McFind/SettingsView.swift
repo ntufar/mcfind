@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var settings = IndexSettings.shared
+    @ObservedObject private var appSettings = AppSettings()
     @State private var showReindexAlert = false
     @State private var hasChanges = false
 
@@ -45,6 +46,34 @@ struct SettingsView: View {
                             }
                         }
                         .padding(.top, 8)
+                    }
+
+                    Divider()
+
+                    // Indexing Options
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Indexing Options")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.primary)
+
+                        HStack {
+                            Text("Index dot files and directories")
+                                .font(.system(size: 12))
+                            Spacer()
+                            Toggle("", isOn: $appSettings.indexDotFiles)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .controlSize(.small)
+                                .onChange(of: appSettings.indexDotFiles) { _ in
+                                    hasChanges = true
+                                }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                        )
                     }
 
                     Divider()
