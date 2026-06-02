@@ -12,6 +12,7 @@ class SearchViewModel: ObservableObject {
     private let fileIndexer = FileIndexer()
     private var cancellables = Set<AnyCancellable>()
     private let searchQueue = DispatchQueue(label: "com.mcfind.search", qos: .userInitiated)
+    private let quickLookController = QuickLookController()
 
     var isIndexing: Bool {
         return fileIndexer.isIndexing
@@ -33,13 +34,17 @@ class SearchViewModel: ObservableObject {
         return fileIndexer.totalFiles
     }
 
+    var isQuickLookVisible: Bool {
+        quickLookController.isVisible
+    }
+
     init() {
         setupSearchBinding()
     }
 
     private func setupSearchBinding() {
         Publishers.CombineLatest(
-            $searchText.debounce(for: .milliseconds(150), scheduler: RunLoop.main),
+            $searchText.removeDuplicates().debounce(for: .milliseconds(150), scheduler: RunLoop.main),
             $selectedSizeFilter
         )
         .sink { [weak self] query, sizeFilter in
@@ -74,6 +79,12 @@ class SearchViewModel: ObservableObject {
 
     func cancelIndexing() {
         fileIndexer.cancel()
+    }
+
+    func toggleQuickLook() {
+        quickLookController.files = files
+        quickLookController.selectedIndex = selectedIndex
+        quickLookController.togglePanel()
     }
 
     func selectNext() {

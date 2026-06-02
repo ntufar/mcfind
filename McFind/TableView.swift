@@ -22,7 +22,7 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.allowsColumnResizing = true
         tableView.allowsColumnReordering = false
         tableView.target = context.coordinator
-        tableView.doubleAction = #selector(Coordinator.tableViewDoubleClick(_:))
+        tableView.action = #selector(Coordinator.tableViewClicked(_:))
 
         let menu = NSMenu()
         menu.delegate = context.coordinator
@@ -349,8 +349,11 @@ struct ResizableTableView: NSViewRepresentable {
             }
         }
 
-        @objc func tableViewDoubleClick(_ sender: Any?) {
-            onDoubleClick()
+        @objc func tableViewClicked(_ sender: Any?) {
+            guard let event = NSApp.currentEvent else { return }
+            if event.clickCount == 2 {
+                onDoubleClick()
+            }
         }
     }
 }

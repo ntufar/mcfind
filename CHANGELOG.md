@@ -12,6 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [0.2.0] - 2026-06-02
+
+### Added
+- Quick Look integration: press Space to preview selected file with QLPreviewPanel
+- Size filters (file size ranges) in search results toolbar
+- "Move to Trash" option in results context menu (right-click)
+
+### Fixed
+- Dot files ("."-prefixed) no longer appear in search results
+- Single-click on search results no longer opens files (now requires double-click or Enter)
+- Escape key in Quick Look no longer erases search text field
+- Quick Look closing no longer resets selection to first file
+- Search text field refocus no longer triggers duplicate searches
+
 ## [0.1.4] - 2026-06-02
 
 ### Added

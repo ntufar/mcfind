@@ -1,4 +1,11 @@
 import SwiftUI
+import AppKit
+
+private func isSearchFieldActive() -> Bool {
+    guard let window = NSApp.keyWindow,
+          let responder = window.firstResponder else { return false }
+    return responder is NSTextView || responder is NSTextField
+}
 
 struct ContentView: View {
     @StateObject private var viewModel = SearchViewModel()
@@ -11,9 +18,7 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .font(.system(size: 14))
 
-                TextField("Search files...", text: $viewModel.searchText, onCommit: {
-                    viewModel.openSelectedFile()
-                })
+                TextField("Search files...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
 
@@ -153,7 +158,15 @@ struct ContentView: View {
             case 126: // Up arrow
                 viewModel.selectPrevious()
                 return true
+            case 36: // Return
+                viewModel.openSelectedFile()
+                return true
+            case 49: // Space
+                if isSearchFieldActive() { return false }
+                viewModel.toggleQuickLook()
+                return true
             case 53: // Escape
+                if viewModel.isQuickLookVisible { return false }
                 if !viewModel.searchText.isEmpty {
                     viewModel.searchText = ""
                 } else {

@@ -13,6 +13,8 @@
 		9F0F79D32FCE2D76008D73C5 /* KeyEventHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */; };
 		9F0F79D62FCE2DB9008D73C5 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */; };
 		9F0F79D82FCE3509008D73C5 /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79D72FCE3509008D73C5 /* TableView.swift */; };
+		9F0F79E12FCE3A00008D73C5 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0F79E02FCE3A00008D73C5 /* Quartz.framework */; };
+		9F0F79E32FCE3A00008D73C5 /* QuickLookController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79E22FCE3A00008D73C5 /* QuickLookController.swift */; };
 		9F242A352FCE3CEA00039749 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A332FCE3CEA00039749 /* SettingsView.swift */; };
 		9F242A372FCE3DF500039749 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A362FCE3DF500039749 /* SettingsView.swift */; };
 		9F242A392FCE3EF000039749 /* IndexSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F242A382FCE3EF000039749 /* IndexSettings.swift */; };
@@ -47,6 +49,8 @@
 		9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventHandling.swift; sourceTree = "<group>"; };
 		9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9F0F79D72FCE3509008D73C5 /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
+		9F0F79E02FCE3A00008D73C5 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
+		9F0F79E22FCE3A00008D73C5 /* QuickLookController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookController.swift; sourceTree = "<group>"; };
 		9F242A332FCE3CEA00039749 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9F242A362FCE3DF500039749 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9F242A382FCE3EF000039749 /* IndexSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexSettings.swift; sourceTree = "<group>"; };
@@ -73,6 +77,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9F0F79D62FCE2DB9008D73C5 /* libsqlite3.tbd in Frameworks */,
+				9F0F79E12FCE3A00008D73C5 /* Quartz.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				9F0F79D52FCE2DB9008D73C5 /* libsqlite3.tbd */,
+				9F0F79E02FCE3A00008D73C5 /* Quartz.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -97,6 +103,7 @@
 				9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */,
 				9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */,
 				9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */,
+				9F0F79E22FCE3A00008D73C5 /* QuickLookController.swift */,
 				9F0F79CF2FCE2D76008D73C5 /* KeyEventHandling.swift */,
 				AA0000000000000000000002 /* McFindApp.swift */,
 				AA0000000000000000000004 /* ContentView.swift */,
@@ -253,6 +260,7 @@
 				AA0000000000000000000001 /* McFindApp.swift in Sources */,
 				9F242A372FCE3DF500039749 /* SettingsView.swift in Sources */,
 				9F242A392FCE3EF000039749 /* IndexSettings.swift in Sources */,
+				9F0F79E32FCE3A00008D73C5 /* QuickLookController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
