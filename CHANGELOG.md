@@ -12,6 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [0.1.3] - 2026-06-02
+
+### Added
+- Unicode-aware case-insensitive search (Greek, Romanian, Russian, etc.)
+- SPEC.md tracking implemented and planned features
+- Automatic VACUUM when database has >10K free pages (>10%)
+
+### Changed
+- Search uses normalized (lowercased) name/path columns for Unicode case folding
+- File icon resolution simplified to `NSWorkspace.shared.icon(forFile:)` for reliability
+- Disabled automatic Shortcuts registration to avoid linkd service crash
+
+### Fixed
+- Crash on startup from `dbQueue.sync` inside `dbQueue.async` (VACUUM deadlock)
+- Crash from zero-size NSImage in SwiftUI `Image(nsImage:)`
+- Database bloat from accumulated FSEvent-driven deletes
+
 ## [0.1.2] - 2026-06-02
 
 ### Added

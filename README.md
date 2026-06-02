@@ -6,8 +6,9 @@
 [![macOS](https://img.shields.io/badge/macOS-14.0+-blue.svg)](https://www.apple.com/macos)
 [![Xcode](https://img.shields.io/badge/Xcode-15.0+-blue.svg)](https://developer.apple.com/xcode)
 [![License](https://img.shields.io/badge/License-Open%20Source-green.svg)](https://github.com/ntufar/mcfind)
+[![Website](https://img.shields.io/badge/Website-ntufar.github.io%2Fmcfind-blue)](https://ntufar.github.io/mcfind/)
 
-A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows.
+A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows. [Visit website →](https://ntufar.github.io/mcfind/)
 
 ## Features
 
@@ -24,15 +25,14 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.1.2)
+### Latest Release (v0.1.3)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
 
-**What's New in v0.1.2:**
-- Added professional website with GitHub Pages deployment
-- New application icon with magnifying glass design
-- Ad-hoc code signing to prevent Gatekeeper warnings
-- Comprehensive documentation for deployment and code signing
+**What's New in v0.1.3:**
+- Unicode-aware case-insensitive search (Greek, Romanian, Russian)
+- Automatic database VACUUM to prevent bloat
+- Crash fixes for image icon rendering and queue deadlock
 
 ### Installation Instructions
 1. **DMG**: Download the DMG file, open it, and drag McFind.app to your Applications folder
