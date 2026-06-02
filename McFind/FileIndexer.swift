@@ -45,6 +45,11 @@ class FileIndexer: ObservableObject {
         indexingQueue.async { [weak self] in
             guard let self = self else { return }
 
+            // Purge any dot files that were indexed before dot-file filtering was enabled
+            if !self.indexDotFiles {
+                self.database.removeDotFiles()
+            }
+
             let count = self.database.getFileCount()
             print("📊 Loaded \(count) files from disk")
 
@@ -102,7 +107,7 @@ class FileIndexer: ObservableObject {
         }
 
         // Skip dot files/directories unless enabled in settings
-        if !indexDotFiles && URL(fileURLWithPath: path).lastPathComponent.hasPrefix(".") {
+        if !indexDotFiles && URL(fileURLWithPath: path).pathComponents.contains(where: { $0.hasPrefix(".") }) {
             return
         }
 
@@ -424,6 +429,10 @@ class FileIndexer: ObservableObject {
     }
 
     func search(_ query: String) -> [FileItem] {
-        return database.search(query)
+        return database.search(query, filterDotFiles: !indexDotFiles)
+    }
+
+    func removeDotFilesFromIndex() {
+        database.removeDotFiles()
     }
 }

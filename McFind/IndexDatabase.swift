@@ -363,8 +363,8 @@ class IndexDatabase {
         case regex(sqlFilter: String, regex: NSRegularExpression)
     }
 
-    func search(_ query: String) -> [FileItem] {
-        print("🔍 IndexDatabase.search() called with: '\(query)'")
+    func search(_ query: String, filterDotFiles: Bool = false) -> [FileItem] {
+        print("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles))")
         guard !query.isEmpty else {
             print("⚠️ Empty query, returning []")
             return []
@@ -374,7 +374,7 @@ class IndexDatabase {
         let startTime = Date()
         let results = dbQueue.sync {
             print("🔓 Database queue acquired")
-            return searchInternal(query)
+            return searchInternal(query, filterDotFiles: filterDotFiles)
         }
         let elapsed = Date().timeIntervalSince(startTime)
         print("✅ Search completed in \(String(format: "%.3f", elapsed))s - found \(results.count) results")
@@ -448,27 +448,28 @@ class IndexDatabase {
         return best.count >= 2 ? best : ""
     }
 
-    private func searchInternal(_ query: String) -> [FileItem] {
-        print("  📊 searchInternal() starting...")
+    private func searchInternal(_ query: String, filterDotFiles: Bool = false) -> [FileItem] {
+        print("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles))")
 
         let mode = parseSearchMode(query)
+        let filterClause = filterDotFiles ? "AND path_normalized NOT LIKE '%/.%'" : ""
 
         switch mode {
         case .simple(let normalizedQuery, let pattern, let prefixPattern, let pathPattern):
-            return searchSimple(normalizedQuery: normalizedQuery, pattern: pattern, prefixPattern: prefixPattern, pathPattern: pathPattern)
+            return searchSimple(normalizedQuery: normalizedQuery, pattern: pattern, prefixPattern: prefixPattern, pathPattern: pathPattern, filterClause: filterClause)
         case .wildcard(let likePattern):
-            return searchWildcard(likePattern: likePattern)
+            return searchWildcard(likePattern: likePattern, filterClause: filterClause)
         case .regex(let sqlFilter, let regex):
-            return searchRegex(sqlFilter: sqlFilter, regex: regex)
+            return searchRegex(sqlFilter: sqlFilter, regex: regex, filterClause: filterClause)
         }
     }
 
-    private func searchSimple(normalizedQuery: String, pattern: String, prefixPattern: String, pathPattern: String) -> [FileItem] {
+    private func searchSimple(normalizedQuery: String, pattern: String, prefixPattern: String, pathPattern: String, filterClause: String = "") -> [FileItem] {
         var files: [FileItem] = []
 
         let searchQuery = """
         SELECT path, name, is_directory, size, modified_date FROM files
-        WHERE name_normalized LIKE ? OR path_normalized LIKE ?
+        WHERE (name_normalized LIKE ? OR path_normalized LIKE ?) \(filterClause)
         ORDER BY
             CASE
                 WHEN name_normalized = ? THEN 1
@@ -519,13 +520,13 @@ class IndexDatabase {
         return files
     }
 
-    private func searchWildcard(likePattern: String) -> [FileItem] {
+    private func searchWildcard(likePattern: String, filterClause: String = "") -> [FileItem] {
         var files: [FileItem] = []
 
         let searchQuery = """
         SELECT path, name, is_directory, size, modified_date FROM files
-        WHERE name_normalized LIKE ? ESCAPE '\\'
-           OR path_normalized LIKE ? ESCAPE '\\'
+        WHERE (name_normalized LIKE ? ESCAPE '\\'
+           OR path_normalized LIKE ? ESCAPE '\\') \(filterClause)
         ORDER BY name_normalized COLLATE NOCASE
         LIMIT 1000;
         """
@@ -556,15 +557,15 @@ class IndexDatabase {
         return files
     }
 
-    private func searchRegex(sqlFilter: String, regex: NSRegularExpression) -> [FileItem] {
+    private func searchRegex(sqlFilter: String, regex: NSRegularExpression, filterClause: String = "") -> [FileItem] {
         var candidates: [FileItem] = []
 
         let filterPattern = sqlFilter.isEmpty ? "%" : "%\(sqlFilter.lowercased())%"
 
         let searchQuery = """
         SELECT path, name, is_directory, size, modified_date FROM files
-        WHERE name_normalized LIKE ?
-           OR path_normalized LIKE ?
+        WHERE (name_normalized LIKE ?
+           OR path_normalized LIKE ?) \(filterClause)
         ORDER BY name_normalized COLLATE NOCASE
         LIMIT 5000;
         """
@@ -722,6 +723,13 @@ class IndexDatabase {
             let changes = Int(sqlite3_changes(db))
             sqlite3_finalize(s)
             return changes
+        }
+    }
+
+    func removeDotFiles() {
+        dbQueue.sync {
+            let query = "DELETE FROM files WHERE path_normalized LIKE '%/.%';"
+            sqlite3_exec(db, query, nil, nil, nil)
         }
     }
 
