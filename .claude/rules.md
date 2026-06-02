@@ -23,6 +23,9 @@
 - Skip unnecessary file system operations
 
 ### Testing
+- **Every time code is changed**, the corresponding tests must be updated or new tests must be added to cover the change.
+- **All tests must pass before committing changes.**
+- Run tests using `xcodebuild test -project McFind.xcodeproj -scheme McFind -destination 'platform=macOS'` or via Xcode's test navigator.
 - Test changes in the actual app before marking complete
 - Verify keyboard shortcuts work
 - Check that file monitoring detects changes
