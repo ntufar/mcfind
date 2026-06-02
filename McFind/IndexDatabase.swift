@@ -52,6 +52,16 @@ class IndexDatabase {
         );
         CREATE INDEX IF NOT EXISTS idx_name ON files(name COLLATE NOCASE);
         CREATE INDEX IF NOT EXISTS idx_path ON files(path COLLATE NOCASE);
+
+        CREATE TABLE IF NOT EXISTS metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS dir_mtime (
+            path TEXT PRIMARY KEY,
+            mtime REAL NOT NULL
+        );
         """
 
         var error: UnsafeMutablePointer<Int8>?
@@ -104,12 +114,16 @@ class IndexDatabase {
     private func migrateSchemaIfNeeded() {
         let hasNameNorm = columnExists(in: "files", name: "name_normalized")
         let hasPathNorm = columnExists(in: "files", name: "path_normalized")
+        let hasGeneration = columnExists(in: "files", name: "generation")
 
         if !hasNameNorm {
             sqlite3_exec(db, "ALTER TABLE files ADD COLUMN name_normalized TEXT NOT NULL DEFAULT '';", nil, nil, nil)
         }
         if !hasPathNorm {
             sqlite3_exec(db, "ALTER TABLE files ADD COLUMN path_normalized TEXT NOT NULL DEFAULT '';", nil, nil, nil)
+        }
+        if !hasGeneration {
+            sqlite3_exec(db, "ALTER TABLE files ADD COLUMN generation INTEGER NOT NULL DEFAULT 0;", nil, nil, nil)
         }
 
         // Migrate existing rows: Swift lowercased() handles Unicode properly
@@ -154,11 +168,11 @@ class IndexDatabase {
         sqlite3_exec(db, "CREATE INDEX IF NOT EXISTS idx_path_norm ON files(path_normalized);", nil, nil, nil)
     }
 
-    func insertFile(_ file: FileItem) {
+    func insertFile(_ file: FileItem, generation: Int64 = 0) {
         dbQueue.sync {
             let insertQuery = """
-            INSERT OR REPLACE INTO files (path, name, is_directory, size, modified_date, name_normalized, path_normalized)
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+            INSERT OR REPLACE INTO files (path, name, is_directory, size, modified_date, name_normalized, path_normalized, generation)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
             """
 
             var statement: OpaquePointer?
@@ -189,6 +203,7 @@ class IndexDatabase {
             file.path.lowercased().withCString { cString in
                 _ = sqlite3_bind_text(stmt, 7, cString, -1, SQLITE_TRANSIENT)
             }
+            sqlite3_bind_int64(stmt, 8, generation)
 
             if sqlite3_step(stmt) != SQLITE_DONE {
                 print("❌ Error inserting file: \(file.path)")
@@ -198,23 +213,22 @@ class IndexDatabase {
         }
     }
 
-    func insertFiles(_ files: [FileItem]) {
+    func insertFiles(_ files: [FileItem], generation: Int64 = 0) {
         dbQueue.sync {
             sqlite3_exec(db, "BEGIN TRANSACTION", nil, nil, nil)
 
             for file in files {
-                // Call internal version that doesn't use dbQueue
-                insertFileInternal(file)
+                insertFileInternal(file, generation: generation)
             }
 
             sqlite3_exec(db, "COMMIT", nil, nil, nil)
         }
     }
 
-    private func insertFileInternal(_ file: FileItem) {
+    private func insertFileInternal(_ file: FileItem, generation: Int64 = 0) {
         let insertQuery = """
-        INSERT OR REPLACE INTO files (path, name, is_directory, size, modified_date, name_normalized, path_normalized)
-        VALUES (?, ?, ?, ?, ?, ?, ?);
+        INSERT OR REPLACE INTO files (path, name, is_directory, size, modified_date, name_normalized, path_normalized, generation)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
 
         var statement: OpaquePointer?
@@ -245,6 +259,7 @@ class IndexDatabase {
         file.path.lowercased().withCString { cString in
             _ = sqlite3_bind_text(stmt, 7, cString, -1, SQLITE_TRANSIENT)
         }
+        sqlite3_bind_int64(stmt, 8, generation)
 
         if sqlite3_step(stmt) != SQLITE_DONE {
             print("❌ Error inserting file: \(file.path)")
@@ -462,7 +477,124 @@ class IndexDatabase {
     func clearDatabase() {
         dbQueue.sync {
             sqlite3_exec(db, "DELETE FROM files;", nil, nil, nil)
+            sqlite3_exec(db, "DELETE FROM metadata;", nil, nil, nil)
+            sqlite3_exec(db, "DELETE FROM dir_mtime;", nil, nil, nil)
             sqlite3_exec(db, "VACUUM;", nil, nil, nil)
         }
     }
+
+    // MARK: - Incremental Indexing
+
+    func setMetadata(key: String, value: String) {
+        dbQueue.sync {
+            let query = "INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?);"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            key.withCString { sqlite3_bind_text(s, 1, $0, -1, SQLITE_TRANSIENT) }
+            value.withCString { sqlite3_bind_text(s, 2, $0, -1, SQLITE_TRANSIENT) }
+            sqlite3_step(s)
+            sqlite3_finalize(s)
+        }
+    }
+
+    func getMetadata(key: String) -> String? {
+        dbQueue.sync {
+            let query = "SELECT value FROM metadata WHERE key = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return nil }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            key.withCString { sqlite3_bind_text(s, 1, $0, -1, SQLITE_TRANSIENT) }
+            var result: String?
+            if sqlite3_step(s) == SQLITE_ROW, let ptr = sqlite3_column_text(s, 0) {
+                result = String(cString: ptr)
+            }
+            sqlite3_finalize(s)
+            return result
+        }
+    }
+
+    func storeLastIndexedAt(_ date: Date) {
+        setMetadata(key: "last_indexed_at", value: "\(date.timeIntervalSince1970)")
+    }
+
+    func getLastIndexedAt() -> Date? {
+        guard let val = getMetadata(key: "last_indexed_at") else { return nil }
+        guard let interval = TimeInterval(val) else { return nil }
+        return Date(timeIntervalSince1970: interval)
+    }
+
+    func storeCurrentGeneration(_ gen: Int64) {
+        setMetadata(key: "generation", value: "\(gen)")
+    }
+
+    func getCurrentGeneration() -> Int64 {
+        guard let val = getMetadata(key: "generation") else { return 0 }
+        return Int64(val) ?? 0
+    }
+
+    func deleteByGeneration(notEqual gen: Int64) -> Int {
+        dbQueue.sync {
+            let query = "DELETE FROM files WHERE generation != ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return 0 }
+            sqlite3_bind_int64(s, 1, gen)
+            sqlite3_step(s)
+            let changes = Int(sqlite3_changes(db))
+            sqlite3_finalize(s)
+            return changes
+        }
+    }
+
+    // MARK: - Directory mtime tracking
+
+    func getDirMtime(_ path: String) -> Double? {
+        dbQueue.sync {
+            let query = "SELECT mtime FROM dir_mtime WHERE path = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return nil }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            path.withCString { sqlite3_bind_text(s, 1, $0, -1, SQLITE_TRANSIENT) }
+            var result: Double?
+            if sqlite3_step(s) == SQLITE_ROW {
+                result = sqlite3_column_double(s, 0)
+            }
+            sqlite3_finalize(s)
+            return result
+        }
+    }
+
+    func setDirMtime(_ path: String, mtime: Double) {
+        dbQueue.sync {
+            let query = "INSERT OR REPLACE INTO dir_mtime (path, mtime) VALUES (?, ?);"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            path.withCString { sqlite3_bind_text(s, 1, $0, -1, SQLITE_TRANSIENT) }
+            sqlite3_bind_double(s, 2, mtime)
+            sqlite3_step(s)
+            sqlite3_finalize(s)
+        }
+    }
+
+    // MARK: - Generation helpers for incremental indexing
+
+    /// Mark all files under `dirPath` (and the dir itself) as current for the given generation.
+    func updateGeneration(path dirPath: String, generation: Int64) {
+        dbQueue.sync {
+            let query = "UPDATE files SET generation = ? WHERE path = ? OR path LIKE ? ESCAPE '\\';"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            sqlite3_bind_int64(s, 1, generation)
+            dirPath.withCString { sqlite3_bind_text(s, 2, $0, -1, SQLITE_TRANSIENT) }
+            let escaped = dirPath.replacingOccurrences(of: "\\", with: "\\\\")
+                                .replacingOccurrences(of: "%", with: "\\%")
+                                .replacingOccurrences(of: "_", with: "\\_")
+            (escaped + "/%").withCString { sqlite3_bind_text(s, 3, $0, -1, SQLITE_TRANSIENT) }
+            sqlite3_step(s)
+            sqlite3_finalize(s)
+        }
+    }
+
 }

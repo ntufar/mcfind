@@ -39,7 +39,7 @@
 - [x] Schema migration support (normalized columns for Unicode search)
 - [x] Indexes directories themselves (not just files)
 - [ ] Multiple directory support (not just home)
-- [ ] Incremental indexing (scan only changed directories)
+- [x] Incremental indexing (scan only changed directories)
 - [ ] Index statistics dashboard
 - [ ] Export/import index
 
@@ -155,3 +155,4 @@
 - 1000 result cap
 - No file content search
 - No regex or advanced query syntax
+- Incremental indexing relies on directory mtime changes; files content-modified in-place (no directory mtime change) are only caught on next full reindex

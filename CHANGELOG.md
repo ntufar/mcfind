@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Incremental indexing: startup now only scans changed directories (compares stored directory mtime vs current). Unchanged subtrees are bulk-marked via SQL, avoiding filesystem walks and DB writes. Stale entries from deleted/excluded paths are auto-cleaned. Full reindex still available via Cmd+Shift+R.
+- `dir_mtime` and `metadata` tables in SQLite for tracking directory modification times and index generation counter
+- `generation` column on `files` table for mark-and-sweep cleanup of stale entries
+- `FileItem` init from pre-read file properties to avoid double stat during enumeration
+
 ### Changed
 ### Fixed
 ### Removed

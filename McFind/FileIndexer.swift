@@ -26,11 +26,9 @@ class FileIndexer: ObservableObject {
     }
 
     private func loadIndexFromDisk() {
-        // Check if database file exists and has size > 0
         let dbExists = FileManager.default.fileExists(atPath: database.dbPath)
 
         if dbExists {
-            // Database exists, show UI immediately
             DispatchQueue.main.async { [weak self] in
                 self?.isLoadingFromDisk = false
             }
@@ -47,14 +45,33 @@ class FileIndexer: ObservableObject {
             print("📊 Loaded \(count) files from disk")
 
             DispatchQueue.main.async { [weak self] in
-                self?.totalFiles = count
-                self?.isLoadingFromDisk = false
+                guard let self = self else { return }
+                self.totalFiles = count
+                self.isLoadingFromDisk = false
 
-                // If no index exists, start initial indexing
                 if count == 0 {
-                    self?.startIndexing()
+                    self.startIndexing()
+                } else {
+                    self.startIncrementalIndexing()
                 }
             }
+        }
+    }
+
+    func startIncrementalIndexing() {
+        guard !isIndexing else { return }
+        isCancelled = false
+        isIndexing = true
+        progress = 0.0
+        indexedCount = 0
+
+        print("🔍 Starting incremental indexing")
+        let estimatedTotal = database.getFileCount()
+        let newGeneration = database.getCurrentGeneration() + 1
+        database.storeCurrentGeneration(newGeneration)
+
+        indexingQueue.async { [weak self] in
+            self?.incrementalIndexDirectory(estimatedTotal: estimatedTotal, generation: newGeneration)
         }
     }
 
@@ -215,6 +232,115 @@ class FileIndexer: ObservableObject {
             self.isIndexing = false
             self.progress = 1.0
             self.totalFiles = count
+        }
+    }
+
+    private func incrementalIndexDirectory(estimatedTotal: Int, generation: Int64) {
+        print("🔍 Incremental scanning from: \(homeDirectory.path)")
+
+        let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey, .isPackageKey]
+
+        let enumerator = fileManager.enumerator(
+            at: homeDirectory,
+            includingPropertiesForKeys: Array(resourceKeys),
+            options: []
+        )
+
+        guard let enumerator = enumerator else {
+            print("❌ Failed to create enumerator")
+            DispatchQueue.main.async { [weak self] in
+                self?.isIndexing = false
+            }
+            return
+        }
+
+        var batch: [FileItem] = []
+        var count = 0
+        let batchSize = 1000
+        var changedDirs: [(path: String, mtime: Double)] = []
+
+        for case let fileURL as URL in enumerator {
+            if isCancelled {
+                finishIndexing(count: count)
+                return
+            }
+
+            let path = fileURL.path
+
+            guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys) else {
+                continue
+            }
+
+            let isDir = resourceValues.isDirectory ?? false
+            let isPackage = resourceValues.isPackage ?? false
+
+            if !settings.shouldIndexPath(path, homeDirectory: homeDirectory.path) {
+                if isDir { enumerator.skipDescendants() }
+                continue
+            }
+
+            if isDir && !isPackage {
+                if shouldSkipDirectory(fileURL) {
+                    enumerator.skipDescendants()
+                    continue
+                }
+
+                let currentMtime = resourceValues.contentModificationDate?.timeIntervalSince1970 ?? 0
+                let storedMtime = database.getDirMtime(path)
+
+                if let stored = storedMtime, abs(currentMtime - stored) < 0.001 {
+                    database.updateGeneration(path: path, generation: generation)
+                    enumerator.skipDescendants()
+                    continue
+                }
+
+                let size = resourceValues.fileSize ?? 0
+                let date = resourceValues.contentModificationDate ?? Date()
+                batch.append(FileItem(url: fileURL, isDir: true, size: Int64(size), dateModified: date))
+                count += 1
+                changedDirs.append((path, currentMtime))
+            } else if !isPackage {
+                let size = resourceValues.fileSize ?? 0
+                let date = resourceValues.contentModificationDate ?? Date()
+                batch.append(FileItem(url: fileURL, isDir: false, size: Int64(size), dateModified: date))
+                count += 1
+            }
+
+            if batch.count >= batchSize {
+                database.insertFiles(batch, generation: generation)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !self.isCancelled else { return }
+                    self.indexedCount = count
+                    self.progress = min(Double(count) / Double(max(estimatedTotal, 1)), 0.95)
+                }
+                batch.removeAll(keepingCapacity: true)
+            }
+        }
+
+        if !batch.isEmpty {
+            database.insertFiles(batch, generation: generation)
+        }
+
+        for (dirPath, mtime) in changedDirs {
+            database.setDirMtime(dirPath, mtime: mtime)
+        }
+
+        let deletedCount = database.deleteByGeneration(notEqual: generation)
+        if deletedCount > 0 {
+            print("🗑️  Removed \(deletedCount) stale index entries")
+        }
+
+        database.storeLastIndexedAt(Date())
+        finishIndexing(count: count)
+    }
+
+    private func finishIndexing(count: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, !self.isCancelled else { return }
+            print("✅ Incremental indexing finished: \(count) files processed")
+            self.isIndexing = false
+            self.progress = 1.0
+            self.totalFiles = self.database.getFileCount()
         }
     }
 

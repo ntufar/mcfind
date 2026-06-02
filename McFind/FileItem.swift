@@ -98,4 +98,14 @@ struct FileItem: Identifiable, Hashable {
         self.dateModified = dateModified
         self.fileExtension = URL(fileURLWithPath: path).pathExtension.isEmpty ? nil : URL(fileURLWithPath: path).pathExtension
     }
+
+    // Initialize from enumerator-provided URL properties (avoids extra stat)
+    init(url: URL, isDir: Bool, size: Int64, dateModified: Date) {
+        self.name = url.lastPathComponent
+        self.path = url.path
+        self.isDirectory = isDir
+        self.size = size
+        self.dateModified = dateModified
+        self.fileExtension = url.pathExtension.isEmpty ? nil : url.pathExtension
+    }
 }
