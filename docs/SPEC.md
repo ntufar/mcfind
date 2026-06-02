@@ -125,7 +125,7 @@
 ## Build & Deployment
 
 - [x] Xcode project (McFind.xcodeproj)
-- [x] macOS 13.0+ (Ventura) minimum target
+- [x] macOS 14.0+ (Sonoma) minimum target
 - [x] Swift 5.7+
 - [x] GitHub Actions CI/CD:
   - [x] macOS build workflow

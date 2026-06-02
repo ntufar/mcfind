@@ -32,8 +32,9 @@
 - Batch processing for performance
 
 ### Keyboard Shortcuts
-- **↑/↓**: Navigate results
+- **↑/↓**: Navigate results (auto-focuses result list)
 - **Enter**: Open selected file
+- **Space**: Quick Look preview of selected file
 - **Escape**: Clear search (or deselect if search is empty)
 - **⌘⇧R**: Re-index files (menu command)
 
@@ -41,6 +42,17 @@
 - Open in Default App
 - Reveal in Finder
 - Copy Path
+- Copy File
+- Share (via macOS Share Sheet)
+- Move to Trash
+
+### Quick Look
+- Press Space to preview selected file
+- Uses macOS QLPreviewPanel
+
+### Size Filters
+- Filter results by file size: <100KB, <1MB, <10MB, <100MB, >100MB, >1GB
+- Combines with text search
 
 ### Visual Feedback
 - Progress bar during initial indexing
@@ -58,8 +70,10 @@
 | Persistent index | ✅ | ✅ | ✅ Implemented |
 | Real-time monitoring | ✅ | ✅ | ✅ Implemented |
 | Background indexing | ✅ | ✅ | ✅ Implemented |
-| Multiple drives | ✅ | ❌ | Home directory only |
+| Size filters | ✅ | ✅ | ✅ Implemented |
+| Quick Look preview | ✅ | ✅ | ✅ Implemented |
 | Regex search | ✅ | ✅ | ✅ Implemented |
+| Multiple drives | ✅ | ❌ | Home directory only |
 | Advanced filters | ✅ | ❌ | Future enhancement |
 | HTTP server | ✅ | ❌ | Not planned |
 | Network shares | ✅ | ❌ | Not planned |
@@ -68,8 +82,10 @@
 
 ### Short Term
 - [x] Advanced search syntax (wildcards, regex)
+- [x] Quick Look / file preview on selection (Space key)
+- [x] Size filters (file size ranges)
+- [x] Move to Trash from context menu
 - [ ] File type filters (show only: images, documents, etc.)
-- [ ] Size filters (files > 1GB, < 100KB, etc.)
 - [ ] Date filters (modified in last week, month, etc.)
 - [ ] Exclude patterns (user-configurable skip list)
 - [ ] Launch at login option
@@ -80,7 +96,6 @@
 - [ ] Index statistics dashboard
 - [ ] Search history
 - [ ] Bookmarks/favorites
-- [ ] File preview on selection
 - [ ] Duplicate file finder
 - [ ] Empty folder detection
 

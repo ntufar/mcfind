@@ -25,9 +25,15 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.2.0)
+### Latest Release (v0.2.1)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
+
+**What's New in v0.2.1:**
+- Fixed "Modifying state during view update" SwiftUI warnings during search and navigation
+- Eliminated redundant UI updates by converting `selectedFile` to a computed property
+- Suppressed Intents framework `linkd` connection errors
+- Improved responsiveness with deferred state updates in delegate callbacks
 
 **What's New in v0.2.0:**
 - Quick Look integration: press Space to preview any file
@@ -43,8 +49,8 @@ View all available releases and download previous versions: [Releases Page](http
 
 ## Requirements
 
-- macOS 13.0 or later (Ventura+)
-- Xcode 14.0 or later (for building from source)
+- macOS 14.0 or later (Sonoma+)
+- Xcode 15.0 or later (for building from source)
 
 ## Building from Source
 

@@ -91,9 +91,9 @@ Automatically skips:
 ## Building
 
 ### Requirements
-- Xcode 14.0+
-- macOS 13.0+ (Ventura) for Settings API
-- Swift 5.7+
+- Xcode 15.0+
+- macOS 14.0+ (Sonoma)
+- Swift 5.9+
 
 ### First Build
 1. Open `McFind.xcodeproj` in Xcode
