@@ -36,28 +36,30 @@
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 4rem 2rem;
+            padding: 3rem 2rem 2.5rem;
             text-align: center;
         }
 
         .app-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 2rem;
-            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
         }
 
         header h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
         header p {
-            font-size: 1.3rem;
-            opacity: 0.95;
-            max-width: 700px;
-            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+            font-weight: 400;
         }
 
         .badges {
@@ -65,11 +67,12 @@
             justify-content: center;
             gap: 0.5rem;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .badges img {
-            height: 20px;
+            height: 18px;
+            opacity: 0.9;
         }
 
         .cta-buttons {
@@ -81,11 +84,11 @@
 
         .btn {
             display: inline-block;
-            padding: 0.9rem 2rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 8px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-weight: 500;
+            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
@@ -116,7 +119,7 @@
         }
 
         section {
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
         }
 
         section:nth-child(even) {
@@ -124,51 +127,59 @@
         }
 
         h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
             text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
         .section-subtitle {
             text-align: center;
             color: var(--text-secondary);
-            font-size: 1.2rem;
-            margin-bottom: 3rem;
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
             margin-top: 2rem;
         }
 
         .feature-card {
             background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.04);
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 122, 255, 0.1);
         }
 
         .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             margin-bottom: 0.5rem;
-            color: var(--primary);
+            color: var(--text);
+            font-weight: 600;
         }
 
         .feature-card p {
             color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
 
         .download-section {
@@ -177,7 +188,7 @@
 
         .download-options {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             justify-content: center;
             margin-top: 2rem;
             flex-wrap: wrap;
@@ -185,47 +196,53 @@
 
         .download-card {
             background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            min-width: 250px;
+            padding: 1.75rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            min-width: 240px;
         }
 
         .download-card h3 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
         .download-card p {
             color: var(--text-secondary);
             margin-bottom: 1.5rem;
+            font-size: 0.95rem;
         }
 
         .version-badge {
             background: var(--success);
             color: white;
-            padding: 0.3rem 0.8rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 500;
             display: inline-block;
             margin-bottom: 1rem;
         }
 
         .keyboard-shortcuts {
             background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            max-width: 600px;
+            padding: 1.5rem;
+            border-radius: 10px;
+            max-width: 550px;
             margin: 2rem auto;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
         }
 
         .shortcut {
             display: flex;
             justify-content: space-between;
-            padding: 0.8rem 0;
+            align-items: center;
+            padding: 0.75rem 0;
             border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
         }
 
         .shortcut:last-child {
@@ -234,19 +251,27 @@
 
         .shortcut-key {
             background: var(--surface);
-            padding: 0.3rem 0.8rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 6px;
-            font-family: monospace;
-            font-weight: 600;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+            font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .requirements {
-            max-width: 700px;
+            max-width: 550px;
             margin: 2rem auto;
             background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .requirements h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
         }
 
         .requirements ul {
@@ -255,9 +280,10 @@
         }
 
         .requirements li {
-            padding: 0.8rem 0;
-            padding-left: 2rem;
+            padding: 0.65rem 0;
+            padding-left: 1.75rem;
             position: relative;
+            font-size: 0.95rem;
         }
 
         .requirements li:before {
@@ -265,8 +291,8 @@
             position: absolute;
             left: 0;
             color: var(--success);
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
 
         footer {
@@ -274,28 +300,53 @@
             color: white;
             padding: 2rem;
             text-align: center;
+            font-size: 0.95rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
         }
 
         footer a {
             color: var(--secondary);
             text-decoration: none;
+            transition: opacity 0.2s ease;
         }
 
         footer a:hover {
+            opacity: 0.8;
             text-decoration: underline;
         }
 
         @media (max-width: 768px) {
+            header {
+                padding: 2.5rem 1.5rem 2rem;
+            }
+
             header h1 {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             header p {
-                font-size: 1.1rem;
+                font-size: 1rem;
+            }
+
+            .app-icon {
+                width: 70px;
+                height: 70px;
+            }
+
+            section {
+                padding: 2.5rem 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.75rem;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
 
             .download-options {
