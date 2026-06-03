@@ -104,11 +104,14 @@ jobs:
         if: ${{ github.event.inputs.create_dmg == 'true' }}
         run: |
           brew install create-dmg
-          pip3 install Pillow
+          python3 -m venv /tmp/dmg-venv
+          source /tmp/dmg-venv/bin/activate
+          pip install Pillow
 
       - name: Create DMG (if requested)
         if: ${{ github.event.inputs.create_dmg == 'true' }}
         run: |
+          source /tmp/dmg-venv/bin/activate
           ./scripts/create-dmg.sh McFind-Distribution/McFind.app
       
       - name: Create PKG (if requested)

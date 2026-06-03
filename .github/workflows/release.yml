@@ -40,10 +40,13 @@ jobs:
       - name: Install DMG tools
         run: |
           brew install create-dmg
-          pip3 install Pillow
+          python3 -m venv /tmp/dmg-venv
+          source /tmp/dmg-venv/bin/activate
+          pip install Pillow
 
       - name: Create DMG
         run: |
+          source /tmp/dmg-venv/bin/activate
           BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
           echo "Build directory: $BUILD_DIR"
           ./scripts/create-dmg.sh "$BUILD_DIR/Release/McFind.app"
