@@ -103,6 +103,12 @@ struct ContentView: View {
                         onCopyFile: {
                             viewModel.copyFile()
                         },
+                        onOpenTerminal: {
+                            viewModel.openTerminal()
+                        },
+                        onCopyPathEscaped: {
+                            viewModel.copyPathEscaped()
+                        },
                         onMoveToTrash: { index in
                             viewModel.moveToTrashFile(at: index)
                         },

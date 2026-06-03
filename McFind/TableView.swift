@@ -15,6 +15,8 @@ struct ResizableTableView: NSViewRepresentable {
     var onRevealInFinder: (() -> Void)?
     var onCopyPath: (() -> Void)?
     var onCopyFile: (() -> Void)?
+    var onOpenTerminal: (() -> Void)?
+    var onCopyPathEscaped: (() -> Void)?
     var onMoveToTrash: ((Int) -> Void)?
     var onRenameFile: ((Int, String) -> Void)?
 
@@ -126,7 +128,7 @@ struct ResizableTableView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onMoveToTrash: onMoveToTrash, onRenameFile: onRenameFile)
+        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onOpenTerminal: onOpenTerminal, onCopyPathEscaped: onCopyPathEscaped, onMoveToTrash: onMoveToTrash, onRenameFile: onRenameFile)
     }
 
     class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate, NSTextFieldDelegate {
@@ -137,6 +139,8 @@ struct ResizableTableView: NSViewRepresentable {
         var onRevealInFinder: (() -> Void)?
         var onCopyPath: (() -> Void)?
         var onCopyFile: (() -> Void)?
+        var onOpenTerminal: (() -> Void)?
+        var onCopyPathEscaped: (() -> Void)?
         var onMoveToTrash: ((Int) -> Void)?
         var onRenameFile: ((Int, String) -> Void)?
         weak var tableView: NSTableView?
@@ -146,13 +150,15 @@ struct ResizableTableView: NSViewRepresentable {
         private var renamingRow: Int = -1
         private var originalName: String = ""
 
-        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?, onRenameFile: ((Int, String) -> Void)?) {
+        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onOpenTerminal: (() -> Void)?, onCopyPathEscaped: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?, onRenameFile: ((Int, String) -> Void)?) {
             self._selectedIndex = selectedIndex
             self.onDoubleClick = onDoubleClick
             self.onSelectionChange = onSelectionChange
             self.onRevealInFinder = onRevealInFinder
             self.onCopyPath = onCopyPath
             self.onCopyFile = onCopyFile
+            self.onOpenTerminal = onOpenTerminal
+            self.onCopyPathEscaped = onCopyPathEscaped
             self.onMoveToTrash = onMoveToTrash
             self.onRenameFile = onRenameFile
             super.init()
@@ -190,6 +196,14 @@ struct ResizableTableView: NSViewRepresentable {
             let copyFileItem = NSMenuItem(title: "Copy File", action: #selector(menuCopyFile(_:)), keyEquivalent: "")
             copyFileItem.target = self
             menu.addItem(copyFileItem)
+
+            let copyPathEscapedItem = NSMenuItem(title: "Copy Path (Escaped for Terminal)", action: #selector(menuCopyPathEscaped(_:)), keyEquivalent: "")
+            copyPathEscapedItem.target = self
+            menu.addItem(copyPathEscapedItem)
+
+            let openTerminalItem = NSMenuItem(title: "Open Terminal Here", action: #selector(menuOpenTerminal(_:)), keyEquivalent: "")
+            openTerminalItem.target = self
+            menu.addItem(openTerminalItem)
 
             menu.addItem(NSMenuItem.separator())
 
@@ -245,6 +259,18 @@ struct ResizableTableView: NSViewRepresentable {
             guard clickedRow >= 0, clickedRow < files.count else { return }
             onSelectionChange(clickedRow)
             onCopyFile?()
+        }
+
+        @objc private func menuCopyPathEscaped(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onCopyPathEscaped?()
+        }
+
+        @objc private func menuOpenTerminal(_ sender: Any?) {
+            guard clickedRow >= 0, clickedRow < files.count else { return }
+            onSelectionChange(clickedRow)
+            onOpenTerminal?()
         }
 
         @objc private func menuMoveToTrash(_ sender: Any?) {

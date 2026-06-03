@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-06-04
+
+### Added
+- Open Terminal Here — right-click a file to open Terminal.app at its parent directory
+- Copy Path (Escaped for Terminal) — right-click a file to copy its path wrapped in shell-safe single quotes
+
 ## [0.2.8] - 2026-06-04
 
 ### Added
@@ -267,6 +273,7 @@ When preparing a new release:
    - Copy changelog section to release notes
    - Upload DMG and PKG installers
 
+[0.2.9]: https://github.com/ntufar/mcfind/releases/tag/v0.2.9
 [0.2.8]: https://github.com/ntufar/mcfind/releases/tag/v0.2.8
 [0.2.7]: https://github.com/ntufar/mcfind/releases/tag/v0.2.7
 [0.2.6]: https://github.com/ntufar/mcfind/releases/tag/v0.2.6

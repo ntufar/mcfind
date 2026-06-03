@@ -170,4 +170,31 @@ class SearchViewModel: ObservableObject {
             print("❌ Failed to rename file: \(error)")
         }
     }
+
+    func openTerminal() {
+        guard let file = selectedFile else { return }
+        let directory = URL(fileURLWithPath: file.path).deletingLastPathComponent()
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("mcfind_terminal_here.command")
+        let command = "cd \(directory.path.shellEscaped)\nclear\nexec $SHELL\n"
+        do {
+            try command.write(to: tempURL, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: tempURL.path)
+            NSWorkspace.shared.open(tempURL)
+        } catch {
+            print("❌ Failed to open Terminal: \(error)")
+        }
+    }
+
+    func copyPathEscaped() {
+        guard let file = selectedFile else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(file.path.shellEscaped, forType: .string)
+    }
+}
+
+private extension String {
+    var shellEscaped: String {
+        let escaped = self.replacingOccurrences(of: "'", with: "'\\''")
+        return "'\(escaped)'"
+    }
 }
