@@ -46,8 +46,8 @@ create-dmg \
   --window-pos 420 250 \
   --window-size 600 400 \
   --icon-size 128 \
-  --icon "McFind.app" 150 190 \
-  --app-drop-link 450 190 \
+  --icon "McFind.app" 150 165 \
+  --app-drop-link 450 165 \
   --background "$STAGING_DIR/.background/background.png" \
   "$DMG_NAME" \
   "$STAGING_DIR"
