@@ -11,6 +11,8 @@
 
 A fast, modern macOS application for searching files in your home directory, inspired by Everything on Windows. [Visit website →](https://ntufar.github.io/mcfind/)
 
+![McFind Screenshot](docs/McFind-blurred.png)
+
 ## Features
 
 - **Lightning-fast search**: Indexes your home directory for instant file searching
