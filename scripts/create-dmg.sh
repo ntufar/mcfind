@@ -20,11 +20,31 @@ W, H = 600, 400
 img = Image.new('RGBA', (W, H), (255, 255, 255, 0))
 draw = ImageDraw.Draw(img)
 
-gray = (140, 140, 140, 255)
-arrow_y = 200
+color = (170, 170, 170, 255)
+cy = H // 2  # 200
 
-draw.line([(215, arrow_y), (375, arrow_y)], fill=gray, width=3)
-draw.polygon([(375, arrow_y - 14), (400, arrow_y), (375, arrow_y + 14)], fill=gray)
+# Shaft geometry
+sx1, sx2 = 225, 362
+sh = 3  # half-shaft height (total 6px)
+
+# Arrowhead geometry
+hx1, hx2 = 358, 392
+hh = 14  # half-head height (total 28px)
+
+# Draw unified arrow polygon (chevron-style head taller than shaft)
+arrow = [
+    (sx1, cy - sh),
+    (hx1, cy - sh),
+    (hx1, cy - hh),
+    (hx2, cy),
+    (hx1, cy + hh),
+    (hx1, cy + sh),
+    (sx1, cy + sh),
+]
+draw.polygon(arrow, fill=color)
+
+# Rounded left cap
+draw.ellipse([sx1 - sh, cy - sh, sx1 + sh, cy + sh], fill=color)
 
 img.save("$STAGING_DIR/.background/background.png")
 PYEOF
