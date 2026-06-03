@@ -18,6 +18,16 @@ class FileIndexer: ObservableObject {
     private var isCancelled = false
     private let settings = IndexSettings.shared
 
+    private enum FSEventAction {
+        case insert(FileItem)
+        case delete(String)
+    }
+
+    private var fsEventBuffer: [FSEventAction] = []
+    private var fsEventDebounceWorkItem: DispatchWorkItem?
+    private let fsEventQueue = DispatchQueue(label: "com.mcfind.fsevent", qos: .userInitiated)
+    private let fsEventDebounceInterval: TimeInterval = 5.0
+
     private var indexDotFiles: Bool {
         UserDefaults.standard.bool(forKey: "indexDotFiles")
     }
@@ -29,6 +39,10 @@ class FileIndexer: ObservableObject {
 
     deinit {
         fileMonitor?.stop()
+        fsEventDebounceWorkItem?.cancel()
+        fsEventQueue.sync {
+            flushFSEventBuffer()
+        }
     }
 
     private func loadIndexFromDisk() {
@@ -120,27 +134,60 @@ class FileIndexer: ObservableObject {
         let isModified = (flags & UInt32(kFSEventStreamEventFlagItemModified)) != 0
         let isRenamed = (flags & UInt32(kFSEventStreamEventFlagItemRenamed)) != 0
 
-        if isRemoved {
-            print("🗑️  File removed: \(path)")
-            database.deleteFile(atPath: path)
-            DispatchQueue.main.async { [weak self] in
-                self?.totalFiles = self?.database.getFileCount() ?? 0
-            }
-        } else if isCreated || isRenamed {
-            print("➕ File created/renamed: \(path)")
-            let url = URL(fileURLWithPath: path)
-            let file = FileItem(url: url)
-            database.insertFile(file)
-            DispatchQueue.main.async { [weak self] in
-                self?.totalFiles = self?.database.getFileCount() ?? 0
-            }
-        } else if isModified {
-            // Update the file in the database
-            let url = URL(fileURLWithPath: path)
-            if fileManager.fileExists(atPath: path) {
+        fsEventQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            if isRemoved {
+                print("🗑️  File removed: \(path)")
+                self.fsEventBuffer.append(.delete(path))
+            } else if isCreated || isRenamed {
+                print("➕ File created/renamed: \(path)")
+                let url = URL(fileURLWithPath: path)
                 let file = FileItem(url: url)
-                database.insertFile(file)
+                self.fsEventBuffer.append(.insert(file))
+            } else if isModified {
+                let url = URL(fileURLWithPath: path)
+                if self.fileManager.fileExists(atPath: path) {
+                    let file = FileItem(url: url)
+                    self.fsEventBuffer.append(.insert(file))
+                }
             }
+
+            self.scheduleFSEventFlush()
+        }
+    }
+
+    private func scheduleFSEventFlush() {
+        fsEventDebounceWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.flushFSEventBuffer()
+        }
+        fsEventDebounceWorkItem = workItem
+        fsEventQueue.asyncAfter(deadline: .now() + fsEventDebounceInterval, execute: workItem)
+    }
+
+    private func flushFSEventBuffer() {
+        guard !fsEventBuffer.isEmpty else { return }
+
+        let actions = fsEventBuffer
+        fsEventBuffer.removeAll(keepingCapacity: true)
+
+        var inserts: [FileItem] = []
+        var deletes: [String] = []
+
+        for action in actions {
+            switch action {
+            case .insert(let file):
+                inserts.append(file)
+            case .delete(let path):
+                deletes.append(path)
+            }
+        }
+
+        database.applyChanges(inserts: inserts, deletes: deletes)
+
+        DispatchQueue.main.async { [weak self] in
+            self?.totalFiles = self?.database.getFileCount() ?? 0
         }
     }
 

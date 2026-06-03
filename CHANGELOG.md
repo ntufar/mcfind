@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- WAL journal mode + `synchronous=NORMAL` PRAGMAs to reduce write amplification
+- FSEvent write batching: file system changes buffered in memory with 5-second debounce, flushed as a single SQLite transaction
+- `IndexDatabase.applyChanges(inserts:deletes:)` for mixed batch operations in one transaction
+
+### Changed
+- FSEvent handling no longer writes to SQLite per-event; accumulates in a buffer and commits after 5 seconds of inactivity
+- Database round-trips during file bursts reduced from 1-per-event to 1-per-5-second-window
+
 ## [0.2.3] - 2026-06-03
 
 ### Fixed

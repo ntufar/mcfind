@@ -45,6 +45,21 @@ class IndexDatabase {
     private func openDatabase() {
         if sqlite3_open(dbPath, &db) != SQLITE_OK {
             print("❌ Error opening database")
+            return
+        }
+
+        var stmt: OpaquePointer?
+
+        let journalStmt = "PRAGMA journal_mode=WAL;"
+        if sqlite3_prepare_v2(db, journalStmt, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_step(stmt)
+            sqlite3_finalize(stmt)
+        }
+
+        let syncStmt = "PRAGMA synchronous=NORMAL;"
+        if sqlite3_prepare_v2(db, syncStmt, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_step(stmt)
+            sqlite3_finalize(stmt)
         }
     }
 
@@ -284,34 +299,51 @@ class IndexDatabase {
 
     func deleteFile(atPath path: String) {
         dbQueue.sync {
-            let deleteQuery = "DELETE FROM files WHERE path = ? OR path LIKE ?;"
-
-            var statement: OpaquePointer?
-            guard sqlite3_prepare_v2(db, deleteQuery, -1, &statement, nil) == SQLITE_OK else {
-                print("❌ Error preparing delete statement")
-                return
-            }
-
-            guard let stmt = statement else {
-                print("❌ Statement is nil")
-                return
-            }
-
-            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-
-            path.withCString { cString in
-                _ = sqlite3_bind_text(stmt, 1, cString, -1, SQLITE_TRANSIENT)
-            }
-
-            // Also delete all files under this path (if it's a directory)
-            let pathPattern = path.hasSuffix("/") ? path + "%" : path + "/%"
-            pathPattern.withCString { cString in
-                _ = sqlite3_bind_text(stmt, 2, cString, -1, SQLITE_TRANSIENT)
-            }
-
-            _ = sqlite3_step(stmt)
-            sqlite3_finalize(stmt)
+            deleteFileInternal(atPath: path)
         }
+    }
+
+    func applyChanges(inserts: [FileItem], deletes: [String]) {
+        dbQueue.sync {
+            sqlite3_exec(db, "BEGIN TRANSACTION", nil, nil, nil)
+            for path in deletes {
+                deleteFileInternal(atPath: path)
+            }
+            for file in inserts {
+                insertFileInternal(file, generation: 0)
+            }
+            sqlite3_exec(db, "COMMIT", nil, nil, nil)
+        }
+    }
+
+    private func deleteFileInternal(atPath path: String) {
+        let deleteQuery = "DELETE FROM files WHERE path = ? OR path LIKE ?;"
+
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, deleteQuery, -1, &statement, nil) == SQLITE_OK else {
+            print("❌ Error preparing delete statement")
+            return
+        }
+
+        guard let stmt = statement else {
+            print("❌ Statement is nil")
+            return
+        }
+
+        let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+        path.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 1, cString, -1, SQLITE_TRANSIENT)
+        }
+
+        // Also delete all files under this path (if it's a directory)
+        let pathPattern = path.hasSuffix("/") ? path + "%" : path + "/%"
+        pathPattern.withCString { cString in
+            _ = sqlite3_bind_text(stmt, 2, cString, -1, SQLITE_TRANSIENT)
+        }
+
+        _ = sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
     }
 
     func getAllFiles() -> [FileItem] {

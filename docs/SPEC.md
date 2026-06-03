@@ -24,7 +24,9 @@
 ## Indexing
 
 - [x] SQLite persistent index (survives restarts)
-- [x] Batch inserts (1000 files per transaction)
+- [x] WAL journal mode + `synchronous=NORMAL` for low write amplification
+- [x] Batch inserts (1000 files per transaction) during full/incremental index
+- [x] Batch FSEvent writes (5-second debounce, single transaction per flush)
 - [x] Background indexing (`com.mcfind.indexing`, qos `.utility`)
 - [x] Progress indicator during indexing
 - [x] Cancel indexing in progress
@@ -45,11 +47,13 @@
 
 ## File Monitoring (FSEvents)
 
-- [x] Real-time file system change detection
-- [x] 1-second event aggregation latency
+- [x] File system change detection via FSEvents
+- [x] Changes buffered in memory with 5-second debounce
+- [x] Batched SQLite writes in a single transaction per flush
 - [x] Handles create, delete, modify, rename events
 - [x] Ignores database directory events
 - [x] Respects settings-based path exclusion
+- [x] Remaining buffer flushed on deinit
 - [ ] Monitor external drives
 - [ ] Monitor network shares
 

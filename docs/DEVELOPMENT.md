@@ -15,7 +15,8 @@ McFind is a fast, local file search utility for macOS written in SwiftUI. It ind
 
 2. **FileIndexer.swift** - File system indexing
    - Scans home directory on first launch
-   - Real-time monitoring via FSEvents
+   - Real-time monitoring via FSEvents with 5-second debounce
+   - Batched SQLite writes (single transaction per flush)
    - Smart skipping of caches, logs, and build artifacts
    - Respects user exclusion settings
 
@@ -114,6 +115,10 @@ If you encounter issues:
 
 **Location:** `~/Library/Application Support/McFind/index.db`
 
+**Pragmas:**
+- `journal_mode = WAL` — sequential WAL appends instead of journal+db double-write
+- `synchronous = NORMAL` — reduces fsync calls (safe in WAL mode)
+
 **Schema:**
 ```sql
 CREATE TABLE files (
@@ -126,6 +131,11 @@ CREATE TABLE files (
 CREATE INDEX idx_name ON files(name COLLATE NOCASE);
 CREATE INDEX idx_path ON files(path COLLATE NOCASE);
 ```
+
+**Write batching:**
+- Full/incremental index: 1000 files per `BEGIN/COMMIT` transaction
+- FSEvent monitoring: changes buffered in memory, flushed as a single transaction after 5 seconds of inactivity
+- `IndexDatabase.applyChanges(inserts:deletes:)` applies mixed inserts and deletes in one transaction
 
 **Debugging:**
 ```bash

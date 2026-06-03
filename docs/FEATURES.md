@@ -16,10 +16,11 @@
 - Database location: `~/Library/Application Support/McFind/index.db`
 
 ### Real-time Updates
-- Automatically detects file system changes
+- Automatically detects file system changes via FSEvents
 - Updates index when files are created, deleted, or renamed
-- Uses macOS FSEvents API for efficient monitoring
-- 1-second latency for event aggregation
+- Changes buffered in memory with 5-second debounce
+- Buffered writes flushed as a single SQLite transaction
+- Reduces SSD write amplification during file bursts
 
 ### Smart Indexing
 - Indexes directories themselves (searchable)
@@ -137,6 +138,7 @@
 - Background execution: Non-blocking UI
 
 ### Monitoring
-- Event latency: 1 second aggregation
+- Event latency: 5 second debounce (resets on new events)
+- SQLite writes: batched in a single transaction per flush
 - Memory overhead: Minimal (~5-10 MB)
 - CPU usage: < 1% idle, spikes briefly on file changes
