@@ -31,8 +31,10 @@ t   = 15 * S
 
 draw.line([(cx - dep, cy - h), (cx, cy)], fill=color, width=t)
 draw.line([(cx, cy), (cx - dep, cy + h)], fill=color, width=t)
+# Round all three endpoints: tip + two open ends
 r = t // 2
-draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=color)
+for ex, ey in [(cx, cy), (cx - dep, cy - h), (cx - dep, cy + h)]:
+    draw.ellipse([ex - r, ey - r, ex + r, ey + r], fill=color)
 
 img = img.resize((W, H), Image.LANCZOS)
 img.save("$STAGING_DIR/.background/background.png")
@@ -41,7 +43,7 @@ PYEOF
 echo "Creating DMG..."
 create-dmg \
   --volname "$VOLUME_NAME" \
-  --window-pos 200 120 \
+  --window-pos 420 250 \
   --window-size 600 400 \
   --icon-size 128 \
   --icon "McFind.app" 150 190 \
