@@ -12,6 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Files under `Library/CloudStorage` (OneDrive, SharePoint, Google Drive) not being indexed even when enabled in settings, because the indexer called `skipDescendants()` on the excluded `Library` directory, preventing the enumerator from ever reaching its enabled sub-paths. Added `shouldSkipDescendants()` check that respects enabled predefined sub-paths before skipping.
 
+### Added
+- Homebrew tap badge to README
+
+### Changed
+- Document Gatekeeper workaround in README and website
+
+## [0.2.6] - 2026-06-03
+
+### Added
+- Homebrew tap distribution (`brew install ntufar/tap/mcfind`)
+- Gatekeeper workaround documentation for unsigned macOS apps
+
+## [0.2.5] - 2026-06-03
+
+### Changed
+- Polished DMG installer layout: unified chevron arrow, centered window on 1440x900, icon positioning refinements, proper background TIFF
+
 ## [0.2.4] - 2026-06-03
 
 ### Added
@@ -59,6 +76,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - Direct `selectedFile` property writes — now derived from `files[selectedIndex]`
+
+## [0.2.1] - 2026-06-02
+
+### Added
+- Granular indexing progress messages
+
+### Changed
+- Improved indexing UI: status bar moved to bottom, table headers hidden
+- Window tabs disabled: replaced `WindowGroup` with `Window` scene
+
+### Fixed
+- State modification during view updates
 
 ## [0.2.0] - 2026-06-02
 
@@ -229,9 +258,12 @@ When preparing a new release:
    - Upload DMG and PKG installers
 
 [0.2.7]: https://github.com/ntufar/mcfind/releases/tag/v0.2.7
+[0.2.6]: https://github.com/ntufar/mcfind/releases/tag/v0.2.6
+[0.2.5]: https://github.com/ntufar/mcfind/releases/tag/v0.2.5
 [0.2.4]: https://github.com/ntufar/mcfind/releases/tag/v0.2.4
 [0.2.3]: https://github.com/ntufar/mcfind/releases/tag/v0.2.3
 [0.2.2]: https://github.com/ntufar/mcfind/releases/tag/v0.2.2
+[0.2.1]: https://github.com/ntufar/mcfind/releases/tag/v0.2.1
 [0.2.0]: https://github.com/ntufar/mcfind/releases/tag/v0.2.0
 [0.1.4]: https://github.com/ntufar/mcfind/releases/tag/v0.1.4
 [0.1.3]: https://github.com/ntufar/mcfind/releases/tag/v0.1.3

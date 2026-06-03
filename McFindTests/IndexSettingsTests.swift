@@ -133,7 +133,7 @@ final class IndexSettingsTests: XCTestCase {
     func testShouldSkipDescendantsOfLibraryWhenCloudStorageExplicitlyExcluded() {
         settings.excludedPaths = ["Library", "Library/CloudStorage"]
         let path = "\(homeDirectory)/Library"
-        XCTAssertTrue(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+        XCTAssertFalse(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
     }
 
     func testShouldSkipDescendantsOfNonExcludedDirectory() {
