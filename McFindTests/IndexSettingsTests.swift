@@ -115,4 +115,34 @@ final class IndexSettingsTests: XCTestCase {
         XCTAssertTrue(settings.isExcluded("Desktop"))
         XCTAssertFalse(settings.isExcluded("Documents"))
     }
+
+    // MARK: - shouldSkipDescendants
+
+    func testShouldSkipDescendantsOfExcludedTopLevelWithoutEnabledSubpaths() {
+        settings.excludedPaths = ["Downloads"]
+        let path = "\(homeDirectory)/Downloads"
+        XCTAssertTrue(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+    }
+
+    func testShouldNotSkipDescendantsOfLibraryBecauseCloudStorageIsEnabled() {
+        settings.excludedPaths = ["Library"]
+        let path = "\(homeDirectory)/Library"
+        XCTAssertFalse(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+    }
+
+    func testShouldSkipDescendantsOfLibraryWhenCloudStorageExplicitlyExcluded() {
+        settings.excludedPaths = ["Library", "Library/CloudStorage"]
+        let path = "\(homeDirectory)/Library"
+        XCTAssertTrue(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+    }
+
+    func testShouldSkipDescendantsOfNonExcludedDirectory() {
+        let path = "\(homeDirectory)/Documents"
+        XCTAssertTrue(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+    }
+
+    func testShouldSkipDescendantsOfPathOutsideHome() {
+        let path = "/Applications"
+        XCTAssertTrue(settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory))
+    }
 }

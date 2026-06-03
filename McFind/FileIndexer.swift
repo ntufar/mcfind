@@ -254,7 +254,9 @@ class FileIndexer: ObservableObject {
             if !settings.shouldIndexPath(path, homeDirectory: homeDirectory.path) {
                 var isDir: ObjCBool = false
                 if fileManager.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
-                    enumerator.skipDescendants()
+                    if settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory.path) {
+                        enumerator.skipDescendants()
+                    }
                 }
                 continue
             }
@@ -372,7 +374,9 @@ class FileIndexer: ObservableObject {
             let isPackage = resourceValues.isPackage ?? false
 
             if !settings.shouldIndexPath(path, homeDirectory: homeDirectory.path) {
-                if isDir { enumerator.skipDescendants() }
+                if isDir && settings.shouldSkipDescendants(of: path, homeDirectory: homeDirectory.path) {
+                    enumerator.skipDescendants()
+                }
                 continue
             }
 

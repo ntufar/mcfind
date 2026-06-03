@@ -95,6 +95,23 @@ class IndexSettings: ObservableObject {
         return !excludedPaths.contains(topLevelFolder)
     }
 
+    /// Checks whether the descendants of the given path should be skipped during indexing.
+    /// A parent directory may be excluded (e.g., "Library") while a sub-path
+    /// (e.g., "Library/CloudStorage") is enabled — in that case we must NOT skip
+    /// descendants so the enumerator can reach the enabled sub-path.
+    func shouldSkipDescendants(of path: String, homeDirectory: String) -> Bool {
+        guard path.hasPrefix(homeDirectory + "/") else { return true }
+        let relativePath = String(path.dropFirst(homeDirectory.count + 1))
+
+        for predefinedPath in Self.predefinedPaths {
+            if predefinedPath.path.hasPrefix(relativePath + "/") && !excludedPaths.contains(predefinedPath.path) {
+                return false
+            }
+        }
+
+        return true
+    }
+
     func resetToDefaults() {
         excludedPaths = IndexSettings.defaultExcludedPaths
     }
