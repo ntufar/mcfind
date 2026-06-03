@@ -20,31 +20,19 @@ W, H = 600, 400
 img = Image.new('RGBA', (W, H), (255, 255, 255, 0))
 draw = ImageDraw.Draw(img)
 
-color = (170, 170, 170, 255)
-cy = H // 2  # 200
+color = (30, 30, 30, 255)
+cx, cy = 300, 200
+h = 40    # half-height of chevron arms
+depth = 28  # horizontal span
+t = 20    # stroke thickness
 
-# Shaft geometry
-sx1, sx2 = 225, 362
-sh = 3  # half-shaft height (total 6px)
+# Draw ">" chevron as two thick strokes meeting at the tip
+draw.line([(cx - depth, cy - h), (cx, cy)], fill=color, width=t)
+draw.line([(cx, cy), (cx - depth, cy + h)], fill=color, width=t)
 
-# Arrowhead geometry
-hx1, hx2 = 358, 392
-hh = 14  # half-head height (total 28px)
-
-# Draw unified arrow polygon (chevron-style head taller than shaft)
-arrow = [
-    (sx1, cy - sh),
-    (hx1, cy - sh),
-    (hx1, cy - hh),
-    (hx2, cy),
-    (hx1, cy + hh),
-    (hx1, cy + sh),
-    (sx1, cy + sh),
-]
-draw.polygon(arrow, fill=color)
-
-# Rounded left cap
-draw.ellipse([sx1 - sh, cy - sh, sx1 + sh, cy + sh], fill=color)
+# Fill the joint at the tip for a clean miter
+r = t // 2
+draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=color)
 
 img.save("$STAGING_DIR/.background/background.png")
 PYEOF
