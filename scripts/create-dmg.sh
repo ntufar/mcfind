@@ -24,7 +24,7 @@ draw = ImageDraw.Draw(img)
 
 color = (50, 50, 50, 255)
 cx  = 300 * S
-cy  = 200 * S
+cy  = 140 * S
 h   = 38 * S
 dep = 26 * S
 t   = 15 * S
@@ -46,8 +46,8 @@ create-dmg \
   --window-pos 420 250 \
   --window-size 600 400 \
   --icon-size 128 \
-  --icon "McFind.app" 150 210 \
-  --app-drop-link 450 210 \
+  --icon "McFind.app" 150 260 \
+  --app-drop-link 450 260 \
   --background "$STAGING_DIR/.background/background.png" \
   "$DMG_NAME" \
   "$STAGING_DIR"
