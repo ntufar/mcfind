@@ -43,9 +43,12 @@ jobs:
           BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
           echo "Build directory: $BUILD_DIR"
           
-          # Create app bundle directory
+          # Create DMG staging directory
           mkdir -p McFind-Release
           cp -R "$BUILD_DIR/Release/McFind.app" McFind-Release/
+          
+          # Create symbolic link to Applications folder (arrow icon)
+          ln -s /Applications McFind-Release/Applications
           
           # Create DMG
           hdiutil create -volname "McFind" -srcfolder McFind-Release -ov -format UDZO McFind.dmg

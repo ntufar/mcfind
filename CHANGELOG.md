@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-06-03
+
 ### Added
+- Applications folder symlink in DMG installer for drag-and-drop installation
 - WAL journal mode + `synchronous=NORMAL` PRAGMAs to reduce write amplification
 - FSEvent write batching: file system changes buffered in memory with 5-second debounce, flushed as a single SQLite transaction
 - `IndexDatabase.applyChanges(inserts:deletes:)` for mixed batch operations in one transaction
@@ -219,6 +222,19 @@ When preparing a new release:
    - Create release on GitHub with tag
    - Copy changelog section to release notes
    - Upload DMG and PKG installers
+
+[0.2.4]: https://github.com/ntufar/mcfind/releases/tag/v0.2.4
+[0.2.3]: https://github.com/ntufar/mcfind/releases/tag/v0.2.3
+[0.2.2]: https://github.com/ntufar/mcfind/releases/tag/v0.2.2
+[0.2.0]: https://github.com/ntufar/mcfind/releases/tag/v0.2.0
+[0.1.4]: https://github.com/ntufar/mcfind/releases/tag/v0.1.4
+[0.1.3]: https://github.com/ntufar/mcfind/releases/tag/v0.1.3
+[0.1.2]: https://github.com/ntufar/mcfind/releases/tag/v0.1.2
+[0.1.1]: https://github.com/ntufar/mcfind/releases/tag/v0.1.1
+[0.1.0]: https://github.com/ntufar/mcfind/releases/tag/v0.1.0
+[0.0.3]: https://github.com/ntufar/mcfind/releases/tag/v0.0.3
+[0.0.2]: https://github.com/ntufar/mcfind/releases/tag/v0.0.2
+[0.0.1]: https://github.com/ntufar/mcfind/releases/tag/v0.0.1
 
 ## Version Numbering
 

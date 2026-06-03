@@ -25,15 +25,14 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.2.3)
+### Latest Release (v0.2.4)
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
 
-**What's New in v0.2.3:**
-- Status bar now shows real-time progress during indexing (item count updates every 100 files)
-- Incremental scanning shows enumerated item count so you always see something moving
-- Fixed "Scanning for file changes..." getting stuck indefinitely with no visible feedback
-- Fixed status bar being completely invisible on first launch
+**What's New in v0.2.4:**
+- DMG installer now shows Applications folder shortcut for proper drag-and-drop installation
+- Improved indexing performance with WAL journal mode and write batching
+- Reduced database round-trips during file system changes
 
 **What's New in v0.2.0:**
 - Quick Look integration: press Space to preview any file

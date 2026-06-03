@@ -103,13 +103,11 @@ jobs:
       - name: Create DMG (if requested)
         if: ${{ github.event.inputs.create_dmg == 'true' }}
         run: |
-          # Create DMG with custom background and icon
-          hdiutil create -volname "McFind" -srcfolder McFind-Distribution -ov -format UDZO McFind.dmg
+          # Create symbolic link to Applications folder (arrow icon)
+          ln -s /Applications McFind-Distribution/Applications
           
-          # Optional: Mount DMG and customize appearance
-          # hdiutil attach McFind.dmg
-          # # Add custom background, icon positioning, etc.
-          # hdiutil detach /Volumes/McFind
+          # Create DMG
+          hdiutil create -volname "McFind" -srcfolder McFind-Distribution -ov -format UDZO McFind.dmg
       
       - name: Create PKG (if requested)
         if: ${{ github.event.inputs.create_pkg == 'true' }}
