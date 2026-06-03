@@ -5,6 +5,8 @@ class IndexDatabase {
     private var db: OpaquePointer?
     let dbPath: String  // Made public so FileIndexer can check if file exists
     private let dbQueue = DispatchQueue(label: "com.mcfind.database", qos: .userInitiated)
+    private var vacuumTimer: DispatchSourceTimer?
+    private let vacuumInterval: TimeInterval = 3600  // Check every hour
 
     init() {
         let fileManager = FileManager.default
@@ -22,6 +24,7 @@ class IndexDatabase {
         dbQueue.async { [weak self] in
             self?.vacuumIfNeeded()
         }
+        startPeriodicVacuum()
     }
 
     init(customPath: String) {
@@ -36,9 +39,11 @@ class IndexDatabase {
         dbQueue.async { [weak self] in
             self?.vacuumIfNeeded()
         }
+        startPeriodicVacuum()
     }
 
     deinit {
+        vacuumTimer?.cancel()
         closeDatabase()
     }
 
@@ -121,6 +126,16 @@ class IndexDatabase {
         print("🧹 VACUUM: \(freePages) free pages (\(Int(freeRatio * 100))% of \(totalPages)) — running VACUUM")
         sqlite3_exec(db, "VACUUM;", nil, nil, nil)
         print("✅ VACUUM complete")
+    }
+
+    private func startPeriodicVacuum() {
+        let timer = DispatchSource.makeTimerSource(queue: dbQueue)
+        timer.schedule(deadline: .now() + vacuumInterval, repeating: vacuumInterval, leeway: .seconds(60))
+        timer.setEventHandler { [weak self] in
+            self?.vacuumIfNeeded()
+        }
+        timer.resume()
+        vacuumTimer = timer
     }
 
     private func columnExists(in table: String, name: String) -> Bool {

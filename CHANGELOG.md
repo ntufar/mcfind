@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-04
+
+### Added
+- Periodic VACUUM — hourly freelist check prevents SQLite index bloat; VACUUMs when free pages exceed 10% of total
+
 ## [0.2.9] - 2026-06-04
 
 ### Added
@@ -273,6 +278,7 @@ When preparing a new release:
    - Copy changelog section to release notes
    - Upload DMG and PKG installers
 
+[0.3.0]: https://github.com/ntufar/mcfind/releases/tag/v0.3.0
 [0.2.9]: https://github.com/ntufar/mcfind/releases/tag/v0.2.9
 [0.2.8]: https://github.com/ntufar/mcfind/releases/tag/v0.2.8
 [0.2.7]: https://github.com/ntufar/mcfind/releases/tag/v0.2.7

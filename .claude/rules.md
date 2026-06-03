@@ -45,16 +45,21 @@ When preparing a release:
    - Create new empty `[Unreleased]` section at top
    - Categorize changes under: Added, Changed, Fixed, Removed
 
-2. **Update version numbers**
+2. **Verify test coverage**
+   - Ensure all new functionality and changes have corresponding test coverage
+   - Run full test suite and confirm all tests pass
+   - Update existing tests if behavior changed
+
+3. **Update version numbers**
    - Xcode project: General → Version
    - README.md: Latest Release section
    - Info.plist: CFBundleShortVersionString
 
-3. **Update README.md**
+4. **Update README.md**
    - Version number in "Latest Release (vX.Y.Z)" section
    - Download links (if release process changed)
 
-4. **Commit and tag**
+5. **Commit and tag**
    ```bash
    git add CHANGELOG.md README.md McFind.xcodeproj
    git commit -m "Release vX.Y.Z"
@@ -62,7 +67,7 @@ When preparing a release:
    git push origin main --tags
    ```
 
-5. **Create GitHub Release**
+6. **Create GitHub Release**
    - Use the tag created above
    - Copy the changelog section for this version into release notes
    - Upload DMG and PKG installers

@@ -40,6 +40,7 @@
   - [x] `.Trash`, `Mail`, `Containers`, `Saved Application State`
 - [x] Schema migration support (normalized columns for Unicode search)
 - [x] Indexes directories themselves (not just files)
+- [x] Periodic VACUUM — hourly freelist check (>10K free pages, >10% ratio) prevents index bloat
 - [ ] Multiple directory support (not just home)
 - [x] Incremental indexing (scan only changed directories)
 - [ ] Index statistics dashboard
@@ -119,8 +120,8 @@
 - [x] Copy File
 - [x] Share menu
 - [x] Rename (inline editing)
-- [ ] Open Terminal Here (open terminal at file's directory)
-- [ ] Copy Path (Escaped for Terminal)
+- [x] Open Terminal Here (open terminal at file's directory)
+- [x] Copy Path (Escaped for Terminal)
 
 ## Drag & Drop
 

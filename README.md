@@ -25,6 +25,7 @@ A fast, modern macOS application for searching files in your home directory, ins
 - **File metadata**: Shows file size, modification date, and file type icons
 - **Real-time monitoring**: Automatically detects file system changes
 - **Background indexing**: Non-blocking file indexing with progress indicator
+- **Automatic database maintenance**: Periodic VACUUM to prevent index bloat
 
 ## Download
 
@@ -37,7 +38,7 @@ brew tap ntufar/tap
 brew install --cask mcfind
 ```
 
-### Option 2: Direct download (v0.2.9)
+### Option 2: Direct download (v0.3.0)
 
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) — drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) — automated installer
