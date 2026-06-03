@@ -25,23 +25,44 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ## Download
 
-### Latest Release (v0.2.4)
-- **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) - Easy drag-and-drop installation
-- **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) - Professional installer package
+### Option 1: Homebrew (recommended)
 
-**What's New in v0.2.4:**
-- DMG installer now shows Applications folder shortcut for proper drag-and-drop installation
-- Improved indexing performance with WAL journal mode and write batching
-- Reduced database round-trips during file system changes
+No Gatekeeper warnings, updates with `brew upgrade`:
+
+```bash
+brew tap ntufar/tap
+brew install --cask mcfind
+```
+
+### Option 2: Direct download (v0.2.5)
+
+- **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) — drag-and-drop installation
+- **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) — automated installer
+
+**What's New in v0.2.5:**
+- Ad-hoc code signing for consistent distribution
 
 **What's New in v0.2.0:**
 - Quick Look integration: press Space to preview any file
 - Size filters and "Move to Trash" context menu
 - Fixed dot files showing in results, fixed click/Quick Look interactions
 
-### Installation Instructions
-1. **DMG**: Download the DMG file, open it, and drag McFind.app to your Applications folder
-2. **PKG**: Download the PKG file and double-click to run the installer
+#### First launch: Gatekeeper warning
+
+Because McFind is not yet notarized with Apple, macOS will block the first launch when installed from the DMG. You'll see:
+
+> *"McFind" cannot be opened because Apple cannot verify it is free of malware.*
+
+**Fix — one-time only, two options:**
+
+**Option A (GUI):** Right-click `McFind.app` in Finder → **Open** → click **Open** in the dialog.
+
+**Option B (Terminal):**
+```bash
+xattr -dr com.apple.quarantine /Applications/McFind.app
+```
+
+After doing this once, McFind opens normally every time. Installing via Homebrew skips this step entirely.
 
 ### All Releases
 View all available releases and download previous versions: [Releases Page](https://github.com/ntufar/mcfind/releases)
