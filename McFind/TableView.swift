@@ -25,10 +25,9 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.delegate = context.coordinator
         tableView.dataSource = context.coordinator
         tableView.usesAlternatingRowBackgroundColors = true
-        tableView.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
+        tableView.columnAutoresizingStyle = .lastColumnOnlyAutoresizingStyle
         tableView.allowsColumnResizing = true
-        tableView.allowsColumnReordering = false
-        tableView.headerView = nil
+        tableView.allowsColumnReordering = true
         tableView.target = context.coordinator
         tableView.action = #selector(Coordinator.tableViewClicked(_:))
         tableView.setDraggingSourceOperationMask(.copy, forLocal: false)
@@ -71,10 +70,16 @@ struct ResizableTableView: NSViewRepresentable {
 
         scrollView.documentView = tableView
         scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = true
+        scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
 
         context.coordinator.tableView = tableView
+        NotificationCenter.default.addObserver(
+            context.coordinator,
+            selector: #selector(Coordinator.constrainColumnWidths),
+            name: NSTableView.columnDidResizeNotification,
+            object: tableView
+        )
 
         return scrollView
     }
@@ -158,6 +163,9 @@ struct ResizableTableView: NSViewRepresentable {
         deinit {
             NotificationCenter.default.removeObserver(self, name: .mcfindRenameSelected, object: nil)
             NotificationCenter.default.removeObserver(self, name: .mcfindRenameCancel, object: nil)
+            if let tableView = tableView {
+                NotificationCenter.default.removeObserver(self, name: NSTableView.columnDidResizeNotification, object: tableView)
+            }
         }
 
         func menuNeedsUpdate(_ menu: NSMenu) {
@@ -474,6 +482,27 @@ struct ResizableTableView: NSViewRepresentable {
                 // Defer to avoid modifying @Published/@State during view update
                 DispatchQueue.main.async { [weak self] in
                     self?.onSelectionChange(row)
+                }
+            }
+        }
+
+        @objc func constrainColumnWidths() {
+            guard let tableView = tableView else { return }
+            let columns = tableView.tableColumns
+            guard !columns.isEmpty else { return }
+            let visibleWidth = tableView.enclosingScrollView?.contentView.bounds.width ?? tableView.visibleRect.width
+
+            var overflow = columns.reduce(0) { $0 + $1.width } - visibleWidth
+            guard overflow > 0 else { return }
+
+            // Always constrain from last column first
+            for col in columns.reversed() {
+                guard overflow > 0 else { break }
+                let available = col.width - col.minWidth
+                let shrink = min(available, overflow)
+                if shrink > 0 {
+                    col.width = col.width - shrink
+                    overflow -= shrink
                 }
             }
         }

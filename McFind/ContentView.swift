@@ -9,6 +9,7 @@ private func isSearchFieldActive() -> Bool {
 
 struct ContentView: View {
     @StateObject private var viewModel = SearchViewModel()
+    @AppStorage("showPreviewPanel") private var showPreviewPanel = true
     @State private var focusResults = false
 
     var body: some View {
@@ -81,33 +82,41 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                // Resizable Table View
-                ResizableTableView(
-                    files: $viewModel.files,
-                    selectedIndex: $viewModel.selectedIndex,
-                    focusResults: $focusResults,
-                    onDoubleClick: {
-                        viewModel.openSelectedFile()
-                    },
-                    onSelectionChange: { index in
-                        viewModel.selectFile(at: index)
-                    },
-                    onRevealInFinder: {
-                        viewModel.revealInFinder()
-                    },
-                    onCopyPath: {
-                        viewModel.copyPath()
-                    },
-                    onCopyFile: {
-                        viewModel.copyFile()
-                    },
-                    onMoveToTrash: { index in
-                        viewModel.moveToTrashFile(at: index)
-                    },
-                    onRenameFile: { index, newName in
-                        viewModel.renameFile(at: index, to: newName)
+                HStack(spacing: 0) {
+                    // Resizable Table View
+                    ResizableTableView(
+                        files: $viewModel.files,
+                        selectedIndex: $viewModel.selectedIndex,
+                        focusResults: $focusResults,
+                        onDoubleClick: {
+                            viewModel.openSelectedFile()
+                        },
+                        onSelectionChange: { index in
+                            viewModel.selectFile(at: index)
+                        },
+                        onRevealInFinder: {
+                            viewModel.revealInFinder()
+                        },
+                        onCopyPath: {
+                            viewModel.copyPath()
+                        },
+                        onCopyFile: {
+                            viewModel.copyFile()
+                        },
+                        onMoveToTrash: { index in
+                            viewModel.moveToTrashFile(at: index)
+                        },
+                        onRenameFile: { index, newName in
+                            viewModel.renameFile(at: index, to: newName)
+                        }
+                    )
+
+                    // Preview Panel
+                    if showPreviewPanel, let selectedFile = viewModel.selectedFile {
+                        Divider()
+                        PreviewPanel(file: selectedFile)
                     }
-                )
+                }
             }
 
             Divider()

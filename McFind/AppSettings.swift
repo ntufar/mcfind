@@ -20,9 +20,16 @@ class AppSettings: ObservableObject {
         }
     }
 
+    @Published var showPreviewPanel: Bool {
+        didSet {
+            UserDefaults.standard.set(showPreviewPanel, forKey: "showPreviewPanel")
+        }
+    }
+
     init() {
         self.showFullPath = UserDefaults.standard.bool(forKey: "showFullPath")
         self.compactMode = UserDefaults.standard.bool(forKey: "compactMode")
         self.indexDotFiles = UserDefaults.standard.bool(forKey: "indexDotFiles")
+        self.showPreviewPanel = UserDefaults.standard.object(forKey: "showPreviewPanel") as? Bool ?? true
     }
 }

@@ -25,6 +25,7 @@
 		AA0000000000000000000009 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* FileItem.swift */; };
 		AA000000000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* Assets.xcassets */; };
 		AA000000000000000000000D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000E /* Preview Assets.xcassets */; };
+		9F0F79E42FCE3A01008D73C5 /* PreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79E52FCE3A01008D73C5 /* PreviewPanel.swift */; };
 		BB000001 /* IndexDatabaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000020 /* IndexDatabaseTests.swift */; };
 		BB000002 /* IndexSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000021 /* IndexSettingsTests.swift */; };
 		BB000003 /* SearchViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000022 /* SearchViewModelTests.swift */; };
@@ -61,6 +62,7 @@
 		AA000000000000000000000A /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
 		AA000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000000000000000000000E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		9F0F79E52FCE3A01008D73C5 /* PreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPanel.swift; sourceTree = "<group>"; };
 		AA000000000000000000000F /* McFind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = McFind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000010 /* McFind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = McFind.entitlements; sourceTree = "<group>"; };
 		BB000020 /* IndexDatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexDatabaseTests.swift; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 				AA0000000000000000000006 /* FileIndexer.swift */,
 				AA0000000000000000000008 /* SearchViewModel.swift */,
 				AA000000000000000000000A /* FileItem.swift */,
+				9F0F79E52FCE3A01008D73C5 /* PreviewPanel.swift */,
 				AA000000000000000000000C /* Assets.xcassets */,
 				AA0000000000000000000010 /* McFind.entitlements */,
 				AA0000000000000000000013 /* Preview Content */,
@@ -261,12 +264,12 @@
 				9F242A372FCE3DF500039749 /* SettingsView.swift in Sources */,
 				9F242A392FCE3EF000039749 /* IndexSettings.swift in Sources */,
 				9F0F79E32FCE3A00008D73C5 /* QuickLookController.swift in Sources */,
+				9F0F79E42FCE3A01008D73C5 /* PreviewPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXSourcesBuildPhase section */
 		BB000060 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -427,7 +430,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.7;
+				MARKETING_VERSION = 0.2.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -454,7 +457,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.7;
+				MARKETING_VERSION = 0.2.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

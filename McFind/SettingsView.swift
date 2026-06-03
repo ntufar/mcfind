@@ -78,6 +78,30 @@ struct SettingsView: View {
 
                     Divider()
 
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Display Options")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.primary)
+
+                        HStack {
+                            Text("Show preview panel")
+                                .font(.system(size: 12))
+                            Spacer()
+                            Toggle("", isOn: $appSettings.showPreviewPanel)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .controlSize(.small)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                        )
+                    }
+
+                    Divider()
+
                     // Info section
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 6) {

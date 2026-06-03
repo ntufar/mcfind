@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.7] - 2026-06-03
+## [0.2.8] - 2026-06-04
+
+### Added
+- Preview panel: file metadata displayed on the right when a file is selected (Kind, Size, Created, Modified, Extension, Path)
+- Show/hide preview panel toggle in Settings under Display Options (default: on)
+- Column headers visible with draggable dividers for resizing
+- Column reordering support
+
+### Changed
+- Columns always fit within visible area — rightmost columns shrink first when resizing, no horizontal scrolling
+- Preview panel setting persists via UserDefaults and takes effect immediately
 
 ### Fixed
 - Files under `Library/CloudStorage` (OneDrive, SharePoint, Google Drive) not being indexed even when enabled in settings, because the indexer called `skipDescendants()` on the excluded `Library` directory, preventing the enumerator from ever reaching its enabled sub-paths. Added `shouldSkipDescendants()` check that respects enabled predefined sub-paths before skipping.
@@ -257,6 +267,7 @@ When preparing a new release:
    - Copy changelog section to release notes
    - Upload DMG and PKG installers
 
+[0.2.8]: https://github.com/ntufar/mcfind/releases/tag/v0.2.8
 [0.2.7]: https://github.com/ntufar/mcfind/releases/tag/v0.2.7
 [0.2.6]: https://github.com/ntufar/mcfind/releases/tag/v0.2.6
 [0.2.5]: https://github.com/ntufar/mcfind/releases/tag/v0.2.5

@@ -78,8 +78,8 @@
 - [x] Right-click context menu on results (Open, Reveal in Finder, Copy Path, Copy File, Share)
 - [ ] Advanced filters UI panel
 - [ ] Search history dropdown
+- [ ] Quick Look + Preview column (preview pane with file metadata)
 - [ ] File preview on selection
-- [ ] Quick Look integration
 - [ ] Dark mode refinements
 - [ ] Menu bar icon with quick search popup
 - [ ] Launch at login option
@@ -119,6 +119,8 @@
 - [x] Copy File
 - [x] Share menu
 - [x] Rename (inline editing)
+- [ ] Open Terminal Here (open terminal at file's directory)
+- [ ] Copy Path (Escaped for Terminal)
 
 ## Drag & Drop
 
@@ -130,7 +132,7 @@
 - [x] `Identifiable` (UUID) and `Hashable`
 - [x] `NSImage` icon resolution via `UTType`
 - [ ] Bookmarks/favorites
-- [ ] Tags support
+- [ ] File tagging (read/write macOS tags, search/filter by tag)
 
 ## Build & Deployment
 
