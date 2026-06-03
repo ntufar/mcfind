@@ -17,23 +17,24 @@ python3 << PYEOF
 from PIL import Image, ImageDraw
 
 W, H = 600, 400
-img = Image.new('RGBA', (W, H), (255, 255, 255, 0))
+S = 4  # supersampling factor — draw at 4x then downsample for antialiasing
+
+img = Image.new('RGBA', (W * S, H * S), (235, 235, 235, 255))
 draw = ImageDraw.Draw(img)
 
-color = (30, 30, 30, 255)
-cx, cy = 300, 200
-h = 40    # half-height of chevron arms
-depth = 28  # horizontal span
-t = 20    # stroke thickness
+color = (50, 50, 50, 255)
+cx  = 300 * S
+cy  = 200 * S
+h   = 38 * S
+dep = 26 * S
+t   = 15 * S
 
-# Draw ">" chevron as two thick strokes meeting at the tip
-draw.line([(cx - depth, cy - h), (cx, cy)], fill=color, width=t)
-draw.line([(cx, cy), (cx - depth, cy + h)], fill=color, width=t)
-
-# Fill the joint at the tip for a clean miter
+draw.line([(cx - dep, cy - h), (cx, cy)], fill=color, width=t)
+draw.line([(cx, cy), (cx - dep, cy + h)], fill=color, width=t)
 r = t // 2
 draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=color)
 
+img = img.resize((W, H), Image.LANCZOS)
 img.save("$STAGING_DIR/.background/background.png")
 PYEOF
 
