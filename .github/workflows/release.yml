@@ -37,24 +37,19 @@ jobs:
           codesign --force --deep --sign - "$BUILD_DIR/Release/McFind.app"
           codesign --verify --verbose "$BUILD_DIR/Release/McFind.app"
 
+      - name: Install DMG tools
+        run: |
+          brew install create-dmg
+          pip3 install Pillow
+
       - name: Create DMG
         run: |
-          # Find the actual build output directory
           BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
           echo "Build directory: $BUILD_DIR"
+          ./scripts/create-dmg.sh "$BUILD_DIR/Release/McFind.app"
           
-          # Create DMG staging directory
-          mkdir -p McFind-Release
-          cp -R "$BUILD_DIR/Release/McFind.app" McFind-Release/
-          
-          # Create symbolic link to Applications folder (arrow icon)
-          ln -s /Applications McFind-Release/Applications
-          
-          # Create DMG
-          hdiutil create -volname "McFind" -srcfolder McFind-Release -ov -format UDZO McFind.dmg
-          
-          # Create installer package (optional)
-          pkgbuild --root McFind-Release --identifier com.mcfind.McFind --version 1.0 --install-location /Applications McFind.pkg
+          # Create installer package
+          pkgbuild --root "$BUILD_DIR/Release/McFind.app" --identifier com.mcfind.McFind --version 1.0 --install-location /Applications McFind.pkg
       
       - name: List files for release
         run: |

@@ -100,14 +100,16 @@ jobs:
           EOF
           chmod +x McFind-Distribution/Install.command
       
+      - name: Install DMG tools
+        if: ${{ github.event.inputs.create_dmg == 'true' }}
+        run: |
+          brew install create-dmg
+          pip3 install Pillow
+
       - name: Create DMG (if requested)
         if: ${{ github.event.inputs.create_dmg == 'true' }}
         run: |
-          # Create symbolic link to Applications folder (arrow icon)
-          ln -s /Applications McFind-Distribution/Applications
-          
-          # Create DMG
-          hdiutil create -volname "McFind" -srcfolder McFind-Distribution -ov -format UDZO McFind.dmg
+          ./scripts/create-dmg.sh McFind-Distribution/McFind.app
       
       - name: Create PKG (if requested)
         if: ${{ github.event.inputs.create_pkg == 'true' }}
