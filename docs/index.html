@@ -215,6 +215,48 @@
             font-size: 0.95rem;
         }
 
+        .gatekeeper-box {
+            background: #FFF9E6;
+            border: 1px solid #F0C040;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            max-width: 680px;
+            margin: 2rem auto 0;
+            text-align: left;
+        }
+
+        .gatekeeper-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #7A5800;
+        }
+
+        .gatekeeper-box p {
+            font-size: 0.9rem;
+            color: #5C4200;
+            margin-bottom: 0.75rem;
+        }
+
+        .gatekeeper-box code {
+            display: block;
+            background: #1D1D1F;
+            color: #A8FF60;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+
+        .gatekeeper-box .or-divider {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #7A5800;
+            margin: 0.5rem 0;
+            font-weight: 500;
+        }
+
         .version-badge {
             background: var(--success);
             color: white;
@@ -425,20 +467,34 @@
             <h2>Download</h2>
             <p class="section-subtitle">Choose your installation method</p>
 
-            <span class="version-badge">Latest v0.1.2</span>
+            <span class="version-badge">Latest v0.2.6</span>
 
             <div class="download-options">
                 <div class="download-card">
+                    <h3>Homebrew</h3>
+                    <p>Easy install &amp; automatic updates</p>
+                    <code style="display:block;background:#1D1D1F;color:#A8FF60;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;text-align:left;margin-bottom:1rem;font-family:'SF Mono','Menlo',monospace;">brew tap ntufar/tap<br>brew install --cask mcfind</code>
+                </div>
+
+                <div class="download-card">
                     <h3>DMG Installer</h3>
-                    <p>Easy drag-and-drop installation</p>
+                    <p>Drag-and-drop installation</p>
                     <a href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg" class="btn btn-primary">Download DMG</a>
                 </div>
 
                 <div class="download-card">
                     <h3>PKG Installer</h3>
-                    <p>Professional installer package</p>
+                    <p>Automated installer package</p>
                     <a href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg" class="btn btn-primary">Download PKG</a>
                 </div>
+            </div>
+
+            <div class="gatekeeper-box">
+                <h3>⚠️ First launch: Gatekeeper warning</h3>
+                <p>Because McFind is not yet notarized with Apple, macOS blocks the first launch. Run this once in Terminal to fix it:</p>
+                <code>xattr -dr com.apple.quarantine /Applications/McFind.app</code>
+                <div class="or-divider">— or —</div>
+                <p>Right-click <strong>McFind.app</strong> in Finder → <strong>Open</strong> → click <strong>Open</strong> in the dialog. After doing this once, McFind opens normally every time.</p>
             </div>
 
             <div class="requirements">

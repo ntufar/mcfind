@@ -27,42 +27,34 @@ A fast, modern macOS application for searching files in your home directory, ins
 
 ### Option 1: Homebrew (recommended)
 
-No Gatekeeper warnings, updates with `brew upgrade`:
+Easy install and updates with `brew upgrade`:
 
 ```bash
 brew tap ntufar/tap
 brew install --cask mcfind
 ```
 
-### Option 2: Direct download (v0.2.5)
+### Option 2: Direct download (v0.2.6)
 
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) — drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) — automated installer
 
-**What's New in v0.2.5:**
-- Ad-hoc code signing for consistent distribution
+### First launch: Gatekeeper warning
 
-**What's New in v0.2.0:**
-- Quick Look integration: press Space to preview any file
-- Size filters and "Move to Trash" context menu
-- Fixed dot files showing in results, fixed click/Quick Look interactions
-
-#### First launch: Gatekeeper warning
-
-Because McFind is not yet notarized with Apple, macOS will block the first launch when installed from the DMG. You'll see:
+Because McFind is not notarized with Apple, macOS blocks the first launch regardless of how you installed it. You'll see:
 
 > *"McFind" cannot be opened because Apple cannot verify it is free of malware.*
 
-**Fix — one-time only, two options:**
+**One-time fix — pick either option:**
 
-**Option A (GUI):** Right-click `McFind.app` in Finder → **Open** → click **Open** in the dialog.
-
-**Option B (Terminal):**
+**Option A — Terminal (fastest):**
 ```bash
 xattr -dr com.apple.quarantine /Applications/McFind.app
 ```
 
-After doing this once, McFind opens normally every time. Installing via Homebrew skips this step entirely.
+**Option B — Finder:** Right-click `McFind.app` → **Open** → click **Open** in the dialog.
+
+After doing this once, McFind opens normally every time.
 
 ### All Releases
 View all available releases and download previous versions: [Releases Page](https://github.com/ntufar/mcfind/releases)
