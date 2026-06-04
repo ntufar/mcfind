@@ -36,7 +36,11 @@ struct KeyEventHandler: NSViewRepresentable {
                 guard let self = self else { return event }
 
                 // Let command-key combos through (cmd+Q, cmd+W, cmd+C, etc.)
+                // But first allow the handler to consume specific command events (e.g., Cmd+A)
                 if event.modifierFlags.contains(.command) {
+                    if let handler = self.onKeyDown, handler(event) {
+                        return nil
+                    }
                     return event
                 }
 

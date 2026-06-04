@@ -8,16 +8,16 @@ extension Notification.Name {
 
 struct ResizableTableView: NSViewRepresentable {
     @Binding var files: [FileItem]
-    @Binding var selectedIndex: Int
+    @Binding var selectedIndices: Set<Int>
     @Binding var focusResults: Bool
     var onDoubleClick: () -> Void
-    var onSelectionChange: (Int) -> Void
+    var onSelectionChange: (Set<Int>) -> Void
     var onRevealInFinder: (() -> Void)?
     var onCopyPath: (() -> Void)?
     var onCopyFile: (() -> Void)?
     var onOpenTerminal: (() -> Void)?
     var onCopyPathEscaped: (() -> Void)?
-    var onMoveToTrash: ((Int) -> Void)?
+    var onMoveToTrash: ((Set<Int>) -> Void)?
     var onRenameFile: ((Int, String) -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -30,9 +30,11 @@ struct ResizableTableView: NSViewRepresentable {
         tableView.columnAutoresizingStyle = .lastColumnOnlyAutoresizingStyle
         tableView.allowsColumnResizing = true
         tableView.allowsColumnReordering = true
+        tableView.allowsMultipleSelection = true
         tableView.target = context.coordinator
         tableView.action = #selector(Coordinator.tableViewClicked(_:))
         tableView.setDraggingSourceOperationMask(.copy, forLocal: false)
+        tableView.setDraggingSourceOperationMask(.copy, forLocal: true)
 
         let menu = NSMenu()
         menu.delegate = context.coordinator
@@ -89,25 +91,41 @@ struct ResizableTableView: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let tableView = scrollView.documentView as? NSTableView else { return }
 
-        // Check if files array actually changed
-        let filesChanged = !areFilesEqual(context.coordinator.files, files)
+        let oldFiles = context.coordinator.files
+        let newFiles = files
+
+        let filesChanged = !areFilesEqual(oldFiles, newFiles)
 
         if filesChanged {
-            print("📊 TableView: Files changed (old: \(context.coordinator.files.count), new: \(files.count))")
-            context.coordinator.files = files
-            tableView.reloadData()
+            print("📊 TableView: Files changed (old: \(oldFiles.count), new: \(newFiles.count))")
+
+            let oldIDs = Set(oldFiles.map(\.id))
+            let newIDs = Set(newFiles.map(\.id))
+            let removedIDs = oldIDs.subtracting(newIDs)
+            let addedIDs = newIDs.subtracting(oldIDs)
+
+            if !removedIDs.isEmpty && addedIDs.isEmpty {
+                let removedIndices = oldFiles.enumerated()
+                    .filter { removedIDs.contains($0.element.id) }
+                    .map(\.offset)
+                context.coordinator.files = newFiles
+                tableView.removeRows(at: IndexSet(removedIndices), withAnimation: .slideUp)
+            } else {
+                context.coordinator.files = newFiles
+                tableView.reloadData()
+            }
         }
 
         // Only update selection if it changed and is different from what we last set
-        if selectedIndex != context.coordinator.lastKnownSelection {
-            print("📌 TableView: Selection changed to \(selectedIndex)")
-            context.coordinator.lastKnownSelection = selectedIndex
-            if selectedIndex >= 0 && selectedIndex < files.count {
-                context.coordinator.isProgrammaticSelection = true
-                tableView.selectRowIndexes(IndexSet(integer: selectedIndex), byExtendingSelection: false)
-                tableView.scrollRowToVisible(selectedIndex)
-                context.coordinator.isProgrammaticSelection = false
+        if selectedIndices != context.coordinator.lastKnownSelection {
+            print("📌 TableView: Selection changed to \(selectedIndices)")
+            context.coordinator.lastKnownSelection = selectedIndices
+            context.coordinator.isProgrammaticSelection = true
+            tableView.selectRowIndexes(IndexSet(selectedIndices), byExtendingSelection: false)
+            if let first = selectedIndices.sorted().first {
+                tableView.scrollRowToVisible(first)
             }
+            context.coordinator.isProgrammaticSelection = false
         }
 
         // Give keyboard focus to the table when user navigates with arrow keys
@@ -128,30 +146,31 @@ struct ResizableTableView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(files: $files, selectedIndex: $selectedIndex, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onOpenTerminal: onOpenTerminal, onCopyPathEscaped: onCopyPathEscaped, onMoveToTrash: onMoveToTrash, onRenameFile: onRenameFile)
+        Coordinator(files: $files, selectedIndices: $selectedIndices, onDoubleClick: onDoubleClick, onSelectionChange: onSelectionChange, onRevealInFinder: onRevealInFinder, onCopyPath: onCopyPath, onCopyFile: onCopyFile, onOpenTerminal: onOpenTerminal, onCopyPathEscaped: onCopyPathEscaped, onMoveToTrash: onMoveToTrash, onRenameFile: onRenameFile)
     }
 
     class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate, NSTextFieldDelegate {
         var files: [FileItem] = []
-        @Binding var selectedIndex: Int
+        @Binding var selectedIndices: Set<Int>
         var onDoubleClick: () -> Void
-        var onSelectionChange: (Int) -> Void
+        var onSelectionChange: (Set<Int>) -> Void
         var onRevealInFinder: (() -> Void)?
         var onCopyPath: (() -> Void)?
         var onCopyFile: (() -> Void)?
         var onOpenTerminal: (() -> Void)?
         var onCopyPathEscaped: (() -> Void)?
-        var onMoveToTrash: ((Int) -> Void)?
+        var onMoveToTrash: ((Set<Int>) -> Void)?
         var onRenameFile: ((Int, String) -> Void)?
         weak var tableView: NSTableView?
         var isProgrammaticSelection = false
-        var lastKnownSelection = 0
+        var lastKnownSelection: Set<Int> = []
         private var clickedRow: Int = -1
+        private var effectiveRows: Set<Int> = []
         private var renamingRow: Int = -1
         private var originalName: String = ""
 
-        init(files: Binding<[FileItem]>, selectedIndex: Binding<Int>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Int) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onOpenTerminal: (() -> Void)?, onCopyPathEscaped: (() -> Void)?, onMoveToTrash: ((Int) -> Void)?, onRenameFile: ((Int, String) -> Void)?) {
-            self._selectedIndex = selectedIndex
+        init(files: Binding<[FileItem]>, selectedIndices: Binding<Set<Int>>, onDoubleClick: @escaping () -> Void, onSelectionChange: @escaping (Set<Int>) -> Void, onRevealInFinder: (() -> Void)?, onCopyPath: (() -> Void)?, onCopyFile: (() -> Void)?, onOpenTerminal: (() -> Void)?, onCopyPathEscaped: (() -> Void)?, onMoveToTrash: ((Set<Int>) -> Void)?, onRenameFile: ((Int, String) -> Void)?) {
+            self._selectedIndices = selectedIndices
             self.onDoubleClick = onDoubleClick
             self.onSelectionChange = onSelectionChange
             self.onRevealInFinder = onRevealInFinder
@@ -177,56 +196,109 @@ struct ResizableTableView: NSViewRepresentable {
         func menuNeedsUpdate(_ menu: NSMenu) {
             menu.removeAllItems()
             clickedRow = tableView?.clickedRow ?? -1
-            guard clickedRow >= 0, clickedRow < files.count else { return }
 
-            let openItem = NSMenuItem(title: "Open in Default App", action: #selector(menuOpenFile(_:)), keyEquivalent: "")
-            openItem.target = self
-            menu.addItem(openItem)
+            // Determine which rows the context menu actions should apply to
+            if clickedRow >= 0, clickedRow < files.count {
+                if selectedIndices.contains(clickedRow) && selectedIndices.count > 1 {
+                    effectiveRows = selectedIndices
+                } else {
+                    effectiveRows = [clickedRow]
+                }
+            } else {
+                effectiveRows = []
+            }
 
-            let revealItem = NSMenuItem(title: "Reveal in Finder", action: #selector(menuRevealInFinder(_:)), keyEquivalent: "")
-            revealItem.target = self
-            menu.addItem(revealItem)
+            guard !effectiveRows.isEmpty else { return }
 
-            menu.addItem(NSMenuItem.separator())
+            let isMulti = effectiveRows.count > 1
 
-            let copyPathItem = NSMenuItem(title: "Copy Path", action: #selector(menuCopyPath(_:)), keyEquivalent: "")
-            copyPathItem.target = self
-            menu.addItem(copyPathItem)
+            if isMulti {
+                let openItem = NSMenuItem(title: "Open \(effectiveRows.count) Items", action: #selector(menuOpenFile(_:)), keyEquivalent: "")
+                openItem.target = self
+                menu.addItem(openItem)
 
-            let copyFileItem = NSMenuItem(title: "Copy File", action: #selector(menuCopyFile(_:)), keyEquivalent: "")
-            copyFileItem.target = self
-            menu.addItem(copyFileItem)
+                let revealItem = NSMenuItem(title: "Reveal \(effectiveRows.count) Items in Finder", action: #selector(menuRevealInFinder(_:)), keyEquivalent: "")
+                revealItem.target = self
+                menu.addItem(revealItem)
 
-            let copyPathEscapedItem = NSMenuItem(title: "Copy Path (Escaped for Terminal)", action: #selector(menuCopyPathEscaped(_:)), keyEquivalent: "")
-            copyPathEscapedItem.target = self
-            menu.addItem(copyPathEscapedItem)
+                menu.addItem(NSMenuItem.separator())
 
-            let openTerminalItem = NSMenuItem(title: "Open Terminal Here", action: #selector(menuOpenTerminal(_:)), keyEquivalent: "")
-            openTerminalItem.target = self
-            menu.addItem(openTerminalItem)
+                let copyPathItem = NSMenuItem(title: "Copy \(effectiveRows.count) Paths", action: #selector(menuCopyPath(_:)), keyEquivalent: "")
+                copyPathItem.target = self
+                menu.addItem(copyPathItem)
 
-            menu.addItem(NSMenuItem.separator())
+                let copyFileItem = NSMenuItem(title: "Copy \(effectiveRows.count) Files", action: #selector(menuCopyFile(_:)), keyEquivalent: "")
+                copyFileItem.target = self
+                menu.addItem(copyFileItem)
 
-            let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
-            shareItem.submenu = buildShareMenu()
-            menu.addItem(shareItem)
+                let copyPathEscapedItem = NSMenuItem(title: "Copy \(effectiveRows.count) Paths (Escaped)", action: #selector(menuCopyPathEscaped(_:)), keyEquivalent: "")
+                copyPathEscapedItem.target = self
+                menu.addItem(copyPathEscapedItem)
 
-            let renameItem = NSMenuItem(title: "Rename", action: #selector(menuRenameFile(_:)), keyEquivalent: "")
-            renameItem.target = self
-            menu.addItem(renameItem)
+                menu.addItem(NSMenuItem.separator())
 
-            menu.addItem(NSMenuItem.separator())
+                let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
+                shareItem.submenu = buildShareMenu()
+                menu.addItem(shareItem)
 
-            let deleteItem = NSMenuItem(title: "Move to Trash", action: #selector(menuMoveToTrash(_:)), keyEquivalent: "")
-            deleteItem.target = self
-            menu.addItem(deleteItem)
+                menu.addItem(NSMenuItem.separator())
+
+                let deleteItem = NSMenuItem(title: "Move \(effectiveRows.count) Items to Trash", action: #selector(menuMoveToTrash(_:)), keyEquivalent: "")
+                deleteItem.target = self
+                menu.addItem(deleteItem)
+            } else {
+                let openItem = NSMenuItem(title: "Open in Default App", action: #selector(menuOpenFile(_:)), keyEquivalent: "")
+                openItem.target = self
+                menu.addItem(openItem)
+
+                let revealItem = NSMenuItem(title: "Reveal in Finder", action: #selector(menuRevealInFinder(_:)), keyEquivalent: "")
+                revealItem.target = self
+                menu.addItem(revealItem)
+
+                menu.addItem(NSMenuItem.separator())
+
+                let copyPathItem = NSMenuItem(title: "Copy Path", action: #selector(menuCopyPath(_:)), keyEquivalent: "")
+                copyPathItem.target = self
+                menu.addItem(copyPathItem)
+
+                let copyFileItem = NSMenuItem(title: "Copy File", action: #selector(menuCopyFile(_:)), keyEquivalent: "")
+                copyFileItem.target = self
+                menu.addItem(copyFileItem)
+
+                let copyPathEscapedItem = NSMenuItem(title: "Copy Path (Escaped for Terminal)", action: #selector(menuCopyPathEscaped(_:)), keyEquivalent: "")
+                copyPathEscapedItem.target = self
+                menu.addItem(copyPathEscapedItem)
+
+                let openTerminalItem = NSMenuItem(title: "Open Terminal Here", action: #selector(menuOpenTerminal(_:)), keyEquivalent: "")
+                openTerminalItem.target = self
+                menu.addItem(openTerminalItem)
+
+                menu.addItem(NSMenuItem.separator())
+
+                let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "")
+                shareItem.submenu = buildShareMenu()
+                menu.addItem(shareItem)
+
+                let renameItem = NSMenuItem(title: "Rename", action: #selector(menuRenameFile(_:)), keyEquivalent: "")
+                renameItem.target = self
+                menu.addItem(renameItem)
+
+                menu.addItem(NSMenuItem.separator())
+
+                let deleteItem = NSMenuItem(title: "Move to Trash", action: #selector(menuMoveToTrash(_:)), keyEquivalent: "")
+                deleteItem.target = self
+                menu.addItem(deleteItem)
+            }
         }
 
         private func buildShareMenu() -> NSMenu {
             let menu = NSMenu(title: "Share")
-            guard clickedRow >= 0, clickedRow < files.count else { return menu }
-            let url = URL(fileURLWithPath: files[clickedRow].path)
-            let services = NSSharingService.sharingServices(forItems: [url])
+            let urls: [URL] = effectiveRows.sorted().compactMap {
+                guard $0 >= 0, $0 < files.count else { return nil }
+                return URL(fileURLWithPath: files[$0].path)
+            }
+            guard !urls.isEmpty else { return menu }
+            let services = NSSharingService.sharingServices(forItems: urls)
             for service in services {
                 let item = NSMenuItem(title: service.title, action: #selector(shareViaService(_:)), keyEquivalent: "")
                 item.target = self
@@ -238,70 +310,86 @@ struct ResizableTableView: NSViewRepresentable {
         }
 
         @objc private func menuOpenFile(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            guard !effectiveRows.isEmpty else { return }
+            selectedIndices = effectiveRows
+            onSelectionChange(effectiveRows)
             onDoubleClick()
         }
 
         @objc private func menuRevealInFinder(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            guard !effectiveRows.isEmpty else { return }
+            selectedIndices = effectiveRows
+            onSelectionChange(effectiveRows)
             onRevealInFinder?()
         }
 
         @objc private func menuCopyPath(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            guard !effectiveRows.isEmpty else { return }
+            selectedIndices = effectiveRows
+            onSelectionChange(effectiveRows)
             onCopyPath?()
         }
 
         @objc private func menuCopyFile(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            guard !effectiveRows.isEmpty else { return }
+            selectedIndices = effectiveRows
+            onSelectionChange(effectiveRows)
             onCopyFile?()
         }
 
         @objc private func menuCopyPathEscaped(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            guard !effectiveRows.isEmpty else { return }
+            selectedIndices = effectiveRows
+            onSelectionChange(effectiveRows)
             onCopyPathEscaped?()
         }
 
         @objc private func menuOpenTerminal(_ sender: Any?) {
             guard clickedRow >= 0, clickedRow < files.count else { return }
-            onSelectionChange(clickedRow)
+            selectedIndices = [clickedRow]
+            onSelectionChange([clickedRow])
             onOpenTerminal?()
         }
 
         @objc private func menuMoveToTrash(_ sender: Any?) {
-            guard clickedRow >= 0, clickedRow < files.count else { return }
-            let file = files[clickedRow]
+            guard !effectiveRows.isEmpty else { return }
+            let fileNames = effectiveRows.sorted().compactMap { files.indices.contains($0) ? files[$0].name : nil }
+            let count = effectiveRows.count
             let alert = NSAlert()
-            alert.messageText = "Are you sure you want to move \"\(file.name)\" to the Trash?"
+            if count == 1 {
+                alert.messageText = "Are you sure you want to move \"\(fileNames[0])\" to the Trash?"
+            } else {
+                alert.messageText = "Are you sure you want to move \(count) items to the Trash?"
+                alert.informativeText = fileNames.prefix(5).joined(separator: "\n") + (count > 5 ? "\n…" : "")
+            }
             alert.informativeText = "This action cannot be undone."
             alert.addButton(withTitle: "Move to Trash")
             alert.addButton(withTitle: "Cancel")
             alert.alertStyle = .warning
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
-                onSelectionChange(clickedRow)
-                onMoveToTrash?(clickedRow)
+                selectedIndices = effectiveRows
+                onSelectionChange(effectiveRows)
+                onMoveToTrash?(effectiveRows)
             }
         }
 
         @objc private func shareViaService(_ sender: NSMenuItem) {
-            guard let service = sender.representedObject as? NSSharingService,
-                  clickedRow >= 0, clickedRow < files.count else { return }
-            let url = URL(fileURLWithPath: files[clickedRow].path)
-            service.perform(withItems: [url])
+            guard let service = sender.representedObject as? NSSharingService else { return }
+            let urls: [URL] = effectiveRows.sorted().compactMap {
+                guard $0 >= 0, $0 < files.count else { return nil }
+                return URL(fileURLWithPath: files[$0].path)
+            }
+            service.perform(withItems: urls)
         }
 
         @objc private func menuRenameFile(_ sender: Any?) {
-            beginRenaming(row: clickedRow)
+            beginRenaming(row: effectiveRows.sorted().first ?? clickedRow)
         }
 
         @objc private func renameSelectedFile() {
-            beginRenaming(row: selectedIndex)
+            let focusRow = selectedIndices.sorted().last ?? 0
+            beginRenaming(row: focusRow)
         }
 
         private func beginRenaming(row: Int) {
@@ -497,18 +585,14 @@ struct ResizableTableView: NSViewRepresentable {
         }
 
         func tableViewSelectionDidChange(_ notification: Notification) {
-            // Don't process programmatic selection changes
             guard !isProgrammaticSelection else { return }
 
             guard let tableView = notification.object as? NSTableView else { return }
-            let row = tableView.selectedRow
-            if row >= 0 && row < files.count && row != lastKnownSelection {
-                lastKnownSelection = row
-                selectedIndex = row
-                // Defer to avoid modifying @Published/@State during view update
-                DispatchQueue.main.async { [weak self] in
-                    self?.onSelectionChange(row)
-                }
+            let selected = Set(tableView.selectedRowIndexes.filter { $0 >= 0 && $0 < files.count })
+            if selected != lastKnownSelection {
+                lastKnownSelection = selected
+                selectedIndices = selected
+                onSelectionChange(selected)
             }
         }
 

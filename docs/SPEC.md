@@ -126,6 +126,7 @@
 ## Drag & Drop
 
 - [x] Drag files from result list to external destinations (Finder, apps, etc.)
+- [x] Multi-select support for actions and drag & drop
 
 ## Data Model
 

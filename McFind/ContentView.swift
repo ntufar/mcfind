@@ -86,31 +86,31 @@ struct ContentView: View {
                     // Resizable Table View
                     ResizableTableView(
                         files: $viewModel.files,
-                        selectedIndex: $viewModel.selectedIndex,
+                        selectedIndices: $viewModel.selectedIndices,
                         focusResults: $focusResults,
                         onDoubleClick: {
-                            viewModel.openSelectedFile()
+                            viewModel.openSelectedFiles()
                         },
-                        onSelectionChange: { index in
-                            viewModel.selectFile(at: index)
+                        onSelectionChange: { indices in
+                            // selection already synced via binding
                         },
                         onRevealInFinder: {
                             viewModel.revealInFinder()
                         },
                         onCopyPath: {
-                            viewModel.copyPath()
+                            viewModel.copyPaths()
                         },
                         onCopyFile: {
-                            viewModel.copyFile()
+                            viewModel.copyFiles()
                         },
                         onOpenTerminal: {
                             viewModel.openTerminal()
                         },
                         onCopyPathEscaped: {
-                            viewModel.copyPathEscaped()
+                            viewModel.copyPathsEscaped()
                         },
-                        onMoveToTrash: { index in
-                            viewModel.moveToTrashFile(at: index)
+                        onMoveToTrash: { indices in
+                            viewModel.moveToTrashFiles(at: indices)
                         },
                         onRenameFile: { index, newName in
                             viewModel.renameFile(at: index, to: newName)
@@ -118,9 +118,14 @@ struct ContentView: View {
                     )
 
                     // Preview Panel
-                    if showPreviewPanel, let selectedFile = viewModel.selectedFile {
-                        Divider()
-                        PreviewPanel(file: selectedFile)
+                    if showPreviewPanel {
+                        if viewModel.selectedIndices.count > 1 {
+                            Divider()
+                            PreviewPanel(files: viewModel.selectedFiles, selectedCount: viewModel.selectedIndices.count)
+                        } else if let selectedFile = viewModel.selectedFile {
+                            Divider()
+                            PreviewPanel(file: selectedFile)
+                        }
                     }
                 }
             }
@@ -154,9 +159,16 @@ struct ContentView: View {
                     .foregroundColor(.blue)
                 } else {
                     if !viewModel.files.isEmpty {
-                        Text("\(viewModel.files.count) results")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                        let selectedCount = viewModel.selectedIndices.count
+                        if selectedCount > 1 {
+                            Text("\(selectedCount) of \(viewModel.files.count) selected")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("\(viewModel.files.count) results")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                        }
                     }
 
                     Spacer()
@@ -196,7 +208,7 @@ struct ContentView: View {
                     NotificationCenter.default.post(name: .mcfindRenameSelected, object: nil)
                     return true
                 }
-                viewModel.openSelectedFile()
+                viewModel.openSelectedFiles()
                 return true
             case 49: // Space
                 if isSearchFieldActive() { return false }
@@ -218,6 +230,13 @@ struct ContentView: View {
                     NSApplication.shared.keyWindow?.close()
                 }
                 return true
+            case 0: // 'a'
+                if event.modifierFlags.contains(.command) {
+                    if isSearchFieldActive() { return false }
+                    viewModel.selectAll()
+                    return true
+                }
+                return false
             default:
                 return false
             }

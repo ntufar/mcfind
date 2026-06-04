@@ -2,39 +2,103 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct PreviewPanel: View {
-    let file: FileItem
+    let file: FileItem?
+    let files: [FileItem]
+    let selectedCount: Int
+
+    init(file: FileItem) {
+        self.file = file
+        self.files = [file]
+        self.selectedCount = 1
+    }
+
+    init(files: [FileItem], selectedCount: Int) {
+        self.file = files.last
+        self.files = files
+        self.selectedCount = selectedCount
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header with icon and name
-            VStack(spacing: 12) {
-                Image(nsImage: file.fileIcon)
-                    .resizable()
-                    .frame(width: 64, height: 64)
+            if selectedCount > 1 {
+                // Multi-select summary
+                VStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 48))
+                        .foregroundColor(.accentColor)
 
-                Text(file.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .truncationMode(.middle)
+                    Text("\(selectedCount) items selected")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    let totalSize = files.reduce(Int64(0)) { $0 + $1.size }
+                    if totalSize > 0 {
+                        Text(formatTotalSize(totalSize))
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 24)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+
+                Divider()
+
+                // Show last-selected file details
+                if let file = file {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Last Selected")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 12)
+
+                        HStack(spacing: 8) {
+                            Image(nsImage: file.fileIcon)
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                            Text(file.name)
+                                .font(.system(size: 11))
+                                .foregroundColor(.primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else if let file = file {
+                // Header with icon and name
+                VStack(spacing: 12) {
+                    Image(nsImage: file.fileIcon)
+                        .resizable()
+                        .frame(width: 64, height: 64)
+
+                    Text(file.name)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .truncationMode(.middle)
+                }
+                .padding(.vertical, 24)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+
+                Divider()
+
+                // Metadata list
+                VStack(spacing: 0) {
+                    MetadataRow(label: "Kind", value: kindDescription)
+                    MetadataRow(label: "Size", value: file.formattedSize)
+                    MetadataRow(label: "Created", value: formattedCreationDate)
+                    MetadataRow(label: "Modified", value: file.formattedDate)
+                    MetadataRow(label: "Extension", value: file.fileExtension ?? "\u{2014}")
+                    MetadataRow(label: "Path", value: file.path)
+                }
+                .padding(.vertical, 12)
             }
-            .padding(.vertical, 24)
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity)
-
-            Divider()
-
-            // Metadata list
-            VStack(spacing: 0) {
-                MetadataRow(label: "Kind", value: kindDescription)
-                MetadataRow(label: "Size", value: file.formattedSize)
-                MetadataRow(label: "Created", value: formattedCreationDate)
-                MetadataRow(label: "Modified", value: file.formattedDate)
-                MetadataRow(label: "Extension", value: file.fileExtension ?? "—")
-                MetadataRow(label: "Path", value: file.path)
-            }
-            .padding(.vertical, 12)
 
             Spacer()
         }
@@ -43,6 +107,7 @@ struct PreviewPanel: View {
     }
 
     private var kindDescription: String {
+        guard let file = file else { return "\u{2014}" }
         if file.isDirectory {
             return "Folder"
         }
@@ -55,6 +120,7 @@ struct PreviewPanel: View {
     }
 
     private var formattedCreationDate: String {
+        guard let file = file else { return "\u{2014}" }
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
             if let creationDate = attributes[.creationDate] as? Date {
@@ -64,7 +130,13 @@ struct PreviewPanel: View {
                 return formatter.string(from: creationDate)
             }
         } catch {}
-        return "—"
+        return "\u{2014}"
+    }
+
+    private func formatTotalSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: Int64(size))
     }
 }
 

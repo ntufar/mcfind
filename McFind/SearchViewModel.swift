@@ -4,13 +4,17 @@ import AppKit
 
 class SearchViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published var selectedIndex = 0
+    @Published var selectedIndices: Set<Int> = []
     @Published var files: [FileItem] = []
     @Published var selectedSizeFilter: SizeFilter = .any
 
     var selectedFile: FileItem? {
-        guard selectedIndex >= 0, selectedIndex < files.count else { return nil }
-        return files[selectedIndex]
+        guard let idx = selectedIndices.sorted().last, idx >= 0, idx < files.count else { return nil }
+        return files[idx]
+    }
+
+    var selectedFiles: [FileItem] {
+        selectedIndices.sorted().compactMap { files.indices.contains($0) ? files[$0] : nil }
     }
 
     private let fileIndexer = FileIndexer()
@@ -52,10 +56,23 @@ class SearchViewModel: ObservableObject {
 
     init() {
         setupSearchBinding()
-        // Forward FileIndexer changes to SwiftUI so status bar updates properly
         fileIndexer.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+
+        fileIndexer.databaseDidChange
+            .sink { [weak self] deletedPaths in
+                guard let self = self else { return }
+                let pathsToRemove = Set(deletedPaths)
+                let indicesToRemove = self.files.enumerated()
+                    .filter { pathsToRemove.contains($0.element.path) }
+                    .map(\.offset)
+                    .sorted(by: >)
+                for index in indicesToRemove {
+                    self.files.remove(at: index)
+                }
             }
             .store(in: &cancellables)
     }
@@ -84,7 +101,7 @@ class SearchViewModel: ObservableObject {
             DispatchQueue.main.async {
                 print("  📝 Updating UI with \(results.count) results")
                 self.files = results
-                self.selectedIndex = 0
+                self.selectedIndices = results.isEmpty ? [] : [0]
                 print("  ✅ UI updated")
             }
         }
@@ -99,64 +116,88 @@ class SearchViewModel: ObservableObject {
     }
 
     func toggleQuickLook() {
+        let focusIndex = selectedIndices.sorted().last ?? 0
         quickLookController.files = files
-        quickLookController.selectedIndex = selectedIndex
+        quickLookController.selectedIndex = focusIndex
         quickLookController.togglePanel()
     }
 
     func selectNext() {
         guard !files.isEmpty else { return }
-        selectedIndex = (selectedIndex + 1) % files.count
+        let current = selectedIndices.sorted().last ?? 0
+        let next = (current + 1) % files.count
+        selectedIndices = [next]
     }
 
     func selectPrevious() {
         guard !files.isEmpty else { return }
-        selectedIndex = selectedIndex == 0 ? files.count - 1 : selectedIndex - 1
+        let current = selectedIndices.sorted().last ?? 0
+        let prev = current == 0 ? files.count - 1 : current - 1
+        selectedIndices = [prev]
     }
 
     func selectFile(at index: Int) {
         guard index >= 0 && index < files.count else { return }
-        guard selectedIndex != index else { return }
-        selectedIndex = index
+        selectedIndices = [index]
     }
 
-    func openSelectedFile() {
-        guard let file = selectedFile else { return }
-        NSWorkspace.shared.open(URL(fileURLWithPath: file.path))
+    func toggleSelection(at index: Int) {
+        guard index >= 0 && index < files.count else { return }
+        if selectedIndices.contains(index) {
+            selectedIndices.remove(index)
+        } else {
+            selectedIndices.insert(index)
+        }
+    }
+
+    func selectAll() {
+        selectedIndices = Set(0..<files.count)
+    }
+
+    func openSelectedFiles() {
+        let urls = selectedFiles.map { URL(fileURLWithPath: $0.path) }
+        for url in urls {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     func revealInFinder() {
-        guard let file = selectedFile else { return }
-        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: file.path)])
+        let urls = selectedFiles.map { URL(fileURLWithPath: $0.path) }
+        guard !urls.isEmpty else { return }
+        NSWorkspace.shared.activateFileViewerSelecting(urls)
     }
 
-    func copyPath() {
-        guard let file = selectedFile else { return }
+    func copyPaths() {
+        guard !selectedFiles.isEmpty else { return }
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(file.path, forType: .string)
+        let paths = selectedFiles.map(\.path)
+        NSPasteboard.general.setString(paths.joined(separator: "\n"), forType: .string)
     }
 
-    func copyFile() {
-        guard let file = selectedFile else { return }
+    func copyFiles() {
+        guard !selectedFiles.isEmpty else { return }
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.writeObjects([NSURL(fileURLWithPath: file.path)])
+        let urls = selectedFiles.map { NSURL(fileURLWithPath: $0.path) as NSURL }
+        NSPasteboard.general.writeObjects(urls)
     }
 
-    func moveToTrashFile(at index: Int) {
-        guard index >= 0, index < files.count else { return }
-        let file = files[index]
-        let url = URL(fileURLWithPath: file.path)
-        do {
-            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
-            files.remove(at: index)
-            if files.isEmpty {
-                selectedIndex = 0
-            } else {
-                selectedIndex = min(index, files.count - 1)
+    func moveToTrashFiles(at indices: Set<Int>) {
+        let sortedIndices = indices.sorted(by: >)
+        for index in sortedIndices {
+            guard index >= 0, index < files.count else { continue }
+            let file = files[index]
+            let url = URL(fileURLWithPath: file.path)
+            do {
+                try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            } catch {
+                print("❌ Failed to move file to trash: \(error)")
             }
-        } catch {
-            print("❌ Failed to move file to trash: \(error)")
         }
+        for index in sortedIndices {
+            guard index >= 0, index < files.count else { continue }
+            files.remove(at: index)
+        }
+        selectedIndices = files.isEmpty ? [] : [min(sortedIndices.min() ?? 0, files.count - 1)]
     }
 
     func renameFile(at index: Int, to newName: String) {
@@ -185,10 +226,11 @@ class SearchViewModel: ObservableObject {
         }
     }
 
-    func copyPathEscaped() {
-        guard let file = selectedFile else { return }
+    func copyPathsEscaped() {
+        guard !selectedFiles.isEmpty else { return }
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(file.path.shellEscaped, forType: .string)
+        let escaped = selectedFiles.map(\.path.shellEscaped).joined(separator: " ")
+        NSPasteboard.general.setString(escaped, forType: .string)
     }
 }
 

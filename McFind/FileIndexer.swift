@@ -28,6 +28,8 @@ class FileIndexer: ObservableObject {
     private let fsEventQueue = DispatchQueue(label: "com.mcfind.fsevent", qos: .userInitiated)
     private let fsEventDebounceInterval: TimeInterval = 5.0
 
+    let databaseDidChange = PassthroughSubject<[String], Never>()
+
     private var indexDotFiles: Bool {
         UserDefaults.standard.bool(forKey: "indexDotFiles")
     }
@@ -137,10 +139,10 @@ class FileIndexer: ObservableObject {
         fsEventQueue.async { [weak self] in
             guard let self = self else { return }
 
-            if isRemoved {
+            if isRemoved || (isRenamed && !self.fileManager.fileExists(atPath: path)) {
                 print("🗑️  File removed: \(path)")
                 self.fsEventBuffer.append(.delete(path))
-            } else if isCreated || isRenamed {
+            } else if isCreated || (isRenamed && self.fileManager.fileExists(atPath: path)) {
                 print("➕ File created/renamed: \(path)")
                 let url = URL(fileURLWithPath: path)
                 let file = FileItem(url: url)
@@ -188,6 +190,7 @@ class FileIndexer: ObservableObject {
 
         DispatchQueue.main.async { [weak self] in
             self?.totalFiles = self?.database.getFileCount() ?? 0
+            self?.databaseDidChange.send(deletes)
         }
     }
 
