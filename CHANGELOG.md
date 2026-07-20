@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-04
+
+### Added
+- Multi-file selection throughout the app: `selectedIndices` (a `Set<Int>`) replaces the single-index model, with matching plural actions (`openSelectedFiles`, `copyPaths`, `copyFiles`, `copyPathsEscaped`, `moveToTrashFiles`)
+- Select All (Cmd+A) for the results list
+- Multi-select context menu actions: "Open N Items", "Reveal N Items in Finder", "Copy N Paths/Files", "Move N Items to Trash"
+- Preview panel shows a multi-select summary (item count, total size) with the last-selected file's details underneath, instead of only a single file's metadata
+- Status bar shows "N of M selected" when more than one file is selected
+- Live sync of file-system deletions into the result list via `FileIndexer.databaseDidChange`, so files removed on disk during an FSEvent-triggered index update disappear from an open search immediately
+
+### Fixed
+- Renamed files briefly disappeared from search results — the FSEvent handler treated `isRenamed` events for a still-existing path as a delete rather than checking whether the path currently exists
+
+### Changed
+- `docs/SPEC.md` — marked multi-select support for actions and drag & drop as implemented
+
 ## [0.3.2] - 2026-07-21
 
 ### Fixed
@@ -293,6 +309,7 @@ When preparing a new release:
    - Upload DMG and PKG installers
 
 [0.3.2]: https://github.com/ntufar/mcfind/releases/tag/v0.3.2
+[0.3.1]: https://github.com/ntufar/mcfind/releases/tag/v0.3.1
 [0.3.0]: https://github.com/ntufar/mcfind/releases/tag/v0.3.0
 [0.2.9]: https://github.com/ntufar/mcfind/releases/tag/v0.2.9
 [0.2.8]: https://github.com/ntufar/mcfind/releases/tag/v0.2.8
