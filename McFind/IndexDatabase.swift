@@ -16,7 +16,7 @@ class IndexDatabase {
         try? fileManager.createDirectory(at: appFolder, withIntermediateDirectories: true)
 
         dbPath = appFolder.appendingPathComponent("index.db").path
-        print("📁 Database path: \(dbPath)")
+        Log.database.debug("📁 Database path: \(self.dbPath)")
 
         openDatabase()
         createTableIfNeeded()
@@ -31,7 +31,7 @@ class IndexDatabase {
         dbPath = customPath
         let parentDir = (customPath as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
-        print("📁 Database path: \(dbPath)")
+        Log.database.debug("📁 Database path: \(self.dbPath)")
 
         openDatabase()
         createTableIfNeeded()
@@ -49,7 +49,7 @@ class IndexDatabase {
 
     private func openDatabase() {
         if sqlite3_open(dbPath, &db) != SQLITE_OK {
-            print("❌ Error opening database")
+            Log.database.error("❌ Error opening database")
             return
         }
 
@@ -101,7 +101,7 @@ class IndexDatabase {
         var error: UnsafeMutablePointer<Int8>?
         if sqlite3_exec(db, createTableQuery, nil, nil, &error) != SQLITE_OK {
             let errorMessage = String(cString: error!)
-            print("❌ Error creating table: \(errorMessage)")
+            Log.database.error("❌ Error creating table: \(errorMessage)")
             sqlite3_free(error)
         }
     }
@@ -123,9 +123,9 @@ class IndexDatabase {
         let freeRatio = Double(freePages) / Double(totalPages)
         guard freeRatio > 0.1 else { return }
 
-        print("🧹 VACUUM: \(freePages) free pages (\(Int(freeRatio * 100))% of \(totalPages)) — running VACUUM")
+        Log.database.debug("🧹 VACUUM: \(freePages) free pages (\(Int(freeRatio * 100))% of \(totalPages)) — running VACUUM")
         sqlite3_exec(db, "VACUUM;", nil, nil, nil)
-        print("✅ VACUUM complete")
+        Log.database.debug("✅ VACUUM complete")
     }
 
     private func startPeriodicVacuum() {
@@ -205,7 +205,7 @@ class IndexDatabase {
         sqlite3_finalize(updateStmt)
         sqlite3_exec(db, "COMMIT", nil, nil, nil)
 
-        print("✅ Migrated \(migrations.count) rows with Unicode-aware lowercased values")
+        Log.database.debug("✅ Migrated \(migrations.count) rows with Unicode-aware lowercased values")
 
         // Indexes for fast search on normalized columns
         sqlite3_exec(db, "CREATE INDEX IF NOT EXISTS idx_name_norm ON files(name_normalized);", nil, nil, nil)
@@ -221,12 +221,12 @@ class IndexDatabase {
 
             var statement: OpaquePointer?
             guard sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK else {
-                print("❌ Error preparing insert statement")
+                Log.database.error("❌ Error preparing insert statement")
                 return
             }
 
             guard let stmt = statement else {
-                print("❌ Statement is nil")
+                Log.database.error("❌ Statement is nil")
                 return
             }
 
@@ -250,7 +250,7 @@ class IndexDatabase {
             sqlite3_bind_int64(stmt, 8, generation)
 
             if sqlite3_step(stmt) != SQLITE_DONE {
-                print("❌ Error inserting file: \(file.path)")
+                Log.database.error("❌ Error inserting file: \(file.path)")
             }
 
             sqlite3_finalize(stmt)
@@ -277,12 +277,12 @@ class IndexDatabase {
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK else {
-            print("❌ Error preparing insert statement")
+            Log.database.error("❌ Error preparing insert statement")
             return
         }
 
         guard let stmt = statement else {
-            print("❌ Statement is nil")
+            Log.database.error("❌ Statement is nil")
             return
         }
 
@@ -306,7 +306,7 @@ class IndexDatabase {
         sqlite3_bind_int64(stmt, 8, generation)
 
         if sqlite3_step(stmt) != SQLITE_DONE {
-            print("❌ Error inserting file: \(file.path)")
+            Log.database.error("❌ Error inserting file: \(file.path)")
         }
 
         sqlite3_finalize(stmt)
@@ -336,12 +336,12 @@ class IndexDatabase {
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, deleteQuery, -1, &statement, nil) == SQLITE_OK else {
-            print("❌ Error preparing delete statement")
+            Log.database.error("❌ Error preparing delete statement")
             return
         }
 
         guard let stmt = statement else {
-            print("❌ Statement is nil")
+            Log.database.error("❌ Statement is nil")
             return
         }
 
@@ -368,19 +368,19 @@ class IndexDatabase {
 
             var statement: OpaquePointer?
             guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
-                print("❌ Error preparing select statement")
+                Log.database.error("❌ Error preparing select statement")
                 return files
             }
 
             guard let stmt = statement else {
-                print("❌ Statement is nil")
+                Log.database.error("❌ Statement is nil")
                 return files
             }
 
             while sqlite3_step(stmt) == SQLITE_ROW {
                 guard let pathPtr = sqlite3_column_text(stmt, 0),
                       let namePtr = sqlite3_column_text(stmt, 1) else {
-                    print("⚠️ Skipping row with NULL path or name")
+                    Log.database.warning("⚠️ Skipping row with NULL path or name")
                     continue
                 }
 
@@ -411,20 +411,20 @@ class IndexDatabase {
     }
 
     func search(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
-        print("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles) sizeFilter: \(sizeFilter.displayName))")
+        Log.database.debug("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles) sizeFilter: \(sizeFilter.displayName))")
         guard !query.isEmpty else {
-            print("⚠️ Empty query, returning []")
+            Log.database.warning("⚠️ Empty query, returning []")
             return []
         }
 
-        print("⏳ Waiting for database queue...")
+        Log.database.debug("⏳ Waiting for database queue...")
         let startTime = Date()
         let results = dbQueue.sync {
-            print("🔓 Database queue acquired")
+            Log.database.debug("🔓 Database queue acquired")
             return searchInternal(query, filterDotFiles: filterDotFiles, sizeFilter: sizeFilter)
         }
         let elapsed = Date().timeIntervalSince(startTime)
-        print("✅ Search completed in \(String(format: "%.3f", elapsed))s - found \(results.count) results")
+        Log.database.debug("Search completed in \(String(format: "%.3f", elapsed))s - found \(results.count) results")
         return results
     }
 
@@ -496,7 +496,7 @@ class IndexDatabase {
     }
 
     private func searchInternal(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
-        print("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles), sizeFilter: \(sizeFilter.displayName))")
+        Log.database.debug("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles), sizeFilter: \(sizeFilter.displayName))")
 
         let mode = parseSearchMode(query)
         var clauses: [String] = []
@@ -537,12 +537,12 @@ class IndexDatabase {
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, searchQuery, -1, &statement, nil) == SQLITE_OK else {
-            print("❌ Error preparing search statement")
+            Log.database.error("❌ Error preparing search statement")
             return files
         }
 
         guard let stmt = statement else {
-            print("❌ Statement is nil")
+            Log.database.error("❌ Statement is nil")
             return files
         }
 
@@ -569,7 +569,7 @@ class IndexDatabase {
 
         files = readSearchResults(stmt)
         sqlite3_finalize(stmt)
-        print("  ✅ searchSimple() found \(files.count) files")
+        Log.database.debug("  ✅ searchSimple() found \(files.count) files")
         return files
     }
 
@@ -586,12 +586,12 @@ class IndexDatabase {
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, searchQuery, -1, &statement, nil) == SQLITE_OK else {
-            print("❌ Error preparing wildcard search statement")
+            Log.database.error("❌ Error preparing wildcard search statement")
             return files
         }
 
         guard let stmt = statement else {
-            print("❌ Statement is nil")
+            Log.database.error("❌ Statement is nil")
             return files
         }
 
@@ -606,7 +606,7 @@ class IndexDatabase {
 
         files = readSearchResults(stmt)
         sqlite3_finalize(stmt)
-        print("  ✅ searchWildcard() found \(files.count) files")
+        Log.database.debug("  ✅ searchWildcard() found \(files.count) files")
         return files
     }
 
@@ -625,12 +625,12 @@ class IndexDatabase {
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, searchQuery, -1, &statement, nil) == SQLITE_OK else {
-            print("❌ Error preparing regex search statement")
+            Log.database.error("❌ Error preparing regex search statement")
             return []
         }
 
         guard let stmt = statement else {
-            print("❌ Statement is nil")
+            Log.database.error("❌ Statement is nil")
             return []
         }
 
@@ -651,7 +651,7 @@ class IndexDatabase {
             return regex.firstMatch(in: item.name, options: [], range: range) != nil
         }
 
-        print("  ✅ searchRegex() found \(files.count) files (from \(candidates.count) candidates)")
+        Log.database.debug("  ✅ searchRegex() found \(files.count) files (from \(candidates.count) candidates)")
         return Array(files.prefix(1000))
     }
 
@@ -661,7 +661,7 @@ class IndexDatabase {
         while sqlite3_step(stmt) == SQLITE_ROW {
             guard let pathPtr = sqlite3_column_text(stmt, 0),
                   let namePtr = sqlite3_column_text(stmt, 1) else {
-                print("⚠️ Skipping row with NULL path or name")
+                Log.database.warning("⚠️ Skipping row with NULL path or name")
                 continue
             }
 
@@ -689,12 +689,12 @@ class IndexDatabase {
 
             var statement: OpaquePointer?
             guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
-                print("❌ Error preparing count statement")
+                Log.database.error("❌ Error preparing count statement")
                 return 0
             }
 
             guard let stmt = statement else {
-                print("❌ Statement is nil")
+                Log.database.error("❌ Statement is nil")
                 return 0
             }
 

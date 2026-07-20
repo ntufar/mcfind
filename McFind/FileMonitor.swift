@@ -46,13 +46,13 @@ class FileMonitor {
         )
 
         guard let stream = eventStream else {
-            print("❌ Failed to create FSEventStream")
+            Log.fileMonitor.error("❌ Failed to create FSEventStream")
             return
         }
 
         FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
         FSEventStreamStart(stream)
-        print("✅ File monitoring started for: \(pathsToWatch)")
+        Log.fileMonitor.debug("✅ File monitoring started for: \(self.pathsToWatch)")
     }
 
     func stop() {
@@ -62,7 +62,7 @@ class FileMonitor {
         FSEventStreamInvalidate(stream)
         FSEventStreamRelease(stream)
         eventStream = nil
-        print("🛑 File monitoring stopped")
+        Log.fileMonitor.debug("🛑 File monitoring stopped")
     }
 
     deinit {

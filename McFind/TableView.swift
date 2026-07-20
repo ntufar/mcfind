@@ -97,7 +97,7 @@ struct ResizableTableView: NSViewRepresentable {
         let filesChanged = !areFilesEqual(oldFiles, newFiles)
 
         if filesChanged {
-            print("📊 TableView: Files changed (old: \(oldFiles.count), new: \(newFiles.count))")
+            Log.ui.debug("📊 TableView: Files changed (old: \(oldFiles.count), new: \(newFiles.count))")
 
             let oldIDs = Set(oldFiles.map(\.id))
             let newIDs = Set(newFiles.map(\.id))
@@ -118,7 +118,7 @@ struct ResizableTableView: NSViewRepresentable {
 
         // Only update selection if it changed and is different from what we last set
         if selectedIndices != context.coordinator.lastKnownSelection {
-            print("📌 TableView: Selection changed to \(selectedIndices)")
+            Log.ui.debug("📌 TableView: Selection changed to \(selectedIndices)")
             context.coordinator.lastKnownSelection = selectedIndices
             context.coordinator.isProgrammaticSelection = true
             tableView.selectRowIndexes(IndexSet(selectedIndices), byExtendingSelection: false)
@@ -140,9 +140,7 @@ struct ResizableTableView: NSViewRepresentable {
 
     private func areFilesEqual(_ a: [FileItem], _ b: [FileItem]) -> Bool {
         guard a.count == b.count else { return false }
-        guard !a.isEmpty else { return true }
-        // Quick check: compare first and last items
-        return a.first?.id == b.first?.id && a.last?.id == b.last?.id
+        return a.elementsEqual(b) { $0.id == $1.id }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -449,7 +447,7 @@ struct ResizableTableView: NSViewRepresentable {
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-            print("✏️ doCommandBy: \(commandSelector)")
+            Log.ui.debug("✏️ doCommandBy: \(commandSelector)")
             if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
                 cancelRename()
                 return true
@@ -466,7 +464,7 @@ struct ResizableTableView: NSViewRepresentable {
             guard let tableView = tableView,
                   let cellView = tableView.view(atColumn: 0, row: renamingRow, makeIfNecessary: false) as? NSTableCellView,
                   let textField = cellView.textField else { return }
-            print("✏️ cancelRename: restoring '\(originalName)'")
+            Log.ui.debug("✏️ cancelRename: restoring '\(self.originalName)'")
             textField.stringValue = originalName
             textField.isEditable = false
             textField.drawsBackground = false

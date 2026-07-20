@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject private var settings = IndexSettings.shared
     @ObservedObject private var appSettings = AppSettings()
+    @AppStorage("showPreviewPanel") private var showPreviewPanel = true
     @State private var showReindexAlert = false
     @State private var hasChanges = false
 
@@ -87,7 +88,7 @@ struct SettingsView: View {
                             Text("Show preview panel")
                                 .font(.system(size: 12))
                             Spacer()
-                            Toggle("", isOn: $appSettings.showPreviewPanel)
+                            Toggle("", isOn: $showPreviewPanel)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
                                 .controlSize(.small)
@@ -191,7 +192,7 @@ struct SettingsView: View {
                 ))
             }
         } catch {
-            print("Error reading home directory: \(error)")
+            Log.ui.debug("Error reading home directory: \(error)")
         }
 
         // Sort: top-level folders first (alphabetically), then Library, then Library subfolders

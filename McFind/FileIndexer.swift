@@ -69,7 +69,7 @@ class FileIndexer: ObservableObject {
             }
 
             let count = self.database.getFileCount()
-            print("📊 Loaded \(count) files from disk")
+            Log.indexing.debug("📊 Loaded \(count) files from disk")
 
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -94,7 +94,7 @@ class FileIndexer: ObservableObject {
         indexedCount = 0
         statusMessage = "Scanning for file changes..."
 
-        print("🔍 Starting incremental indexing")
+        Log.indexing.debug("🔍 Starting incremental indexing")
         let estimatedTotal = database.getFileCount()
         let newGeneration = database.getCurrentGeneration() + 1
         database.storeCurrentGeneration(newGeneration)
@@ -140,10 +140,10 @@ class FileIndexer: ObservableObject {
             guard let self = self else { return }
 
             if isRemoved || (isRenamed && !self.fileManager.fileExists(atPath: path)) {
-                print("🗑️  File removed: \(path)")
+                Log.indexing.debug("🗑️  File removed: \(path)")
                 self.fsEventBuffer.append(.delete(path))
             } else if isCreated || (isRenamed && self.fileManager.fileExists(atPath: path)) {
-                print("➕ File created/renamed: \(path)")
+                Log.indexing.debug("➕ File created/renamed: \(path)")
                 let url = URL(fileURLWithPath: path)
                 let file = FileItem(url: url)
                 self.fsEventBuffer.append(.insert(file))
@@ -203,7 +203,7 @@ class FileIndexer: ObservableObject {
         indexedCount = 0
         statusMessage = "Scanning files..."
 
-        print("🔍 Starting full reindex")
+        Log.indexing.debug("🔍 Starting full reindex")
         database.clearDatabase()
 
         indexingQueue.async { [weak self] in
@@ -216,7 +216,7 @@ class FileIndexer: ObservableObject {
     }
 
     private func indexDirectory() {
-        print("🔍 Starting indexing from: \(homeDirectory.path)")
+        Log.indexing.debug("🔍 Starting indexing from: \(self.homeDirectory.path)")
 
         let enumerator = fileManager.enumerator(
             at: homeDirectory,
@@ -225,7 +225,7 @@ class FileIndexer: ObservableObject {
         )
 
         guard let enumerator = enumerator else {
-            print("❌ Failed to create enumerator")
+            Log.indexing.error("❌ Failed to create enumerator")
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.isIndexing = false
@@ -234,7 +234,7 @@ class FileIndexer: ObservableObject {
             return
         }
 
-        print("✅ Enumerator created successfully")
+        Log.indexing.debug("✅ Enumerator created successfully")
 
         let estimatedFileCount = 500000
         var batch: [FileItem] = []
@@ -324,7 +324,7 @@ class FileIndexer: ObservableObject {
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self, !self.isCancelled else { return }
-            print("✅ Indexing complete: \(count) files indexed")
+            Log.indexing.debug("✅ Indexing complete: \(count) files indexed")
 
             self.isIndexing = false
             self.isIncremental = false
@@ -334,7 +334,7 @@ class FileIndexer: ObservableObject {
     }
 
     private func incrementalIndexDirectory(estimatedTotal: Int, generation: Int64) {
-        print("🔍 Incremental scanning from: \(homeDirectory.path)")
+        Log.indexing.debug("🔍 Incremental scanning from: \(self.homeDirectory.path)")
 
         let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey, .isPackageKey]
 
@@ -345,7 +345,7 @@ class FileIndexer: ObservableObject {
         )
 
         guard let enumerator = enumerator else {
-            print("❌ Failed to create enumerator")
+            Log.indexing.error("❌ Failed to create enumerator")
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.isIndexing = false
@@ -465,7 +465,7 @@ class FileIndexer: ObservableObject {
 
         let deletedCount = database.deleteByGeneration(notEqual: generation)
         if deletedCount > 0 {
-            print("🗑️  Removed \(deletedCount) stale index entries")
+            Log.indexing.debug("🗑️  Removed \(deletedCount) stale index entries")
         }
 
         database.storeLastIndexedAt(Date())
@@ -475,7 +475,7 @@ class FileIndexer: ObservableObject {
     private func finishIndexing(count: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self, !self.isCancelled else { return }
-            print("✅ Incremental indexing finished: \(count) files processed")
+            Log.indexing.debug("✅ Incremental indexing finished: \(count) files processed")
             self.isIndexing = false
             self.isIncremental = false
             self.progress = 1.0

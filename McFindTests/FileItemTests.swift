@@ -69,14 +69,32 @@ final class FileItemTests: XCTestCase {
     }
 
     func testHashable() {
-        let a = FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: Date())
-        let b = FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: Date())
+        let date = Date()
+        let a = FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: date)
+        let b = FileItem(path: "/a.txt", name: "a.txt", isDirectory: false, size: 10, dateModified: date)
         let set: Set<FileItem> = [a, b]
-        XCTAssertEqual(set.count, 2) // Each has unique UUID
+        XCTAssertEqual(set.count, 1) // Same content, same path -> equal
     }
 
     func testIdentifiable() {
         let item = FileItem(path: "/test.txt", name: "test.txt", isDirectory: false, size: 0, dateModified: Date())
         XCTAssertEqual(item.id, item.id)
+    }
+
+    func testIdIsStableAndDerivedFromPath() {
+        // Two distinct FileItem values for the same path must report the same id,
+        // so identity-based diffing (e.g. table view row diffing) treats them as
+        // the same file rather than as a delete+insert.
+        let a = FileItem(path: "/Users/test/file.txt", name: "file.txt", isDirectory: false, size: 10, dateModified: Date())
+        let b = FileItem(path: "/Users/test/file.txt", name: "file.txt", isDirectory: false, size: 20, dateModified: Date())
+        XCTAssertEqual(a.id, b.id)
+        XCTAssertEqual(a.id, "/Users/test/file.txt")
+    }
+
+    func testIdChangesWhenPathChanges() {
+        // A rename produces a new path, so it should be treated as a new identity.
+        let original = FileItem(path: "/Users/test/old.txt", name: "old.txt", isDirectory: false, size: 10, dateModified: Date())
+        let renamed = FileItem(path: "/Users/test/new.txt", name: "new.txt", isDirectory: false, size: 10, dateModified: Date())
+        XCTAssertNotEqual(original.id, renamed.id)
     }
 }

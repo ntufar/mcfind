@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 
 struct FileItem: Identifiable, Hashable {
-    let id = UUID()
+    var id: String { path }
     let name: String
     let path: String
     let isDirectory: Bool

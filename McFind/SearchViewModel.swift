@@ -83,26 +83,26 @@ class SearchViewModel: ObservableObject {
             $selectedSizeFilter
         )
         .sink { [weak self] query, sizeFilter in
-            print("⌨️  SearchText changed to: '\(query)' | sizeFilter: \(sizeFilter.displayName)")
+            Log.search.debug("⌨️  SearchText changed to: '\(query)' | sizeFilter: \(sizeFilter.displayName)")
             self?.performSearch(query, sizeFilter: sizeFilter)
         }
         .store(in: &cancellables)
     }
 
     private func performSearch(_ query: String, sizeFilter: SizeFilter = .any) {
-        print("🚀 performSearch() called on \(Thread.current)")
+        Log.search.debug("🚀 performSearch() called on \(Thread.current)")
         searchQueue.async { [weak self] in
-            print("  🔄 Search queue executing...")
+            Log.search.debug("  🔄 Search queue executing...")
             guard let self = self else { return }
-            print("  🔍 Calling fileIndexer.search() for: '\(query)' sizeFilter: \(sizeFilter.displayName)")
+            Log.search.debug("  🔍 Calling fileIndexer.search() for: '\(query)' sizeFilter: \(sizeFilter.displayName)")
             let results = self.fileIndexer.search(query, sizeFilter: sizeFilter)
-            print("  ✅ fileIndexer.search() returned \(results.count) results")
+            Log.search.debug("  ✅ fileIndexer.search() returned \(results.count) results")
 
             DispatchQueue.main.async {
-                print("  📝 Updating UI with \(results.count) results")
+                Log.search.debug("  📝 Updating UI with \(results.count) results")
                 self.files = results
                 self.selectedIndices = results.isEmpty ? [] : [0]
-                print("  ✅ UI updated")
+                Log.search.debug("  ✅ UI updated")
             }
         }
     }
@@ -190,7 +190,7 @@ class SearchViewModel: ObservableObject {
             do {
                 try FileManager.default.trashItem(at: url, resultingItemURL: nil)
             } catch {
-                print("❌ Failed to move file to trash: \(error)")
+                Log.search.error("❌ Failed to move file to trash: \(error)")
             }
         }
         for index in sortedIndices {
@@ -208,7 +208,7 @@ class SearchViewModel: ObservableObject {
         do {
             try FileManager.default.moveItem(at: oldURL, to: newURL)
         } catch {
-            print("❌ Failed to rename file: \(error)")
+            Log.search.error("❌ Failed to rename file: \(error)")
         }
     }
 
@@ -222,7 +222,7 @@ class SearchViewModel: ObservableObject {
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: tempURL.path)
             NSWorkspace.shared.open(tempURL)
         } catch {
-            print("❌ Failed to open Terminal: \(error)")
+            Log.search.error("❌ Failed to open Terminal: \(error)")
         }
     }
 
