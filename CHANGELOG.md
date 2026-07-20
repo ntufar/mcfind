@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-07-21
+
+### Fixed
+- Table view could silently fail to refresh when only middle rows changed — `areFilesEqual` compared just the first and last row IDs instead of the full list
+- `FileItem.id` was a random UUID regenerated on every init, breaking identity-based diffing/selection after a rename; now derived from `path` so it stays stable for a given file and changes only when the file's path actually changes
+- Two competing sources of truth for the "Show preview panel" setting (`ContentView`'s `@AppStorage` vs a separate `AppSettings` instance in `SettingsView`) unified onto a single `@AppStorage` binding
+
+### Changed
+- Replaced ad-hoc `print()` debug statements throughout indexing, database, and UI code with `os.Logger`, categorized by subsystem and leveled (error/warning/debug), so diagnostic output no longer runs unconditionally in Release builds
+
+### Removed
+- Dead `CompactFileRowView` (unused SwiftUI list row left over from before the results list moved to `NSTableView`)
+- Unused `AppSettings.showFullPath` and `AppSettings.compactMode` properties
+
 ## [0.3.0] - 2026-06-04
 
 ### Added
@@ -278,6 +292,7 @@ When preparing a new release:
    - Copy changelog section to release notes
    - Upload DMG and PKG installers
 
+[0.3.2]: https://github.com/ntufar/mcfind/releases/tag/v0.3.2
 [0.3.0]: https://github.com/ntufar/mcfind/releases/tag/v0.3.0
 [0.2.9]: https://github.com/ntufar/mcfind/releases/tag/v0.2.9
 [0.2.8]: https://github.com/ntufar/mcfind/releases/tag/v0.2.8
