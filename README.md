@@ -38,7 +38,7 @@ brew tap ntufar/tap
 brew install --cask mcfind
 ```
 
-### Option 2: Direct download (v0.3.0)
+### Option 2: Direct download (latest release, signed and notarized by Apple)
 
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) — drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) — automated installer
