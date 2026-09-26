@@ -432,7 +432,7 @@
             <h2>Download</h2>
             <p class="section-subtitle">Choose your installation method</p>
 
-            <span class="version-badge">Latest v0.3.3</span>
+            <span class="version-badge" id="latest-version">Latest v0.3.3</span>
 
             <div class="download-options">
                 <div class="download-card">
@@ -540,5 +540,16 @@
             </p>
         </div>
     </footer>
+    <script>
+        // Show the latest release tag; the static text above is the fallback.
+        fetch('https://api.github.com/repos/ntufar/mcfind/releases/latest')
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
+            .then(release => {
+                if (release.tag_name) {
+                    document.getElementById('latest-version').textContent = 'Latest ' + release.tag_name;
+                }
+            })
+            .catch(() => {});
+    </script>
 </body>
 </html>
