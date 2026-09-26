@@ -43,23 +43,6 @@ brew install --cask mcfind
 - **DMG Installer**: [Download McFind.dmg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg) — drag-and-drop installation
 - **PKG Installer**: [Download McFind.pkg](https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg) — automated installer
 
-### First launch: Gatekeeper warning
-
-Because McFind is not notarized with Apple, macOS blocks the first launch regardless of how you installed it. You'll see:
-
-> *"McFind" cannot be opened because Apple cannot verify it is free of malware.*
-
-**One-time fix — pick either option:**
-
-**Option A — Terminal (fastest):**
-```bash
-xattr -dr com.apple.quarantine /Applications/McFind.app
-```
-
-**Option B — Finder:** Right-click `McFind.app` → **Open** → click **Open** in the dialog.
-
-After doing this once, McFind opens normally every time.
-
 ### All Releases
 View all available releases and download previous versions: [Releases Page](https://github.com/ntufar/mcfind/releases)
 
