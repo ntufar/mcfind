@@ -34,7 +34,8 @@ jobs:
             -project McFind.xcodeproj \
             -scheme McFind \
             -configuration Release \
-            -destination "platform=macOS"
+            -destination "platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO
       
       - name: Create distribution package
         run: |

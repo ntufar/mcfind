@@ -1,262 +1,76 @@
-# Code Signing Guide for McFind
+# Code Signing & Notarization
 
-This document explains how to code sign the McFind application to prevent macOS Gatekeeper warnings.
+McFind is distributed outside the Mac App Store, signed with a **Developer ID** certificate
+and **notarized** by Apple, so it opens on any Mac without Gatekeeper warnings.
 
-## The Problem
+| Setting | Value |
+|---|---|
+| Team | Nicolai Tufar (`6CT959RWB8`) |
+| App signing identity | `Developer ID Application: Nicolai Tufar (6CT959RWB8)` |
+| Installer signing identity | `Developer ID Installer: Nicolai Tufar (6CT959RWB8)` |
+| Hardened runtime | Enabled (`ENABLE_HARDENED_RUNTIME = YES`) |
+| Export method | `developer-id` (`scripts/ExportOptions.plist`) |
 
-When you build and run a macOS app without code signing, macOS Gatekeeper shows a warning:
+Certificates expire **2031-09-17**.
 
-> "McFind" Not Opened
-> 
-> Apple could not verify "McFind" is free of malware that may harm your Mac or compromise your privacy.
-
-## Solutions
-
-### ✅ Solution 1: Ad-Hoc Signing (Current Setup)
-
-**What it does:** Signs the app without a certificate. Works on your Mac and prevents the warning.
-
-**Limitations:** 
-- Only works on the Mac where it was signed
-- Other users will still see the warning
-- Cannot be distributed through Mac App Store
-
-**How to use:**
-
-The CI/CD workflows now automatically apply ad-hoc signing. For local builds:
+## Making a release locally
 
 ```bash
-# After building in Xcode, sign the app
-codesign --force --deep --sign - /path/to/McFind.app
-
-# Verify it worked
-codesign --verify --verbose /path/to/McFind.app
+./scripts/release.sh
 ```
 
-**Current Status:** ✅ Implemented in CI/CD workflows (macos.yml and release.yml)
+This archives the app, exports it with Developer ID, notarizes and staples the app,
+builds `McFind.dmg` and `McFind.pkg`, signs, notarizes and staples both, and runs a
+Gatekeeper assessment. Output goes to `build/release/`.
 
----
+`SKIP_NOTARIZE=1 ./scripts/release.sh` produces signed but un-notarized artifacts (fast, for testing).
 
-### Solution 2: Developer ID Signing (Recommended for Distribution)
+### One-time setup on a new Mac
 
-**What it does:** Signs with an Apple Developer certificate. Works on all Macs.
-
-**Requirements:**
-- Apple Developer Program membership ($99/year)
-- Developer ID Application certificate
-
-**Steps:**
-
-1. **Join Apple Developer Program**
-   - Visit https://developer.apple.com/programs/
-   - Enroll for $99/year
-
-2. **Create Developer ID Certificate**
-   - Log in to https://developer.apple.com/account/
-   - Go to Certificates, Identifiers & Profiles
-   - Click the "+" button to create a new certificate
-   - Select "Developer ID Application"
-   - Follow the prompts to generate and download the certificate
-   - Double-click the certificate to install in Keychain
-
-3. **Sign in Xcode**
-   - Open `McFind.xcodeproj`
-   - Select the project in the navigator
-   - Go to **Signing & Capabilities** tab
-   - Under "Team", select your developer account
-   - Xcode will automatically sign future builds
-
-4. **Manual Signing (if needed)**
+1. Import the Developer ID Application and Installer identities (`.p12`) into the login keychain.
+   Check with `security find-identity -v | grep "Developer ID"`.
+2. Store notarization credentials (App Store Connect API key "McFind Notarization",
+   Developer role) under the profile name the script uses:
    ```bash
-   # Find your certificate identity
-   security find-identity -v -p codesigning
-   
-   # Sign with your certificate
-   codesign --force --deep --sign "Developer ID Application: Your Name (TEAMID)" McFind.app
-   
-   # Verify
-   codesign --verify --verbose McFind.app
-   spctl --assess --verbose McFind.app
+   xcrun notarytool store-credentials mcfind-notary \
+     --key ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8 \
+     --key-id <KEY_ID> --issuer <ISSUER_ID>
    ```
+3. `brew install create-dmg`
 
-5. **Notarization (Required for Distribution)**
+## CI (GitHub Actions)
 
-   After signing, you must notarize with Apple:
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which imports the certificates into a
+temporary keychain, runs `scripts/release.sh`, publishes the DMG and PKG to a GitHub release, and
+updates the Homebrew tap.
 
-   ```bash
-   # Create a DMG
-   hdiutil create -volname "McFind" -srcfolder McFind.app -ov -format UDZO McFind.dmg
-   
-   # Notarize
-   xcrun notarytool submit McFind.dmg \
-     --apple-id your@email.com \
-     --password "app-specific-password" \
-     --team-id TEAMID \
-     --wait
-   
-   # Staple the notarization ticket
-   xcrun stapler staple McFind.dmg
-   ```
+Repository secrets:
 
-   **App-Specific Password:**
-   - Generate at https://appleid.apple.com/account/manage
-   - Use this instead of your actual Apple ID password
+| Secret | Contents |
+|---|---|
+| `DEVELOPER_ID_P12` | base64 `.p12` of the Developer ID Application identity |
+| `DEVELOPER_ID_INSTALLER_P12` | base64 `.p12` of the Developer ID Installer identity |
+| `DEVELOPER_ID_P12_PASSWORD` | password for both `.p12` files |
+| `ASC_API_KEY_P8` | base64 App Store Connect API key (`AuthKey_*.p8`) |
+| `ASC_API_KEY_ID` | API key ID |
+| `ASC_API_ISSUER_ID` | API issuer ID |
 
----
+`macos.yml` and `distribute.yml` build with `CODE_SIGNING_ALLOWED=NO` (they only check that the
+app builds and produce ad-hoc test artifacts).
 
-### Solution 3: Self-Signed Certificate (Free Alternative)
+## Verifying a build
 
-**What it does:** Creates a local certificate for signing. Works on your Mac only.
-
-**Steps:**
-
-1. **Create Certificate**
-   - Open **Keychain Access**
-   - Menu: Keychain Access → Certificate Assistant → Create a Certificate
-   - Name: "McFind Self-Signed"
-   - Identity Type: Self-Signed Root
-   - Certificate Type: Code Signing
-   - Check "Let me override defaults"
-   - Click Continue through the steps
-   - Set Keychain to "login"
-
-2. **Sign with Self-Signed Certificate**
-   ```bash
-   codesign --force --deep --sign "McFind Self-Signed" McFind.app
-   codesign --verify --verbose McFind.app
-   ```
-
-3. **Trust the Certificate**
-   - Open Keychain Access
-   - Find "McFind Self-Signed" certificate
-   - Right-click → Get Info
-   - Expand "Trust"
-   - Set "Code Signing" to "Always Trust"
-
-**Limitations:** Only works on your Mac. Other users must manually trust your certificate.
-
----
-
-## For CI/CD (GitHub Actions)
-
-### Current Setup (Ad-Hoc Signing)
-
-The workflows already include ad-hoc signing:
-
-```yaml
-- name: Ad-hoc sign the app
-  run: |
-    BUILD_DIR=$(xcodebuild -project McFind.xcodeproj -scheme McFind -configuration Release -showBuildSettings | grep -m 1 "BUILD_DIR" | cut -d'=' -f2 | xargs)
-    codesign --force --deep --sign - "$BUILD_DIR/Release/McFind.app"
-```
-
-### Upgrade to Developer ID Signing
-
-To use your Developer ID in GitHub Actions:
-
-1. **Export Certificate**
-   ```bash
-   # Export certificate and private key from Keychain
-   # Save as McFind_Certificate.p12 with a password
-   ```
-
-2. **Add GitHub Secrets**
-   - Go to Repository Settings → Secrets and Variables → Actions
-   - Add secrets:
-     - `MACOS_CERTIFICATE`: Base64-encoded .p12 file
-     - `MACOS_CERTIFICATE_PASSWORD`: The password you set
-     - `APPLE_ID`: Your Apple ID email
-     - `APPLE_ID_PASSWORD`: App-specific password
-     - `APPLE_TEAM_ID`: Your team ID
-
-3. **Update Workflow**
-   ```yaml
-   - name: Import Certificate
-     run: |
-       echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
-       security create-keychain -p temp_password build.keychain
-       security default-keychain -s build.keychain
-       security unlock-keychain -p temp_password build.keychain
-       security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-       security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temp_password build.keychain
-
-   - name: Sign with Developer ID
-     run: |
-       codesign --force --deep --sign "Developer ID Application: Your Name" McFind.app
-   ```
-
----
-
-## Quick Reference
-
-### Check if App is Signed
 ```bash
-codesign --display --verbose=4 McFind.app
+codesign --verify --deep --strict --verbose=2 McFind.app
+codesign -dvv McFind.app                       # Authority=Developer ID Application…, flags=runtime
+spctl --assess --type execute --verbose McFind.app   # source=Notarized Developer ID
+xcrun stapler validate McFind.dmg
+pkgutil --check-signature McFind.pkg
 ```
-
-### Verify Signature
-```bash
-codesign --verify --verbose McFind.app
-```
-
-### Check Gatekeeper Assessment
-```bash
-spctl --assess --verbose McFind.app
-```
-
-### Remove Quarantine (Bypass Warning Temporarily)
-```bash
-xattr -dr com.apple.quarantine McFind.app
-```
-
----
 
 ## Troubleshooting
 
-### "Code object is not signed at all"
-```bash
-# Sign it
-codesign --force --deep --sign - McFind.app
-```
-
-### "The code signature is not valid"
-```bash
-# Re-sign
-codesign --force --deep --sign - McFind.app
-```
-
-### "App is damaged and can't be opened"
-```bash
-# Remove quarantine attribute
-xattr -cr McFind.app
-```
-
-### Users Still See Warning After Signing
-- Ad-hoc signing only works on the build machine
-- You need a Developer ID certificate for distribution
-- See "Solution 2: Developer ID Signing" above
-
----
-
-## Recommendations
-
-**For personal use:** ✅ Current ad-hoc signing setup is sufficient
-
-**For distribution to others:**
-- Get an Apple Developer account
-- Use Developer ID Application certificate
-- Notarize the app with Apple
-- Update CI/CD workflows to use the certificate
-
-**For Mac App Store:**
-- Use "Mac App Store" certificate type (not Developer ID)
-- Follow App Store submission guidelines
-- Enable sandboxing and required entitlements
-
----
-
-## Resources
-
-- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
-- [Notarization Documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
-- [Xcode Signing & Capabilities](https://developer.apple.com/documentation/xcode/adding-capabilities-to-your-app)
+- **Notarization "Invalid"**: `xcrun notarytool log <submission-id> --keychain-profile mcfind-notary`
+  shows which binary failed and why (usually missing hardened runtime or a secure timestamp).
+- **`errSecInternalComponent` in CI**: the key partition list wasn't set; see the import step in `release.yml`.
+- **Rotating certificates**: create new ones at developer.apple.com → Certificates, then update the keychain and the `.p12` secrets.

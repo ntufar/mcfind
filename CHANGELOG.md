@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-26
+
+### Changed
+- McFind is now signed with a Developer ID certificate and notarized by Apple, so it opens without Gatekeeper's "Apple could not verify…" warning. The DMG and PKG are signed, notarized and stapled as well
+- Hardened runtime enabled for the app target (required for notarization)
+- New `scripts/release.sh` builds, signs, notarizes and packages a release locally or in CI; `release.yml` now uses it with Developer ID certificates and an App Store Connect API key from repository secrets
+
+### Fixed
+- The PKG installer was built with `pkgbuild --root McFind.app`, which would install the bundle's contents directly into `/Applications`; it now installs `McFind.app` as a component
+
 ## [0.3.2] - 2026-07-21
 
 ### Fixed
