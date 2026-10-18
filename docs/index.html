@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>McFind: find any file on your Mac</title>
 <meta name="description" content="McFind is a free, open source macOS app. It indexes your home folder in SQLite and finds any file as fast as you type.">
-<meta name="theme-color" content="#e2e2e2">
+<meta name="theme-color" content="#e8f4ff">
 <link rel="canonical" href="https://ntufar.github.io/mcfind/">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -17,453 +17,467 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"McFind","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 14 or later","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://ntufar.github.io/mcfind/","downloadUrl":"https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg","author":{"@type":"Person","name":"Nicolai Tufar"}}
 </script>
-<link rel="preconnect" href="https://api.fontshare.com">
-<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
-<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js');</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#e2e2e2;
-  --surface:#d6d6d6;
-  --ink:#7d0c14;
-  --muted:#7a4a4e;
-  --accent:#7d0c14;
-  --accent-ink:#e2e2e2;
-  --deep:#2a0c0f;
-  --deep-ink:#e2e2e2;
-  --m:28px;
-  --gap:24px;
-  --ease-out:cubic-bezier(0.22,1,0.36,1);
-  --ease-io:cubic-bezier(0.76,0,0.24,1);
-  --font:'Switzer',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
-  --s-small:clamp(0.875rem,0.85rem + 0.1vw,0.9375rem);
-  --s-body:clamp(1.0625rem,1rem + 0.25vw,1.1875rem);
-  --s-lead:clamp(1.25rem,1.1rem + 0.7vw,1.625rem);
-  --s-head:clamp(2rem,1.3rem + 3.2vw,4rem);
-  --s-line:clamp(1.875rem,3.6vw,3.75rem);
+  --sky:#e8f4ff;
+  --ink:#2b2a4c;
+  --blue:#4aa3ff;
+  --pink:#ff8fb1;
+  --yellow:#ffd75e;
+  --mint:#8fe3c0;
+  --lilac:#c9b6ff;
+  --white:#fff;
+  --pop:5px 5px 0 var(--ink);
+  --pop-big:8px 8px 0 var(--ink);
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --head:'Fredoka','Nunito',ui-rounded,'SF Pro Rounded',system-ui,sans-serif;
+  --body:'Nunito',ui-rounded,'SF Pro Rounded',system-ui,sans-serif;
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:var(--font);font-size:var(--s-body);line-height:1.5;letter-spacing:-0.005em;color:var(--ink);background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body);font-weight:700;font-size:1.125rem;line-height:1.55;color:var(--ink);background:var(--sky);overflow-x:hidden}
 a{color:inherit}
-img{display:block;max-width:100%}
+img,svg{display:block;max-width:100%}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-::selection{background:var(--ink);color:var(--bg)}
-:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);padding-inline:var(--m)}
-h1,h2,h3{font-weight:600;letter-spacing:-0.04em;line-height:0.98;text-wrap:balance}
-h2{font-size:var(--s-head)}
-p{max-width:62ch}
-.btn{display:inline-block;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:500;font-size:var(--s-body);padding:18px 28px;transition:background-color .18s ease,transform .12s ease}
-.btn:hover{background:var(--deep)}
-.btn:active{transform:scale(0.97)}
-.link{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;transition:opacity .18s ease}
-.link:hover{opacity:.7}
+h1,h2,h3{font-family:var(--head);font-weight:600;line-height:1.05;letter-spacing:-0.01em;text-wrap:balance}
+h1{font-size:clamp(2.75rem,6.4vw,5.5rem)}
+h2{font-size:clamp(2.2rem,4.6vw,3.75rem)}
+h3{font-size:1.6rem}
+p{max-width:60ch}
+::selection{background:var(--yellow)}
+:focus-visible{outline:4px solid var(--pink);outline-offset:3px}
+.wrap{width:min(1160px,100% - 40px);margin-inline:auto}
 
-/* reveal: content is visible unless script runs and the section is still off screen */
-.js [data-r]{opacity:0;translate:0 26px;transition:opacity .8s var(--ease-out),translate .8s var(--ease-out);transition-delay:calc(var(--i,0) * 80ms)}
-.js [data-r="pic"]{translate:0 0;scale:1.06;transition:opacity 1s var(--ease-out),scale 1.4s var(--ease-out)}
-.js [data-r="row"]{translate:-40px 0}
+/* sticker blocks */
+.card{background:var(--white);border:3px solid var(--ink);border-radius:28px;box-shadow:var(--pop)}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--head);font-weight:600;font-size:1.25rem;text-decoration:none;background:var(--blue);color:var(--white);padding:16px 28px;border:3px solid var(--ink);border-radius:999px;box-shadow:var(--pop);transition:transform .15s var(--ease),box-shadow .15s var(--ease);text-shadow:0 2px 0 rgba(43,42,76,.35)}
+.btn:hover{transform:translate(-2px,-3px);box-shadow:7px 8px 0 var(--ink)}
+.btn:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--ink)}
+.btn.alt{background:var(--yellow);color:var(--ink);text-shadow:none}
+.btn.pink{background:var(--pink)}
+
+/* reveal */
+.js [data-r]{opacity:0;translate:0 30px;scale:.96;transition:opacity .6s var(--ease),translate .7s var(--ease),scale .7s var(--ease);transition-delay:calc(var(--i,0) * 70ms)}
 .js [data-r].in{opacity:1;translate:0 0;scale:1}
 
-/* nav */
-.nav{position:absolute;inset:0 0 auto 0;display:flex;justify-content:space-between;align-items:baseline;padding:22px var(--m);z-index:3;font-size:var(--s-body)}
-.nav a{text-decoration:none;font-weight:500}
-.nav .wm{font-weight:600;letter-spacing:-0.03em;font-size:1.0625rem}
-.nav div{display:flex;gap:28px}
-.nav div a{transition:opacity .18s ease}
-.nav div a:hover{opacity:.65}
+/* top bar */
+.top{padding:18px 0}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:700;font-size:1.6rem;text-decoration:none}
+.logo svg{width:44px;height:44px}
+.top nav{display:flex;gap:6px;background:var(--white);border:3px solid var(--ink);border-radius:999px;padding:5px;box-shadow:4px 4px 0 var(--ink)}
+.top nav a{text-decoration:none;padding:6px 16px;border-radius:999px;font-family:var(--head);font-weight:500;transition:background-color .15s ease}
+.top nav a:hover{background:var(--yellow)}
 
 /* hero */
-.hero{position:relative;height:100svh;min-height:640px;overflow:hidden}
-.hero-copy{position:absolute;left:var(--m);top:96px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:24px}
-.hero-copy .lead{font-size:var(--s-lead);line-height:1.25;letter-spacing:-0.02em;max-width:30ch;font-weight:500}
-.hero-copy .fine{font-size:var(--s-small);color:var(--muted);max-width:40ch}
-.hero-word{position:absolute;left:-7vw;bottom:-0.115em;font-size:clamp(380px,60vw,980px);line-height:0.8;letter-spacing:-0.055em;white-space:nowrap;font-weight:600;color:var(--ink);transform-origin:0% 100%;scale:calc(1 - var(--p,0) * 0.07);translate:0 calc(var(--p,0) * 6%);will-change:scale,translate;user-select:none}
+.hero{position:relative;padding:clamp(24px,4vw,56px) 0 clamp(90px,11vw,160px)}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.hero p.sub{margin-top:22px;font-size:1.375rem;line-height:1.45}
+.hero .acts{display:flex;flex-wrap:wrap;gap:16px;margin-top:32px}
+.hero .fine{margin-top:20px;font-size:1rem;opacity:.8}
+.hero h1 mark{background:var(--yellow);color:inherit;padding:0 .18em;border-radius:.3em;display:inline-block;rotate:-2deg;box-shadow:4px 4px 0 var(--ink);border:3px solid var(--ink)}
+.mascot-box{position:relative;justify-self:center;width:min(100%,430px)}
+.mascot-box .blob{position:absolute;inset:6% 4% 4% 6%;background:var(--yellow);border:3px solid var(--ink);border-radius:46% 54% 52% 48% / 50% 44% 56% 50%;box-shadow:var(--pop-big);z-index:0}
+.mascot{position:relative;z-index:1;width:100%;animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.08)}}
+.float{position:absolute;z-index:2;font-size:2.6rem;animation:drift 4s ease-in-out infinite;filter:drop-shadow(3px 3px 0 rgba(43,42,76,.9))}
+.f1{left:-4%;top:8%}.f2{right:-2%;top:2%;animation-delay:-1s}.f3{left:2%;bottom:6%;animation-delay:-2s}.f4{right:0;bottom:12%;animation-delay:-3s}
+@keyframes drift{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-12px) rotate(8deg)}}
+.badge{position:absolute;z-index:3;right:-2%;bottom:-6%;width:130px;height:130px;border-radius:50%;background:var(--pink);border:3px solid var(--ink);box-shadow:var(--pop);display:grid;place-items:center;text-align:center;font-family:var(--head);font-weight:600;font-size:1.15rem;line-height:1.1;rotate:12deg;animation:wobble 3s ease-in-out infinite}
+@keyframes wobble{0%,100%{rotate:9deg}50%{rotate:15deg}}
+.wave{position:absolute;left:0;right:0;bottom:-1px;height:60px;width:100%}
 
-/* live search */
-.try{padding-block:clamp(110px,16vw,220px) clamp(100px,12vw,180px)}
-.try .head{row-gap:24px;align-items:end}
-.try h2{grid-column:1/7}
-.try .head p{grid-column:8/13;font-size:var(--s-body)}
-.try .stage{padding-inline:var(--m);margin-top:clamp(48px,6vw,88px)}
-.hint{padding-inline:var(--m);margin-top:20px;font-size:var(--s-body);color:var(--muted)}
-.hint button{color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;margin-right:14px;transition:opacity .18s ease}
-.hint button:hover{opacity:.65}
-
-/* the product window: its own interface, so it keeps its own borders */
-.win[data-ui]{background:#f6f6f7;color:#1d1d1f;border:1px solid #bdbdc2;border-radius:12px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:15px;letter-spacing:0;line-height:1.35;box-shadow:0 18px 50px rgba(42,12,15,.18)}
-.win .bar{display:flex;gap:8px;padding:14px 16px 4px}
-.win .bar i{width:12px;height:12px;border-radius:50%;background:#ff5f57}
+/* try it */
+.try{background:var(--white);padding:clamp(60px,8vw,110px) 0 clamp(80px,10vw,140px)}
+.sec-head{text-align:center;margin-inline:auto;margin-bottom:44px}
+.sec-head p{margin:14px auto 0;font-size:1.25rem}
+.win[data-ui]{background:#f6f6f7;color:#1d1d1f;border:3px solid var(--ink);border-radius:26px;overflow:hidden;box-shadow:var(--pop-big);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:500;letter-spacing:0;line-height:1.35}
+.win .bar{display:flex;gap:8px;padding:14px 18px 4px}
+.win .bar i{width:13px;height:13px;border-radius:50%;background:#ff5f57}
 .win .bar i:nth-child(2){background:#febc2e}
 .win .bar i:nth-child(3){background:#28c840}
 .win .q{display:flex;align-items:center;gap:12px;padding:10px 20px 14px}
 .win .q svg{flex:none;width:20px;height:20px;color:#6e6e73}
-.win .q input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:22px;color:#1d1d1f;outline:0;padding:4px 0}
+.win .q input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:22px;font-weight:500;color:#1d1d1f;outline:0;padding:4px 0}
 .win .q input::placeholder{color:#8e8e93}
 .win .q button{width:22px;height:22px;border-radius:50%;background:#8e8e93;color:#f6f6f7;font-size:14px;line-height:22px;visibility:hidden}
 .win .q.has button{visibility:visible}
-.win .chips{display:flex;gap:4px;padding:8px 16px;background:#ececef;overflow-x:auto;scrollbar-width:none}
-.win .chips button{flex:none;padding:5px 12px;border-radius:7px;font-size:14px;color:#4a4a50;transition:background-color .15s ease}
-.win .chips button:hover{background:#e6e6ea}
+.win .chips{display:flex;gap:6px;padding:8px 16px;background:#ececef;overflow-x:auto;scrollbar-width:none}
+.win .chips button{flex:none;padding:5px 13px;border-radius:999px;font-size:14px;font-weight:600;color:#4a4a50;transition:background-color .15s ease}
+.win .chips button:hover{background:#dcdce2}
 .win .chips button[aria-pressed="true"]{background:#0a64e0;color:#fff}
-.win ul{list-style:none;height:clamp(340px,50vh,500px);overflow-y:auto;padding:6px 10px;background:#fff}
-.win li{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.5fr) 78px 128px;gap:16px;align-items:center;padding:9px 12px;border-radius:7px;cursor:default;white-space:nowrap}
+.win ul{list-style:none;height:clamp(340px,50vh,480px);overflow-y:auto;padding:6px 10px;background:#fff}
+.win li{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.5fr) 78px 128px;gap:16px;align-items:center;padding:9px 12px;border-radius:9px;cursor:default;white-space:nowrap}
 .win li:nth-child(even){background:#f4f4f6}
 .win li>span{overflow:hidden;text-overflow:ellipsis}
-.win li .nm{font-weight:500}
-.win li .nm mark{background:none;color:inherit;font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.win li .nm{font-weight:600}
+.win li .nm mark{background:#ffe27a;color:inherit;border-radius:4px;padding:0 2px}
 .win li .pa{color:#6e6e73}
 .win li .sz,.win li .dt{text-align:right;color:#6e6e73;font-variant-numeric:tabular-nums}
 .win li[aria-selected="true"]{background:#0a64e0;color:#fff}
 .win li[aria-selected="true"] span{color:#fff}
-.win .none{display:block;padding:60px 12px;text-align:center;color:#6e6e73;grid-template-columns:none}
-.win .foot{display:flex;justify-content:space-between;gap:16px;padding:10px 20px;background:#ececef;color:#4a4a50;font-size:14px;font-variant-numeric:tabular-nums}
+.win li[aria-selected="true"] mark{background:rgba(255,255,255,.28);color:#fff}
+.win .none{display:block;padding:60px 12px;text-align:center;color:#6e6e73}
+.win .wfoot{display:flex;justify-content:space-between;gap:16px;padding:10px 20px;background:#ececef;color:#4a4a50;font-size:14px;font-variant-numeric:tabular-nums}
+.hint{text-align:center;margin:28px auto 0;font-size:1.0625rem;max-width:none}
+.hint button{font-family:var(--head);font-weight:500;background:var(--yellow);border:3px solid var(--ink);border-radius:999px;padding:3px 16px;margin:4px 3px;box-shadow:3px 3px 0 var(--ink);transition:transform .15s var(--ease),box-shadow .15s var(--ease)}
+.hint button:hover{transform:translate(-1px,-2px);box-shadow:4px 5px 0 var(--ink)}
+.hint button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
 
-/* walk or look */
-.walk{position:relative;overflow:hidden;background:var(--bg);height:max(100svh,760px);padding-top:clamp(70px,8vw,120px)}
-.walk .top{align-items:start;row-gap:20px}
-.walk h2{grid-column:1/7;font-size:clamp(1.75rem,2.4vw,2.25rem);letter-spacing:-0.03em}
-.walk .top p{grid-column:7/13;font-size:var(--s-body)}
-.walk .spec{position:absolute;top:clamp(300px,34vh,380px);font-size:clamp(130px,18.5vw,330px);line-height:0.8;letter-spacing:-0.055em;font-weight:600;white-space:nowrap}
-.walk .spec small{display:block;font-size:var(--s-body);line-height:1.3;letter-spacing:-0.005em;font-weight:500;margin-bottom:22px}
-.walk .a{left:var(--m)}
-.walk .b{left:calc(var(--m) + (100vw - 2 * var(--m) + var(--gap)) / 12 * 6)}
+/* race */
+.race{padding:clamp(70px,9vw,130px) 0;background:var(--pink)}
+.lanes{display:grid;gap:22px;max-width:900px;margin-inline:auto}
+.lane{position:relative;background:var(--white);border:3px solid var(--ink);border-radius:999px;box-shadow:var(--pop);height:100px;padding:0 30px;display:flex;align-items:center;overflow:hidden}
+.lane .lab{position:relative;z-index:2;font-family:var(--head);font-weight:600;font-size:1.15rem;line-height:1.15;max-width:11.5em}
+.lane .lab small{display:block;font-family:var(--body);font-weight:700;font-size:.9rem;opacity:.75}
+.lane .track{position:absolute;left:250px;right:110px;top:0;bottom:0}
+.lane .runner{position:absolute;top:50%;left:0;font-size:2.6rem;line-height:1;translate:0 -50%;scale:-1 1}
+.lane .flag{position:absolute;right:26px;top:50%;translate:0 -50%;font-size:2.2rem}
+.lane .done{position:absolute;right:70px;top:50%;font-family:var(--head);font-weight:600;background:var(--yellow);border:3px solid var(--ink);border-radius:999px;padding:2px 14px;white-space:nowrap;translate:0 -50%;opacity:0}
+.slow .runner{animation:crawl 10s linear infinite}
+.fast .runner{animation:zoom 10s linear infinite}
+.fast .done{animation:pop 10s linear infinite}
+@keyframes crawl{0%{left:0}92%{left:calc(100% - 20px)}100%{left:calc(100% - 20px)}}
+@keyframes zoom{0%{left:0}6%{left:calc(100% - 20px)}100%{left:calc(100% - 20px)}}
+@keyframes pop{0%,5%{opacity:0}9%,92%{opacity:1}96%,100%{opacity:0}}
+.race .note{text-align:center;margin:34px auto 0;font-size:1.0625rem}
 
-/* picture bands */
-.band{position:relative;overflow:hidden;height:min(76vh,760px);background:var(--surface)}
-.band img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.06)}
-.band img.drift{transform:scale(1.14);translate:0 calc(var(--d,0) * -4%);will-change:transform,translate}
-.cap{padding:18px var(--m) 0;display:flex;justify-content:space-between;gap:24px;font-size:var(--s-small);color:var(--muted)}
-.cap a{color:inherit}
+/* polaroids */
+.index{padding:clamp(80px,10vw,150px) 0;background:var(--sky)}
+.index .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center}
+.polas{position:relative;height:clamp(380px,46vw,560px)}
+.pola{position:absolute;background:var(--white);border:3px solid var(--ink);border-radius:8px;padding:12px 12px 8px;box-shadow:var(--pop-big);transition:rotate .3s var(--ease),translate .3s var(--ease)}
+.pola img{width:100%;height:calc(100% - 38px);object-fit:cover}
+.pola figcaption{font-family:var(--head);font-weight:500;font-size:.95rem;text-align:center;padding-top:6px}
+.pola figcaption a{text-underline-offset:3px}
+.pola::before{content:"";position:absolute;top:-18px;left:50%;width:90px;height:30px;margin-left:-45px;background:rgba(255,215,94,.85);border:2px solid var(--ink);rotate:-4deg}
+.pa1{left:0;top:0;width:56%;height:78%;rotate:-5deg}
+.pa2{right:0;bottom:0;width:60%;height:62%;rotate:4deg}
+.pa2::before{background:rgba(255,143,177,.85);rotate:5deg}
+.pola:hover{rotate:0deg;translate:0 -6px;z-index:2}
+.index .txt p{margin-top:20px;font-size:1.25rem}
 
-/* index split */
-.index{padding-block:clamp(110px,14vw,200px);align-items:center}
-.index .pic{grid-column:1/6;aspect-ratio:4/5;overflow:hidden;background:var(--surface)}
-.index .pic img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;filter:grayscale(1) contrast(1.05)}
-.index .txt{grid-column:7/13}
-.index .txt p{font-size:clamp(1.375rem,1.1rem + 1.2vw,2.125rem);line-height:1.2;letter-spacing:-0.025em;font-weight:500;max-width:28ch}
-.index .txt p+p{margin-top:28px;font-size:var(--s-body);line-height:1.5;letter-spacing:-0.005em;font-weight:400;max-width:44ch}
+/* features */
+.feat{padding:clamp(80px,10vw,150px) 0;background:var(--yellow)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.fcard{padding:28px 26px 30px;transition:rotate .25s var(--ease),transform .25s var(--ease)}
+.fcard:nth-child(3n+1){rotate:-1.2deg}
+.fcard:nth-child(3n+2){rotate:1deg}
+.fcard:nth-child(3n){rotate:-.6deg}
+.fcard:hover{rotate:0deg;transform:translateY(-6px)}
+.fcard .ic{width:68px;height:68px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;font-size:2rem;margin-bottom:18px;box-shadow:3px 3px 0 var(--ink)}
+.fcard:nth-child(1) .ic{background:var(--yellow)}.fcard:nth-child(2) .ic{background:var(--blue)}.fcard:nth-child(3) .ic{background:var(--mint)}
+.fcard:nth-child(4) .ic{background:var(--pink)}.fcard:nth-child(5) .ic{background:var(--lilac)}.fcard:nth-child(6) .ic{background:var(--yellow)}
+.fcard:hover .ic{animation:jig .5s ease}
+@keyframes jig{25%{rotate:-12deg}75%{rotate:12deg}}
+.fcard p{margin-top:10px;font-size:1.0625rem;line-height:1.5}
 
-/* features: sentences with switches */
-.sw{display:block}
-.sw .row{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:center;padding:0 var(--m);min-height:max(20vh,150px);background:var(--bg);color:var(--muted);transition:background-color .35s ease,color .35s ease}
-.sw .row:nth-child(1){--bb:#7d0c14;--bi:#e2e2e2}
-.sw .row:nth-child(2){--bb:#2a0c0f;--bi:#e2e2e2}
-.sw .row:nth-child(3){--bb:#b9b9b9;--bi:#7d0c14}
-.sw .row:nth-child(4){--bb:#5a0a10;--bi:#e2e2e2}
-.sw .row:nth-child(5){--bb:#f0f0f0;--bi:#7d0c14}
-.sw .row:nth-child(6){--bb:#7a4a4e;--bi:#f0f0f0}
-.sw .row.on{background:var(--bb);color:var(--bi)}
-.sw .t{grid-column:1/11;padding:28px 0}
-.sw h3{font-size:var(--s-line);line-height:1.05;letter-spacing:-0.035em}
-.sw .t p{display:none;margin-top:12px;font-size:var(--s-body);max-width:60ch}
-.sw .row.on .t p{display:block;animation:rise .5s var(--ease-out) both}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.sw .tg{grid-column:11/13;justify-self:end}
-.tgl[data-ui]{position:relative;width:3.1em;height:1.8em;font-size:20px;border-radius:1em;background:#9a9aa0;transition:background-color .2s ease;flex:none}
-.tgl[data-ui]::after{content:"";position:absolute;top:.15em;left:.15em;width:1.5em;height:1.5em;border-radius:50%;background:#fff;transition:transform .22s var(--ease-out)}
-.tgl[data-ui][aria-checked="true"]{background:#0a64e0}
-.tgl[data-ui][aria-checked="true"]::after{transform:translateX(1.3em)}
-.sw .tgwrap{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+/* keycaps */
+.keys{padding:clamp(80px,10vw,150px) 0;background:var(--lilac)}
+.klist{list-style:none;max-width:820px;margin:0 auto;display:grid;gap:18px}
+.klist li{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 26px;background:var(--white);border:3px solid var(--ink);border-radius:999px;box-shadow:var(--pop);font-family:var(--head);font-weight:500;font-size:1.4rem;transition:transform .2s var(--ease)}
+.klist li:hover{transform:translateX(8px)}
+.kc{display:inline-flex;gap:8px}
+.kc kbd{font-family:var(--head);font-weight:600;font-size:1.1rem;min-width:46px;text-align:center;padding:6px 14px 10px;background:var(--sky);border:3px solid var(--ink);border-radius:12px;box-shadow:0 5px 0 var(--ink);transition:transform .1s ease,box-shadow .1s ease}
+.klist li:hover kbd{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
 
-/* shortcuts */
-.keys{padding-block:clamp(120px,15vw,220px)}
-.keys h2{grid-column:1/5;align-self:start}
-.keys ul{grid-column:5/13;list-style:none}
-.keys li{display:flex;justify-content:space-between;align-items:baseline;gap:32px;padding:clamp(16px,1.6vw,26px) 0;font-size:clamp(1.75rem,3.8vw,4.25rem);line-height:1;letter-spacing:-0.04em;font-weight:600;transition:translate .25s var(--ease-out)}
-.keys li:hover{translate:12px 0}
-.keys li span:last-child{color:var(--muted);text-align:right;font-weight:500}
-
-/* stat */
-.stat{background:var(--accent);color:var(--accent-ink);min-height:max(100svh,720px);padding:clamp(70px,7vw,110px) 0 clamp(60px,6vw,90px);display:flex;flex-direction:column;justify-content:space-between}
-.stat h2{font-size:clamp(1.75rem,3vw,2.75rem);letter-spacing:-0.03em}
-.stat .fig{font-size:clamp(190px,25vw,420px);line-height:0.8;letter-spacing:-0.06em;font-weight:600;font-variant-numeric:lining-nums;display:flex;align-items:flex-start;padding-inline:var(--m)}
-.stat .fig sup{font-size:0.33em;line-height:1;margin:0.02em 0 0 0.06em;letter-spacing:-0.03em}
-.stat .below{padding:0 var(--m);display:flex;justify-content:space-between;align-items:end;gap:24px;margin-top:28px}
-.stat .below p{font-size:var(--s-body);max-width:32ch}
-.stat .below small{font-size:var(--s-small)}
-.stat .top{padding-inline:var(--m)}
+/* speed */
+.speed{padding:clamp(80px,10vw,150px) 0;background:var(--mint);overflow:hidden}
+.speed .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px;align-items:center}
+.speed .mini{width:min(100%,320px);justify-self:center;animation:bob 3.4s ease-in-out infinite}
+.bubble{position:relative;background:var(--white);border:3px solid var(--ink);border-radius:50px;padding:34px 40px 36px;box-shadow:var(--pop-big)}
+.bubble::before{content:"";position:absolute;left:-24px;top:50%;width:36px;height:36px;background:var(--white);border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);rotate:45deg;translate:0 -50%}
+.bubble .fig{font-family:var(--head);font-weight:700;font-size:clamp(6rem,15vw,12rem);line-height:.95;letter-spacing:-0.04em;color:var(--blue);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:6px 6px 0 var(--ink)}
+.bubble .fig sup{font-size:.34em;vertical-align:top;position:relative;top:.15em;margin-left:.08em}
+.bubble h2{font-size:clamp(1.6rem,3vw,2.3rem);margin-bottom:6px}
+.bubble p{margin-top:14px;font-size:1.0625rem}
 
 /* install */
-.install{padding-top:clamp(110px,14vw,200px)}
-.install .shot{grid-column:3/13;margin-top:clamp(48px,6vw,90px)}
-.install .shot img{width:100%;height:auto}
-.install h2{grid-column:1/8}
-.install .head p{grid-column:1/8;margin-top:22px}
-.ways{margin-top:clamp(80px,9vw,140px)}
-.way{padding-block:clamp(40px,5vw,72px);align-items:start;row-gap:20px}
-.way:nth-child(odd){background:var(--surface)}
-.way h3{grid-column:1/7;font-size:clamp(2.25rem,5.2vw,5.5rem);letter-spacing:-0.045em;line-height:0.95}
-.way .d{grid-column:8/13;display:flex;flex-direction:column;gap:20px;align-items:flex-start}
-.way pre{background:var(--deep);color:#e8e8e8;padding:18px 22px;font-size:16px;line-height:1.6;overflow-x:auto;max-width:100%;width:100%}
-.way pre code{font-family:ui-monospace,'SF Mono',Menlo,monospace}
-.need{padding-block:clamp(70px,8vw,120px) clamp(110px,14vw,200px);row-gap:16px}
-.need h3{grid-column:1/7;font-size:var(--s-head);letter-spacing:-0.04em}
-.need ul{grid-column:8/13;list-style:none;font-size:var(--s-lead);line-height:1.3;letter-spacing:-0.02em;font-weight:500;display:flex;flex-direction:column;gap:14px}
+.install{padding:clamp(80px,10vw,150px) 0;background:var(--white)}
+.ver{display:inline-block;font-family:var(--head);font-weight:600;background:var(--mint);border:3px solid var(--ink);border-radius:999px;padding:2px 16px;box-shadow:3px 3px 0 var(--ink)}
+.shot{max-width:900px;margin:0 auto 60px}
+.shot .frame{border:3px solid var(--ink);border-radius:26px;overflow:hidden;box-shadow:var(--pop-big);background:#fff}
+.shot img{width:100%;height:auto}
+.shot p{text-align:center;margin:18px auto 0;font-size:1rem;opacity:.8}
+.way{display:flex;flex-direction:column;gap:14px;padding:30px 28px 32px}
+.way:nth-child(1){background:#fff1c9}.way:nth-child(2){background:#dcefff}.way:nth-child(3){background:#ffe0ea}
+.way .emoji{font-size:2.6rem;line-height:1}
+.way p{font-size:1.0625rem}
+.way .btn{align-self:flex-start;margin-top:auto;font-size:1.0625rem;padding:12px 22px}
+.way pre{background:var(--ink);color:#f4f1ff;border-radius:16px;padding:16px 18px;font-size:15px;line-height:1.6;overflow-x:auto;margin-top:auto}
+.way pre code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-weight:600}
+.need{margin:50px auto 0;max-width:820px;padding:26px 34px;background:var(--sky)}
+.need h3{margin-bottom:10px}
+.need ul{list-style:none;display:grid;gap:8px}
+.need li::before{content:"\2713";display:inline-grid;place-items:center;width:26px;height:26px;margin-right:12px;background:var(--mint);border:2px solid var(--ink);border-radius:50%;font-size:.9rem}
 
-/* the one word button */
-.cta{display:block;position:relative;background:var(--deep);color:var(--deep-ink);text-decoration:none;height:clamp(300px,62svh,640px);overflow:hidden;transition:background-color .2s ease,color .2s ease}
-.cta:hover,.cta:focus-visible{background:var(--deep-ink);color:var(--deep)}
-.cta:focus-visible{outline-offset:-8px}
-.cta .say{position:absolute;left:var(--m);top:22px;max-width:30ch;font-size:var(--s-lead);line-height:1.2;letter-spacing:-0.02em;font-weight:500}
-.cta svg{position:absolute;right:var(--m);top:22px;width:48px;height:48px;transition:translate .25s var(--ease-out)}
-.cta:hover svg{translate:6px -6px}
-.cta .word{position:absolute;left:var(--m);right:var(--m);bottom:24px;font-size:clamp(70px,22.4vw,420px);font-weight:600;letter-spacing:-0.06em;line-height:0.74;white-space:nowrap}
-
-/* footer */
-.foot-field{background:var(--accent);color:var(--accent-ink);min-height:max(90svh,680px);padding:40px var(--m) 28px;display:flex;flex-direction:column;justify-content:space-between}
-.foot-field .notes{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);font-size:var(--s-small)}
-.foot-field .notes p{grid-column:span 3}
-.foot-field .notes a.up{grid-column:12/13;justify-self:end}
-.big{display:block;text-decoration:none;font-size:clamp(2.5rem,11.4vw,13rem);font-weight:600;letter-spacing:-0.055em;line-height:0.9;margin-bottom:40px;transition:opacity .2s ease}
-.big:hover{opacity:.75}
-.meta{display:grid;grid-template-columns:1fr 1.4fr auto;gap:var(--gap);align-items:end;font-size:var(--s-small);line-height:1.5}
-.meta nav{display:flex;gap:18px;flex-wrap:wrap}
-.meta p{max-width:none}
+/* big download + footer */
+.final{background:var(--blue);padding:clamp(90px,11vw,150px) 0 clamp(70px,8vw,110px);text-align:center;position:relative;color:var(--white)}
+.final .wave{top:-1px;bottom:auto;transform:scaleY(-1)}
+.final h2{text-shadow:0 4px 0 rgba(43,42,76,.4)}
+.final .btn{margin-top:34px;font-size:1.6rem;padding:22px 44px;background:var(--yellow);color:var(--ink);text-shadow:none}
+.final .fine{margin:22px auto 0;font-size:1rem;color:var(--white)}
+.site-foot{background:var(--ink);color:#f4f1ff;padding:50px 0 40px}
+.site-foot .wrap{display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center}
+.site-foot svg{width:96px;height:96px;animation:bob 3.4s ease-in-out infinite}
+.site-foot a{color:var(--yellow);text-underline-offset:3px}
+.site-foot .links{display:flex;flex-wrap:wrap;gap:8px 22px;margin:10px 0 14px;font-family:var(--head);font-weight:500;font-size:1.15rem}
+.site-foot .credits{font-size:.9375rem;line-height:1.6;max-width:none}
 
 @media (max-width:900px){
-  :root{--m:20px;--gap:16px}
-  .nav div{gap:18px}
-  .nav div a.hide{display:none}
-  .hero{min-height:620px}
-  .hero-copy{top:84px;gap:20px}
-  .hero-word{font-size:73vw;left:-6vw}
-  .btn{padding:16px 22px;font-size:1rem}
-  .try h2,.try .head p{grid-column:1/13}
+  .hero .wrap,.index .wrap,.speed .wrap{grid-template-columns:1fr}
+  .mascot-box{order:-1;width:min(76%,340px)}
+  .grid3{grid-template-columns:1fr 1fr}
+  .polas{height:420px;max-width:520px;margin:0 auto;width:100%}
+  .bubble::before{left:50%;top:-20px;translate:-50% 0;rotate:135deg}
+  .top nav a.hide{display:none}
+}
+@media (max-width:640px){
+  body{font-size:1.0625rem}
+  .grid3{grid-template-columns:1fr}
+  .fcard{rotate:0deg !important}
   .win li{grid-template-columns:minmax(0,1fr) 70px}
   .win li .pa,.win li .dt{display:none}
   .win .q input{font-size:19px}
-  .walk{height:auto;padding-bottom:0}
-  .walk h2,.walk .top p{grid-column:1/13}
-  .walk .spec{position:relative;top:auto;left:auto;display:block;height:38svh;min-height:260px;overflow:hidden;padding:0 var(--m);font-size:42vw;margin-top:44px}
-  .walk .spec small{font-size:.9375rem;margin-bottom:12px}
-  .walk .b{left:auto;background:var(--accent);color:var(--accent-ink);margin-top:0}
-  .band{height:56vh}
-  .index .pic{grid-column:1/13;aspect-ratio:4/3}
-  .index .txt{grid-column:1/13;margin-top:36px}
-  .sw .row{min-height:132px}
-  .sw .t{grid-column:1/10}
-  .sw h3{font-size:6.4vw;line-height:1.1}
-  .sw .tg{grid-column:10/13}
-  .keys h2,.keys ul{grid-column:1/13}
-  .keys h2{margin-bottom:28px}
-  .keys li{font-size:7.4vw;gap:14px}
-  .stat{min-height:max(80svh,620px)}
-  .stat .fig{font-size:34vw}
-  .stat .below{flex-direction:column;align-items:flex-start;gap:16px}
-  .stat .below p{max-width:80%}
-  .install .shot,.install h2,.install .head p{grid-column:1/13}
-  .way h3,.way .d,.need h3,.need ul{grid-column:1/13}
-  .cta{height:46svh;min-height:280px}
-  .cta .say{font-size:1.0625rem;max-width:20ch}
-  .cta svg{width:32px;height:32px}
-  .cta .word{font-size:20.4vw;bottom:18px}
-  .foot-field .notes{display:flex;flex-direction:column;gap:12px}
-  .foot-field .notes a.up{align-self:flex-start}
-  .big{font-size:11.6vw}
-  .meta{grid-template-columns:1fr;gap:14px;font-size:.8125rem}
-}
-@media (max-width:600px){
-  .hero-copy{width:42%}
-  .hero-copy .lead{font-size:1.0625rem;max-width:none}
-  .hero-copy .fine{font-size:.875rem}
-  .btn{padding:16px 18px;font-size:.9375rem;white-space:nowrap}
-  .hero-word{writing-mode:vertical-rl;left:auto;right:-20vw;top:60px;bottom:auto;font-size:90vw;line-height:.82;letter-spacing:-0.05em;transform-origin:50% 0;scale:calc(1 - var(--p,0) * 0.05);translate:calc(var(--p,0) * 4%) 0}
+  .lane{height:auto;min-height:130px;padding:16px 20px;flex-direction:column;align-items:flex-start;border-radius:34px;gap:14px}
+  .lane .track{position:relative;left:auto;right:auto;top:auto;bottom:auto;height:44px;width:calc(100% - 50px)}
+  .lane .flag{top:auto;bottom:16px;translate:none;right:18px}
+  .lane .done{top:auto;bottom:12px;translate:none;right:62px}
+  .klist li{border-radius:30px;font-size:1.15rem;padding:14px 18px;flex-wrap:wrap}
+  .badge{width:104px;height:104px;font-size:.95rem}
+  .site-foot .wrap{grid-template-columns:1fr}
+  .bubble{padding:28px 24px}
+  .top nav a{padding:6px 12px}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
+  .mascot,.mini,.site-foot svg,.float,.badge,.blink,.slow .runner,.fast .runner,.fast .done{animation:none}
+  .fast .runner{left:calc(100% - 20px)}.slow .runner{left:50%}.fast .done{opacity:1}
   .js [data-r]{translate:0 0;scale:1;transition:opacity .3s ease}
-  .hero-word,.band img.drift{scale:1;translate:0 0;transform:none}
-  .sw .row.on .t p{animation:none}
-  .keys li:hover{translate:0 0}
 }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mas" viewBox="0 0 320 340">
+    <path d="M226 240 L290 306" stroke="#2b2a4c" stroke-width="40" stroke-linecap="round"/>
+    <path d="M226 240 L290 306" stroke="#ffd75e" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="150" cy="150" r="124" fill="#4aa3ff" stroke="#2b2a4c" stroke-width="8"/>
+    <circle cx="150" cy="150" r="96" fill="#f4fbff" stroke="#2b2a4c" stroke-width="6"/>
+    <path d="M78 118 Q88 86 122 72" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+    <ellipse cx="116" cy="140" rx="19" ry="24" fill="#fff" stroke="#2b2a4c" stroke-width="5"/>
+    <ellipse cx="184" cy="140" rx="19" ry="24" fill="#fff" stroke="#2b2a4c" stroke-width="5"/>
+    <circle cx="118" cy="144" r="11" fill="#2b2a4c"/><circle cx="182" cy="144" r="11" fill="#2b2a4c"/>
+    <circle cx="122" cy="139" r="4" fill="#fff"/><circle cx="186" cy="139" r="4" fill="#fff"/>
+    <ellipse cx="88" cy="182" rx="15" ry="9" fill="#ff8fb1" opacity=".75"/>
+    <ellipse cx="212" cy="182" rx="15" ry="9" fill="#ff8fb1" opacity=".75"/>
+    <path d="M132 184 Q150 206 168 184" fill="none" stroke="#2b2a4c" stroke-width="7" stroke-linecap="round"/>
+  </symbol>
+</svg>
 
-<header class="hero" id="top">
-  <nav class="nav" aria-label="Main">
-    <a class="wm" href="#top">McFind</a>
-    <div>
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="logo" href="#top"><svg viewBox="0 0 320 340" aria-hidden="true"><use href="#mas"/></svg>McFind</a>
+    <nav aria-label="Main">
       <a class="hide" href="#try">Try it</a>
       <a class="hide" href="#features">Features</a>
       <a href="#install">Install</a>
       <a href="https://github.com/ntufar/mcfind">GitHub</a>
-    </div>
-  </nav>
-  <div class="hero-copy">
-    <p class="lead">McFind finds any file in your home folder as fast as you type. Free for macOS.</p>
-    <a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg">Download for Mac</a>
-    <p class="fine">Open source. Signed and notarized by Apple. Needs macOS 14 or later.</p>
+    </nav>
   </div>
-  <h1 class="hero-word" id="word">Find<span class="sr"> any file on your Mac with McFind</span></h1>
 </header>
 
-<main id="main">
-<section class="try" id="try" aria-labelledby="try-h">
-  <div class="grid head">
-    <h2 id="try-h" data-r>Type to find a file.</h2>
-    <p data-r>This window works. It searches 300 made-up files, with the same rules McFind uses on your real home folder.</p>
-  </div>
-  <div class="stage" data-r="pic">
-    <div class="win" data-ui>
-      <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
-      <div class="q" id="q">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4.5 4.5"/></svg>
-        <input id="qi" type="search" placeholder="Search files and folders" autocomplete="off" spellcheck="false" aria-label="Search the sample index" role="combobox" aria-expanded="true" aria-controls="res" aria-autocomplete="list">
-        <button type="button" id="qc" aria-label="Clear search">&times;</button>
+<main>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Lost a file? McFind will <mark>fetch</mark> it!</h1>
+      <p class="sub">A tiny, free Mac app that finds any file in your home folder as fast as you type.</p>
+      <div class="acts">
+        <a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg">Download for Mac</a>
+        <a class="btn alt" href="https://github.com/ntufar/mcfind">See it on GitHub</a>
       </div>
-      <div class="chips" id="chips" role="group" aria-label="Filter by size">
-        <button type="button" data-f="any" aria-pressed="true">Any</button>
-        <button type="button" data-f="<100" aria-pressed="false">&lt;100 KB</button>
-        <button type="button" data-f="<1000" aria-pressed="false">&lt;1 MB</button>
-        <button type="button" data-f="<10000" aria-pressed="false">&lt;10 MB</button>
-        <button type="button" data-f="<100000" aria-pressed="false">&lt;100 MB</button>
-        <button type="button" data-f=">100000" aria-pressed="false">&gt;100 MB</button>
-        <button type="button" data-f=">1000000" aria-pressed="false">&gt;1 GB</button>
-      </div>
-      <ul id="res" role="listbox" aria-label="Results">
-        <li class="row" role="option"><span class="nm">Budget 2025.xlsx</span><span class="pa">~/Documents/Finance</span><span class="sz">212 KB</span><span class="dt">Today 09:41</span></li>
-        <li class="row" role="option"><span class="nm">Invoice 0042.pdf</span><span class="pa">~/Documents/Invoices</span><span class="sz">96 KB</span><span class="dt">Yesterday 19:48</span></li>
-        <li class="row" role="option"><span class="nm">Site plan.pdf</span><span class="pa">~/Downloads</span><span class="sz">4.1 MB</span><span class="dt">Oct 12, 16:20</span></li>
-        <li class="row" role="option"><span class="nm">README.md</span><span class="pa">~/Projects/atlas</span><span class="sz">6 KB</span><span class="dt">Oct 9, 11:02</span></li>
-      </ul>
-      <div class="foot"><span id="cnt">300 results</span><span id="tim">300 files in the sample index</span></div>
+      <p class="fine">Open source. Signed and notarized by Apple. Needs macOS 14 or later.</p>
+    </div>
+    <div class="mascot-box" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="float f1">📄</span><span class="float f2">📸</span><span class="float f3">🎵</span><span class="float f4">📁</span>
+      <svg class="mascot" id="mascot" viewBox="0 0 320 340">
+        <path d="M226 240 L290 306" stroke="#2b2a4c" stroke-width="40" stroke-linecap="round"/>
+        <path d="M226 240 L290 306" stroke="#ffd75e" stroke-width="22" stroke-linecap="round"/>
+        <circle cx="150" cy="150" r="124" fill="#4aa3ff" stroke="#2b2a4c" stroke-width="8"/>
+        <circle cx="150" cy="150" r="96" fill="#f4fbff" stroke="#2b2a4c" stroke-width="6"/>
+        <path d="M78 118 Q88 86 122 72" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+        <g class="blink"><ellipse cx="116" cy="140" rx="19" ry="24" fill="#fff" stroke="#2b2a4c" stroke-width="5"/><circle class="pupil" cx="118" cy="144" r="11" fill="#2b2a4c"/><circle class="pupil" cx="122" cy="139" r="4" fill="#fff"/></g>
+        <g class="blink"><ellipse cx="184" cy="140" rx="19" ry="24" fill="#fff" stroke="#2b2a4c" stroke-width="5"/><circle class="pupil" cx="182" cy="144" r="11" fill="#2b2a4c"/><circle class="pupil" cx="186" cy="139" r="4" fill="#fff"/></g>
+        <ellipse cx="88" cy="182" rx="15" ry="9" fill="#ff8fb1" opacity=".75"/>
+        <ellipse cx="212" cy="182" rx="15" ry="9" fill="#ff8fb1" opacity=".75"/>
+        <path d="M132 184 Q150 206 168 184" fill="none" stroke="#2b2a4c" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <div class="badge">Free<br>forever!</div>
     </div>
   </div>
-  <p class="hint" data-r>Try <button type="button" data-try="budget">budget</button><button type="button" data-try="invoice 2025">invoice 2025</button><button type="button" data-try=".pdf">.pdf</button><button type="button" data-try="onedrive">onedrive</button> or use the arrow keys and Return.</p>
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q90 0 180 30 T360 30 T540 30 T720 30 T900 30 T1080 30 T1260 30 T1440 30 V60 H0Z" fill="#fff"/></svg>
 </section>
 
-<section class="walk" aria-labelledby="walk-h">
-  <div class="grid top">
-    <h2 id="walk-h" data-r>Walk, or look.</h2>
-    <p data-r>Without an index, a search walks the disk: folder by folder, file by file, every time you press a key. McFind walks your folders once and writes what it saw into a SQLite index. After that it only looks. File system events keep the index current.</p>
-  </div>
-  <div class="spec a" data-r="row"><small>Without an index</small>Walk</div>
-  <div class="spec b" data-r="row"><small>With McFind</small>Look</div>
-</section>
-
-<figure>
-  <div class="band" data-r="pic"><img class="drift" id="drift" src="img/drawer.jpg" width="1800" height="1200" alt="A wooden drawer of the Copyright Office card catalogue at the Library of Congress, packed with index cards" loading="lazy"></div>
-  <figcaption class="cap"><span>Libraries solved this long ago. Nobody walks the shelves. They read the cards.</span><span>Picture: <a href="https://commons.wikimedia.org/wiki/File:Copyright_Card_Catalog_Drawer.jpg">Michael Holley, public domain</a></span></figcaption>
-</figure>
-
-<section class="grid index" aria-labelledby="index-h">
-  <div class="pic" data-r="pic"><img src="img/cards.jpg" width="1350" height="1800" alt="A drawer of library index cards with coloured rings on their edges and one card held up" loading="lazy"></div>
-  <div class="txt">
-    <h2 class="sr" id="index-h">One card per file</h2>
-    <p data-r>McFind keeps one card for every file: its name, its folder, its size and the day it changed.</p>
-    <p data-r>A typical index of about 100,000 files takes 50 to 100 MB. Folders that only hold noise, such as caches, logs and build output, are left out. A periodic VACUUM keeps the database small.</p>
-    <p data-r style="margin-top:28px"><small style="font-size:var(--s-small);color:var(--muted)">Picture: <a href="https://commons.wikimedia.org/w/index.php?curid=153582894">TBurmeister (WMF), CC BY-SA 4.0</a>, via Wikimedia Commons</small></p>
-  </div>
-</section>
-
-<section class="sw" id="features" aria-label="Features">
-  <div class="row on">
-    <div class="t"><h3>Finds files while you are still typing.</h3><p>Results come from a SQLite index. The goal is a full list in under 50 ms.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="true" aria-label="Show details: fast search"></button></div>
-  </div>
-  <div class="row on">
-    <div class="t"><h3>Searches your cloud folders too.</h3><p>OneDrive, SharePoint, Google Drive and iCloud Drive are on by default.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="true" aria-label="Show details: cloud folders"></button></div>
-  </div>
-  <div class="row">
-    <div class="t"><h3>Notices new files the moment they appear.</h3><p>File system events update the index as you work. You never rescan by hand. Press Cmd+Shift+R if you ever want to.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="false" aria-label="Show details: live updates"></button></div>
-  </div>
-  <div class="row">
-    <div class="t"><h3>Lets you pick every folder it reads.</h3><p>Settings follow your folder tree. Switch a folder off and its children follow, or override them one by one. The Library folder is off by default.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="false" aria-label="Show details: folder settings"></button></div>
-  </div>
-  <div class="row">
-    <div class="t"><h3>Keeps working while it indexes.</h3><p>Indexing runs in the background with a progress indicator. You can search while it runs.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="false" aria-label="Show details: background indexing"></button></div>
-  </div>
-  <div class="row">
-    <div class="t"><h3>Looks like it came with your Mac.</h3><p>It is built with SwiftUI. Each result shows the file type, size and modified date.</p></div>
-    <div class="tg tgwrap"><button class="tgl" data-ui role="switch" aria-checked="false" aria-label="Show details: native interface"></button></div>
+<section class="try" id="try" aria-labelledby="try-h">
+  <div class="wrap">
+    <div class="sec-head" data-r>
+      <h2 id="try-h">Go on, type something!</h2>
+      <p>This window really works. It searches 300 made-up files the same way McFind searches your Mac.</p>
+    </div>
+    <div data-r>
+      <div class="win" data-ui>
+        <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="q" id="q">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4.5 4.5"/></svg>
+          <input id="qi" type="search" placeholder="Search files and folders" autocomplete="off" spellcheck="false" aria-label="Search the sample index" role="combobox" aria-expanded="true" aria-controls="res" aria-autocomplete="list">
+          <button type="button" id="qc" aria-label="Clear search">&times;</button>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filter by size">
+          <button type="button" data-f="any" aria-pressed="true">Any</button>
+          <button type="button" data-f="<100" aria-pressed="false">&lt;100 KB</button>
+          <button type="button" data-f="<1000" aria-pressed="false">&lt;1 MB</button>
+          <button type="button" data-f="<10000" aria-pressed="false">&lt;10 MB</button>
+          <button type="button" data-f="<100000" aria-pressed="false">&lt;100 MB</button>
+          <button type="button" data-f=">100000" aria-pressed="false">&gt;100 MB</button>
+          <button type="button" data-f=">1000000" aria-pressed="false">&gt;1 GB</button>
+        </div>
+        <ul id="res" role="listbox" aria-label="Results">
+          <li role="option"><span class="nm">Budget 2025.xlsx</span><span class="pa">~/Documents/Finance</span><span class="sz">212 KB</span><span class="dt">Today 09:41</span></li>
+          <li role="option"><span class="nm">Invoice 0042.pdf</span><span class="pa">~/Documents/Invoices</span><span class="sz">96 KB</span><span class="dt">Yesterday 19:48</span></li>
+          <li role="option"><span class="nm">Site plan.pdf</span><span class="pa">~/Downloads</span><span class="sz">4.1 MB</span><span class="dt">Oct 12, 16:20</span></li>
+          <li role="option"><span class="nm">README.md</span><span class="pa">~/Projects/atlas</span><span class="sz">6 KB</span><span class="dt">Oct 9, 11:02</span></li>
+        </ul>
+        <div class="wfoot"><span id="cnt">300 results</span><span id="tim">300 files in the sample index</span></div>
+      </div>
+      <p class="hint">Try <button type="button" data-try="budget">budget</button><button type="button" data-try="invoice 2025">invoice 2025</button><button type="button" data-try=".pdf">.pdf</button><button type="button" data-try="onedrive">onedrive</button> or use the arrow keys and Return.</p>
+    </div>
   </div>
 </section>
 
-<section class="grid keys" aria-labelledby="keys-h">
-  <h2 id="keys-h" data-r>Hands stay on the keys.</h2>
-  <ul>
-    <li data-r="row"><span>Open the file</span><span>Return</span></li>
-    <li data-r="row"><span>Move through results</span><span>Up, Down</span></li>
-    <li data-r="row"><span>Clear the search</span><span>Esc</span></li>
-    <li data-r="row"><span>Open settings</span><span>Cmd ,</span></li>
-    <li data-r="row"><span>Index everything again</span><span>Cmd Shift R</span></li>
-  </ul>
+<section class="race" aria-labelledby="race-h">
+  <div class="wrap">
+    <div class="sec-head" data-r>
+      <h2 id="race-h">Walk, or look?</h2>
+      <p>Without an index, a search walks the disk folder by folder, every time you press a key. McFind walks your folders once and writes what it saw into a SQLite index. After that it only looks.</p>
+    </div>
+    <div class="lanes" data-r>
+      <div class="lane slow"><div class="lab">Without an index<small>Walks every folder, every time</small></div><div class="track"><span class="runner" aria-hidden="true">🐌</span></div><span class="flag" aria-hidden="true">🏁</span></div>
+      <div class="lane fast"><div class="lab">With McFind<small>Looks it up in the index</small></div><div class="track"><span class="runner" aria-hidden="true">🐇</span></div><span class="done" aria-hidden="true">Found it!</span><span class="flag" aria-hidden="true">🏁</span></div>
+    </div>
+    <p class="note" data-r>File system events keep the index fresh while you work.</p>
+  </div>
 </section>
 
-<section class="stat" aria-labelledby="stat-h">
-  <div class="top"><h2 id="stat-h" data-r>A search takes under</h2></div>
-  <div>
-    <div class="fig" data-r aria-label="50 milliseconds">50<sup>ms</sup></div>
-    <div class="below">
-      <p data-r>McFind answers from a SQLite index on your own disk. The README promises a result list in under 50 milliseconds.</p>
-      <small>From the McFind README</small>
+<section class="index" aria-labelledby="idx-h">
+  <div class="wrap">
+    <div class="polas" data-r>
+      <figure class="pola pa1"><img src="img/cards.jpg" width="1350" height="1800" alt="A drawer of library index cards with coloured rings on their edges and one card held up" loading="lazy" style="object-position:50% 14%"><figcaption><a href="https://commons.wikimedia.org/w/index.php?curid=153582894">TBurmeister, CC BY-SA 4.0</a></figcaption></figure>
+      <figure class="pola pa2"><img src="img/drawer.jpg" width="1800" height="1200" alt="A wooden drawer of the Copyright Office card catalogue at the Library of Congress, packed with index cards" loading="lazy"><figcaption><a href="https://commons.wikimedia.org/wiki/File:Copyright_Card_Catalog_Drawer.jpg">Michael Holley, public domain</a></figcaption></figure>
+    </div>
+    <div class="txt">
+      <h2 id="idx-h" data-r>One little card for every file</h2>
+      <p data-r>Libraries solved this long ago. Nobody walks the shelves. They read the cards. McFind keeps one card per file: its name, its folder, its size and the day it changed.</p>
+      <p data-r>A typical index of about 100,000 files takes 50 to 100 MB. Caches, logs and build leftovers are skipped, and a periodic VACUUM keeps the database tidy.</p>
+    </div>
+  </div>
+</section>
+
+<section class="feat" id="features" aria-labelledby="feat-h">
+  <div class="wrap">
+    <div class="sec-head" data-r><h2 id="feat-h">Small app, big talents</h2></div>
+    <div class="grid3">
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">⚡</div><h3>Zooms along</h3><p>Results come from a SQLite index. The goal is a full list in under 50 ms.</p></article>
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">☁️</div><h3>Peeks in the cloud</h3><p>OneDrive, SharePoint, Google Drive and iCloud Drive are on by default.</p></article>
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">👀</div><h3>Spots new files</h3><p>File system events update the index as you work. Press Cmd+Shift+R if you ever want a fresh start.</p></article>
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">🗂️</div><h3>You pick the folders</h3><p>Settings follow your folder tree. Switch a folder off and its children follow. Library is off by default.</p></article>
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">🧘</div><h3>Never makes you wait</h3><p>Indexing runs in the background with a progress indicator. Search while it works.</p></article>
+      <article class="card fcard" data-r><div class="ic" aria-hidden="true">🍎</div><h3>Feels like home</h3><p>Built with SwiftUI. Every result shows its type, size and modified date.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="keys" aria-labelledby="keys-h">
+  <div class="wrap">
+    <div class="sec-head" data-r><h2 id="keys-h">Hands stay on the keys</h2><p>No mouse needed. Promise.</p></div>
+    <ul class="klist">
+      <li data-r><span>Open the file</span><span class="kc"><kbd>Return</kbd></span></li>
+      <li data-r><span>Move through results</span><span class="kc"><kbd>&uarr;</kbd><kbd>&darr;</kbd></span></li>
+      <li data-r><span>Clear the search</span><span class="kc"><kbd>Esc</kbd></span></li>
+      <li data-r><span>Open settings</span><span class="kc"><kbd>Cmd</kbd><kbd>,</kbd></span></li>
+      <li data-r><span>Index everything again</span><span class="kc"><kbd>Cmd</kbd><kbd>Shift</kbd><kbd>R</kbd></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="speed" aria-labelledby="speed-h">
+  <div class="wrap">
+    <svg class="mini" viewBox="0 0 320 340" aria-hidden="true"><use href="#mas"/></svg>
+    <div class="bubble" data-r>
+      <h2 id="speed-h">A search takes under</h2>
+      <div class="fig" aria-label="50 milliseconds">50<sup>ms</sup></div>
+      <p>McFind answers from a SQLite index on your own disk. The README promises a result list in under 50 milliseconds. That is quicker than a blink!</p>
     </div>
   </div>
 </section>
 
 <section class="install" id="install" aria-labelledby="inst-h">
-  <div class="grid head">
-    <h2 id="inst-h" data-r>Pick how to install it.</h2>
-    <p data-r>Latest release: <strong id="ver">v0.3.3</strong>. Every build is signed with a Developer ID and notarized by Apple.</p>
-  </div>
-  <div class="grid"><div class="shot" data-r="pic"><img src="McFind-blurred.png" width="2075" height="968" alt="The McFind window showing a search for the word instructions, with file names blurred. It lists 52 results from 375,869 indexed files." loading="lazy"></div></div>
-  <div class="ways">
-    <div class="grid way">
-      <h3 data-r>Homebrew</h3>
-      <div class="d" data-r><p>Installs McFind and updates it with brew upgrade.</p><pre><code>brew tap ntufar/tap
-brew install --cask mcfind</code></pre></div>
+  <div class="wrap">
+    <div class="sec-head" data-r>
+      <h2 id="inst-h">Take McFind home</h2>
+      <p>Latest release: <span class="ver" id="ver">v0.3.3</span><br>Every build is signed with a Developer ID and notarized by Apple.</p>
     </div>
-    <div class="grid way">
-      <h3 data-r>DMG</h3>
-      <div class="d" data-r><p>Open the disk image and drag McFind to Applications.</p><a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg">Download McFind.dmg</a></div>
+    <div class="shot" data-r>
+      <div class="frame"><img src="McFind-blurred.png" width="2075" height="968" alt="The McFind window showing a search for the word instructions, with file names blurred. It lists 52 results from 375,869 indexed files." loading="lazy"></div>
+      <p>The real window. We blurred the file names to keep them private.</p>
     </div>
-    <div class="grid way">
-      <h3 data-r>PKG</h3>
-      <div class="d" data-r><p>An installer package that places the app for you.</p><a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg">Download McFind.pkg</a></div>
+    <div class="grid3">
+      <article class="card way" data-r><div class="emoji" aria-hidden="true">🍺</div><h3>Homebrew</h3><p>Installs McFind and updates it with brew upgrade.</p><pre><code>brew tap ntufar/tap
+brew install --cask mcfind</code></pre></article>
+      <article class="card way" data-r><div class="emoji" aria-hidden="true">💿</div><h3>DMG</h3><p>Open the disk image and drag McFind to Applications.</p><a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg">Download DMG</a></article>
+      <article class="card way" data-r><div class="emoji" aria-hidden="true">📦</div><h3>PKG</h3><p>An installer package that places the app for you.</p><a class="btn pink" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.pkg">Download PKG</a></article>
     </div>
-  </div>
-  <div class="grid need">
-    <h3 data-r>What you need.</h3>
-    <ul data-r>
-      <li>macOS 14 Sonoma or later.</li>
-      <li>About 100 MB of disk space for a typical index.</li>
-      <li>Xcode 15 or later, only if you build from source.</li>
-    </ul>
+    <div class="card need" data-r>
+      <h3>What you need</h3>
+      <ul>
+        <li>macOS 14 Sonoma or later</li>
+        <li>About 100 MB of disk space for a typical index</li>
+        <li>Xcode 15 or later, only if you build from source</li>
+      </ul>
+    </div>
   </div>
 </section>
 
-<a class="cta" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg" aria-label="Download McFind for Mac">
-  <span class="say">Get McFind.dmg, then drag it to Applications.</span>
-  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 36L36 12M16 12h20v20"/></svg>
-  <span class="word" aria-hidden="true">Download</span>
-</a>
+<section class="final">
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q90 0 180 30 T360 30 T540 30 T720 30 T900 30 T1080 30 T1260 30 T1440 30 V60 H0Z" fill="#fff"/></svg>
+  <div class="wrap" data-r>
+    <h2>Ready to find things?</h2>
+    <a class="btn" href="https://github.com/ntufar/mcfind/releases/latest/download/McFind.dmg">Download McFind.dmg</a>
+    <p class="fine">Free and open source. Drag it to Applications and say hello.</p>
+  </div>
+</section>
 </main>
 
-<footer class="foot-field">
-  <div class="notes">
-    <p>McFind is free and open source.</p>
-    <p>Made by <a class="link" href="https://github.com/ntufar">Nicolai Tufar</a>.</p>
-    <p>Built with Swift and SwiftUI for macOS.</p>
-    <a class="up link" href="#top">Back to top</a>
-  </div>
-  <div>
-    <a class="big" href="https://github.com/ntufar/mcfind">github.com/<br>ntufar/mcfind</a>
-    <div class="meta">
-      <nav aria-label="Project links">
-        <a class="link" href="https://github.com/ntufar/mcfind/releases">Releases</a>
-        <a class="link" href="https://github.com/ntufar/mcfind/issues">Issues</a>
-        <a class="link" href="https://github.com/ntufar/mcfind/blob/master/CHANGELOG.md">Changelog</a>
+<footer class="site-foot">
+  <div class="wrap">
+    <svg viewBox="0 0 320 340" aria-hidden="true"><use href="#mas"/></svg>
+    <div>
+      <p>Made with <span aria-label="love">♥</span> by <a href="https://github.com/ntufar">Nicolai Tufar</a>. Built with Swift and SwiftUI for macOS.</p>
+      <nav class="links" aria-label="Project links">
+        <a href="https://github.com/ntufar/mcfind">GitHub</a>
+        <a href="https://github.com/ntufar/mcfind/releases">Releases</a>
+        <a href="https://github.com/ntufar/mcfind/issues">Issues</a>
+        <a href="https://github.com/ntufar/mcfind/blob/master/CHANGELOG.md">Changelog</a>
+        <a href="#top">Back to top</a>
       </nav>
-      <p class="credits">Pictures: <a class="link" href="https://commons.wikimedia.org/wiki/File:Copyright_Card_Catalog_Drawer.jpg">“Copyright Card Catalog Drawer”</a> by Michael Holley, public domain; <a class="link" href="https://commons.wikimedia.org/w/index.php?curid=153582894">“Card catalog at the Indiana State Library”</a> by TBurmeister (WMF), <a class="link" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Both via Wikimedia Commons.</p>
-      <p>2026</p>
+      <p class="credits">Pictures: <a href="https://commons.wikimedia.org/wiki/File:Copyright_Card_Catalog_Drawer.jpg">“Copyright Card Catalog Drawer”</a> by Michael Holley, public domain; <a href="https://commons.wikimedia.org/w/index.php?curid=153582894">“Card catalog at the Indiana State Library”</a> by TBurmeister (WMF), <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Both via Wikimedia Commons.</p>
     </div>
   </div>
 </footer>
@@ -553,7 +567,7 @@ brew install --cask mcfind</code></pre></div>
     shown = out.slice(0, 100);
     res.textContent = '';
     if (!shown.length) {
-      var li = document.createElement('li'); li.className = 'none'; li.textContent = 'No files match.'; res.appendChild(li);
+      var li = document.createElement('li'); li.className = 'none'; li.textContent = 'Nothing here. Try another word!'; res.appendChild(li);
     }
     shown.forEach(function (f, i) {
       var li = document.createElement('li'); li.setAttribute('role', 'option'); li.id = 'r' + i;
@@ -598,44 +612,32 @@ brew install --cask mcfind</code></pre></div>
   });
   run();
 
-  /* ---------- feature switches ---------- */
-  document.querySelectorAll('.tgl').forEach(function (t) {
-    t.addEventListener('click', function () {
-      var on = t.getAttribute('aria-checked') !== 'true';
-      t.setAttribute('aria-checked', on ? 'true' : 'false');
-      t.closest('.row').classList.toggle('on', on);
-    });
-  });
-
   /* ---------- reveal on entry ---------- */
   var items = document.querySelectorAll('[data-r]');
   if ('IntersectionObserver' in window && !reduce) {
     var count = new Map();
     items.forEach(function (el) {
-      var sec = el.closest('section,figure,.ways') || document.body, n = count.get(sec) || 0;
+      var sec = el.closest('section') || document.body, n = count.get(sec) || 0;
       el.style.setProperty('--i', Math.min(n, 6)); count.set(sec, n + 1);
     });
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
     items.forEach(function (el) { io.observe(el); });
   } else {
     items.forEach(function (el) { el.classList.add('in'); });
   }
 
-  /* ---------- scroll-linked: the wordmark and the drawer ---------- */
-  if (!reduce) {
-    var word = document.getElementById('word'), drift = document.getElementById('drift'), ticking = false;
-    function frame() {
-      ticking = false;
-      var vh = innerHeight, y = scrollY;
-      word.style.setProperty('--p', Math.max(0, Math.min(1, y / vh)).toFixed(3));
-      var r = drift.parentNode.getBoundingClientRect();
-      var d = Math.max(-1, Math.min(1, (r.top + r.height / 2 - vh / 2) / vh));
-      drift.style.setProperty('--d', d.toFixed(3));
-    }
-    addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, { passive: true });
-    frame();
+  /* ---------- the mascot's eyes follow the pointer ---------- */
+  var m = document.getElementById('mascot');
+  if (m && !reduce) {
+    var pupils = m.querySelectorAll('.pupil');
+    addEventListener('pointermove', function (e) {
+      var r = m.getBoundingClientRect(), cx = r.left + r.width * 0.47, cy = r.top + r.height * 0.42;
+      var dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260) * 7;
+      var x = dx / d * k, y = dy / d * k;
+      pupils.forEach(function (p) { p.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)'; });
+    }, { passive: true });
   }
 })();
 </script>
