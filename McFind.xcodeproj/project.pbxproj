@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD0000000000000000000004 /* SearchFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000003 /* SearchFilters.swift */; };
+		DD0000000000000000000006 /* SearchFiltersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000005 /* SearchFiltersTests.swift */; };
+		DD0000000000000000000002 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000001 /* DesignSystem.swift */; };
 		9F0F79D02FCE2D76008D73C5 /* FileMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */; };
 		9F0F79D12FCE2D76008D73C5 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */; };
 		9F0F79D22FCE2D76008D73C5 /* IndexDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */; };
@@ -45,6 +48,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DD0000000000000000000003 /* SearchFilters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilters.swift; sourceTree = "<group>"; };
+		DD0000000000000000000005 /* SearchFiltersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFiltersTests.swift; sourceTree = "<group>"; };
+		DD0000000000000000000001 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		9F0F79CC2FCE2D76008D73C5 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		9F0F79CD2FCE2D76008D73C5 /* FileMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMonitor.swift; sourceTree = "<group>"; };
 		9F0F79CE2FCE2D76008D73C5 /* IndexDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexDatabase.swift; sourceTree = "<group>"; };
@@ -100,6 +106,8 @@
 		AA0000000000000000000012 /* McFind */ = {
 			isa = PBXGroup;
 			children = (
+				DD0000000000000000000001 /* DesignSystem.swift */,
+				DD0000000000000000000003 /* SearchFilters.swift */,
 				9F242A382FCE3EF000039749 /* IndexSettings.swift */,
 				9F242A362FCE3DF500039749 /* SettingsView.swift */,
 				9F242A332FCE3CEA00039749 /* SettingsView.swift */,
@@ -138,6 +146,7 @@
 				BB000021 /* IndexSettingsTests.swift */,
 				BB000022 /* SearchViewModelTests.swift */,
 				BB000023 /* FileItemTests.swift */,
+				DD0000000000000000000005 /* SearchFiltersTests.swift */,
 				BB000024 /* McFindTests.swift */,
 			);
 			path = McFindTests;
@@ -269,6 +278,8 @@
 				9F0F79E32FCE3A00008D73C5 /* QuickLookController.swift in Sources */,
 				9F0F79E42FCE3A01008D73C5 /* PreviewPanel.swift in Sources */,
 				CC0000000000000000000001 /* Logging.swift in Sources */,
+				DD0000000000000000000002 /* DesignSystem.swift in Sources */,
+				DD0000000000000000000004 /* SearchFilters.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,6 +293,7 @@
 				BB000002 /* IndexSettingsTests.swift in Sources */,
 				BB000003 /* SearchViewModelTests.swift in Sources */,
 				BB000004 /* FileItemTests.swift in Sources */,
+				DD0000000000000000000006 /* SearchFiltersTests.swift in Sources */,
 				BB000005 /* McFindTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -436,7 +448,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.3.4;
+				MARKETING_VERSION = 0.3.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -465,7 +477,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.3.4;
+				MARKETING_VERSION = 0.3.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -40,7 +40,9 @@ final class FileItemTests: XCTestCase {
         let item = FileItem(path: "/tmp/test.txt", name: "test.txt", isDirectory: false, size: 100, dateModified: thirtyDaysAgo)
         XCTAssertFalse(item.formattedDate.hasPrefix("Today"))
         XCTAssertFalse(item.formattedDate.hasPrefix("Yesterday"))
-        XCTAssertTrue(item.formattedDate.contains(":"))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        XCTAssertEqual(item.formattedDate, formatter.string(from: thirtyDaysAgo))
     }
 
     func testFormattedDateOtherYear() {

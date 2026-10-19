@@ -14,175 +14,12 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Search Bar
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                    .font(.system(size: 14))
-
-                TextField("Search files...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 14))
-
-                if !viewModel.searchText.isEmpty {
-                    Button(action: { viewModel.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 14))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
-
+            searchBar
+            filterBar
             Divider()
-
-            // Size Filter Bar
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 4) {
-                    ForEach(SizeFilter.allCases) { filter in
-                        Button(action: {
-                            viewModel.selectedSizeFilter = filter
-                        }) {
-                            Text(filter.displayName)
-                                .font(.system(size: 10))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(viewModel.selectedSizeFilter == filter ? Color.accentColor : Color(NSColor.controlBackgroundColor))
-                                .foregroundColor(viewModel.selectedSizeFilter == filter ? .white : .secondary)
-                                .cornerRadius(4)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-            }
-
+            content
             Divider()
-
-            // Results List or Empty State
-            if viewModel.files.isEmpty && !viewModel.isIndexing && !viewModel.isLoadingFromDisk {
-                VStack(spacing: 16) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 48))
-                        .foregroundColor(.secondary)
-
-                    Text(viewModel.searchText.isEmpty ? "Start typing to search" : "No files found")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
-
-                    if !viewModel.searchText.isEmpty {
-                        Text("Try a different search term")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                HStack(spacing: 0) {
-                    // Resizable Table View
-                    ResizableTableView(
-                        files: $viewModel.files,
-                        selectedIndices: $viewModel.selectedIndices,
-                        focusResults: $focusResults,
-                        onDoubleClick: {
-                            viewModel.openSelectedFiles()
-                        },
-                        onSelectionChange: { indices in
-                            // selection already synced via binding
-                        },
-                        onRevealInFinder: {
-                            viewModel.revealInFinder()
-                        },
-                        onCopyPath: {
-                            viewModel.copyPaths()
-                        },
-                        onCopyFile: {
-                            viewModel.copyFiles()
-                        },
-                        onOpenTerminal: {
-                            viewModel.openTerminal()
-                        },
-                        onCopyPathEscaped: {
-                            viewModel.copyPathsEscaped()
-                        },
-                        onMoveToTrash: { indices in
-                            viewModel.moveToTrashFiles(at: indices)
-                        },
-                        onRenameFile: { index, newName in
-                            viewModel.renameFile(at: index, to: newName)
-                        }
-                    )
-
-                    // Preview Panel
-                    if showPreviewPanel {
-                        if viewModel.selectedIndices.count > 1 {
-                            Divider()
-                            PreviewPanel(files: viewModel.selectedFiles, selectedCount: viewModel.selectedIndices.count)
-                        } else if let selectedFile = viewModel.selectedFile {
-                            Divider()
-                            PreviewPanel(file: selectedFile)
-                        }
-                    }
-                }
-            }
-
-            Divider()
-
-            // Status Bar
-            HStack(spacing: 12) {
-                if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                    Text("Loading index...")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                } else if viewModel.isIndexing {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                    Text(viewModel.statusMessage.isEmpty
-                         ? "Indexing: \(viewModel.indexedCount) files"
-                         : viewModel.statusMessage)
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-
-                    Spacer()
-
-                    Button("Cancel") {
-                        viewModel.cancelIndexing()
-                    }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11))
-                    .foregroundColor(.blue)
-                } else {
-                    if !viewModel.files.isEmpty {
-                        let selectedCount = viewModel.selectedIndices.count
-                        if selectedCount > 1 {
-                            Text("\(selectedCount) of \(viewModel.files.count) selected")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("\(viewModel.files.count) results")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    if viewModel.totalFiles > 0 {
-                        Text("\(viewModel.totalFiles.formatted()) files indexed")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+            statusBar
         }
         .handleKeyEvents { event in
             switch Int(event.keyCode) {
@@ -244,6 +81,205 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ReindexFiles"))) { _ in
             viewModel.startIndexing()
         }
+    }
+
+    // MARK: - Search bar
+
+    private var searchBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.secondary.opacity(0.7))
+
+            TextField(viewModel.totalFiles > 0 ? "Search \(Format.count(viewModel.totalFiles)) files" : "Search files",
+                      text: $viewModel.searchText)
+                .textFieldStyle(.plain)
+                .font(Typo.query)
+
+            if !viewModel.searchText.isEmpty {
+                Button(action: { viewModel.searchText = "" }) {
+                    Kbd("esc")
+                }
+                .buttonStyle(.plain)
+                .help("Clear search")
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 6)
+        .padding(.bottom, 14)
+    }
+
+    // MARK: - Filters
+
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            FilterControl(
+                title: "Size",
+                activeLabel: viewModel.activeLabel(for: .size),
+                fromQuery: viewModel.isFromToken(.size),
+                options: SizeRange.presets.map { range in
+                    .init(id: range.label, label: range.label,
+                          isSelected: viewModel.effectiveFilters.size == range,
+                          action: { viewModel.setSize(range) })
+                },
+                onClear: { viewModel.clearFilter(.size) }
+            )
+
+            FilterControl(
+                title: "Kind",
+                activeLabel: viewModel.activeLabel(for: .kind),
+                fromQuery: viewModel.isFromToken(.kind),
+                options: KindFilter.allCases.filter { $0 != .any }.map { kind in
+                    .init(id: kind.rawValue, label: kind.displayName,
+                          isSelected: viewModel.effectiveFilters.kind == kind && viewModel.effectiveFilters.extensions.isEmpty,
+                          action: { viewModel.setKind(kind) })
+                },
+                onClear: { viewModel.clearFilter(.kind) }
+            )
+
+            FilterControl(
+                title: "Modified",
+                activeLabel: viewModel.activeLabel(for: .modified),
+                fromQuery: viewModel.isFromToken(.modified),
+                options: ModifiedFilter.presets.map { window in
+                    .init(id: window.label, label: window.label,
+                          isSelected: viewModel.effectiveFilters.modified == window,
+                          action: { viewModel.setModified(window) })
+                },
+                onClear: { viewModel.clearFilter(.modified) }
+            )
+
+            Spacer(minLength: 12)
+
+            if viewModel.hasActiveFilters {
+                Button("Clear all") { viewModel.clearFilters() }
+                    .buttonStyle(LinkButtonStyle())
+                    .font(Typo.caption)
+            } else {
+                Text("Try size:>10mb kind:pdf modified:week")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(.secondary.opacity(0.6))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .layoutPriority(-1)
+            }
+        }
+        .padding(.horizontal, 22)
+        .padding(.bottom, 12)
+    }
+
+    // MARK: - Results
+
+    @ViewBuilder
+    private var content: some View {
+        if viewModel.files.isEmpty {
+            if !viewModel.hasQuery {
+                WelcomeView(viewModel: viewModel)
+            } else if viewModel.isLoadingFromDisk {
+                Color.clear
+            } else {
+                NoResultsView(viewModel: viewModel)
+            }
+        } else {
+            HStack(spacing: 0) {
+                ResizableTableView(
+                    files: $viewModel.files,
+                    selectedIndices: $viewModel.selectedIndices,
+                    focusResults: $focusResults,
+                    query: viewModel.resultsQuery,
+                    onDoubleClick: { viewModel.openSelectedFiles() },
+                    onSelectionChange: { _ in },
+                    onRevealInFinder: { viewModel.revealInFinder() },
+                    onCopyPath: { viewModel.copyPaths() },
+                    onCopyFile: { viewModel.copyFiles() },
+                    onOpenTerminal: { viewModel.openTerminal() },
+                    onCopyPathEscaped: { viewModel.copyPathsEscaped() },
+                    onMoveToTrash: { indices in viewModel.moveToTrashFiles(at: indices) },
+                    onRenameFile: { index, newName in viewModel.renameFile(at: index, to: newName) }
+                )
+
+                if showPreviewPanel, !viewModel.selectedFiles.isEmpty {
+                    Divider()
+                    PreviewPanel(
+                        files: viewModel.selectedFiles,
+                        onOpen: { viewModel.open($0) },
+                        onReveal: { viewModel.reveal($0) },
+                        onCopyPaths: { viewModel.copyPaths(of: $0) }
+                    )
+                }
+            }
+        }
+    }
+
+    // MARK: - Status bar
+
+    private var statusBar: some View {
+        HStack(spacing: 10) {
+            if viewModel.isLoadingFromDisk && viewModel.totalFiles == 0 {
+                ProgressView().controlSize(.small)
+                Text("Loading index\u{2026}")
+            } else if viewModel.isIndexing {
+                if let fraction = viewModel.indexingFraction {
+                    ProgressView(value: fraction)
+                        .progressViewStyle(.linear)
+                        .controlSize(.small)
+                        .frame(width: 140)
+                    Text("Indexing \(Format.count(viewModel.indexedCount)) of about \(Format.count(viewModel.totalFiles))")
+                } else {
+                    ProgressView().controlSize(.small)
+                    Text(viewModel.statusMessage.isEmpty
+                         ? "Indexing \(Format.count(viewModel.indexedCount)) files"
+                         : viewModel.statusMessage)
+                }
+
+                Spacer()
+
+                Button("Cancel") { viewModel.cancelIndexing() }
+                    .buttonStyle(LinkButtonStyle())
+            } else {
+                if !viewModel.files.isEmpty {
+                    let selectedCount = viewModel.selectedIndices.count
+                    if selectedCount > 1 {
+                        Text("\(selectedCount) of \(Format.count(viewModel.files.count)) selected")
+                    } else {
+                        Text(viewModel.files.count >= 1000
+                             ? "1,000+ results"
+                             : "\(Format.count(viewModel.files.count)) results")
+                    }
+                }
+
+                Spacer()
+
+                if viewModel.totalFiles > 0 {
+                    indexHealth
+                }
+            }
+        }
+        .font(Typo.micro)
+        .monospacedDigit()
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 22)
+        .frame(height: 32)
+    }
+
+    private var indexHealth: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { _ in
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(Theme.good)
+                    .frame(width: 6, height: 6)
+                Text(indexHealthText)
+            }
+        }
+    }
+
+    private var indexHealthText: String {
+        var text = "\(Format.count(viewModel.totalFiles)) files indexed"
+        if let updated = viewModel.lastIndexedAt {
+            text += " \u{00B7} updated \(Format.relative(updated))"
+        }
+        return text
     }
 }
 

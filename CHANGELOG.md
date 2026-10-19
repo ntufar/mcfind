@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-10-19
+
+### Added
+- Filter menus for Size, Kind and Modified replace the row of size buttons. The size bands no longer overlap
+- Type filters in the search box: `size:>10mb`, `size:1mb..50mb`, `kind:pdf`, `kind:images`, `ext:png,jpg` and `modified:week`. Each token becomes a chip that you can remove
+- A filter on its own, such as `kind:images`, lists the most recently changed matches
+- The welcome screen shows the file count, recently opened files, filter examples and keyboard shortcuts
+- The preview panel shows a Quick Look thumbnail and the Open, Reveal and Copy path buttons
+- The status bar shows indexing progress and the time of the last index update
+- When filters hide every result, McFind says how many files match without them and offers to clear the filters
+
+### Changed
+- A larger search field with the Esc key hint
+- The results list highlights the matching part of each name and shows folders with `~`. The list has no zebra stripes and uses a soft selection color
+- Dates use one format for each age: "Today, 7:48 PM", "Mar 4", "Sep 17, 2025"
+- A size filter no longer matches folders
+
 ## [0.3.4] - 2026-10-19
 
 ### Changed

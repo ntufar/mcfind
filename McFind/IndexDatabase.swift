@@ -410,9 +410,10 @@ class IndexDatabase {
         case regex(sqlFilter: String, regex: NSRegularExpression)
     }
 
-    func search(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
-        Log.database.debug("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles) sizeFilter: \(sizeFilter.displayName))")
-        guard !query.isEmpty else {
+    func search(_ query: String, filterDotFiles: Bool = false, filters: SearchFilters = .none) -> [FileItem] {
+        Log.database.debug("🔍 IndexDatabase.search() called with: '\(query)' (filterDotFiles: \(filterDotFiles) filters: \(String(describing: filters)))")
+        // A query with no text is only meaningful when filters narrow it ("kind:pdf modified:week").
+        guard !query.isEmpty || !filters.isEmpty else {
             Log.database.warning("⚠️ Empty query, returning []")
             return []
         }
@@ -421,7 +422,7 @@ class IndexDatabase {
         let startTime = Date()
         let results = dbQueue.sync {
             Log.database.debug("🔓 Database queue acquired")
-            return searchInternal(query, filterDotFiles: filterDotFiles, sizeFilter: sizeFilter)
+            return searchInternal(query, filterDotFiles: filterDotFiles, filters: filters)
         }
         let elapsed = Date().timeIntervalSince(startTime)
         Log.database.debug("Search completed in \(String(format: "%.3f", elapsed))s - found \(results.count) results")
@@ -495,17 +496,18 @@ class IndexDatabase {
         return best.count >= 2 ? best : ""
     }
 
-    private func searchInternal(_ query: String, filterDotFiles: Bool = false, sizeFilter: SizeFilter = .any) -> [FileItem] {
-        Log.database.debug("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles), sizeFilter: \(sizeFilter.displayName))")
+    private func searchInternal(_ query: String, filterDotFiles: Bool = false, filters: SearchFilters = .none) -> [FileItem] {
+        Log.database.debug("  📊 searchInternal() starting... (filterDotFiles: \(filterDotFiles))")
 
-        let mode = parseSearchMode(query)
         var clauses: [String] = []
         if filterDotFiles { clauses.append("path_normalized NOT LIKE '%/.%'") }
-        if !sizeFilter.sqlClause.isEmpty {
-            let sizeClause = String(sizeFilter.sqlClause.dropFirst(4))
-            clauses.append(sizeClause)
-        }
+        clauses.append(contentsOf: filters.sqlClauses())
         let filterClause = clauses.isEmpty ? "" : "AND " + clauses.joined(separator: " AND ")
+
+        if query.isEmpty {
+            return searchFiltersOnly(filterClause: filterClause)
+        }
+        let mode = parseSearchMode(query)
 
         switch mode {
         case .simple(let normalizedQuery, let pattern, let prefixPattern, let pathPattern):
@@ -515,6 +517,24 @@ class IndexDatabase {
         case .regex(let sqlFilter, let regex):
             return searchRegex(sqlFilter: sqlFilter, regex: regex, filterClause: filterClause)
         }
+    }
+
+    /// Filters with no query text: the most recently modified matches first.
+    private func searchFiltersOnly(filterClause: String) -> [FileItem] {
+        let sql = """
+        SELECT path, name, is_directory, size, modified_date FROM files
+        WHERE 1 = 1 \(filterClause)
+        ORDER BY modified_date DESC
+        LIMIT 1000;
+        """
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
+            Log.database.error("❌ Error preparing filter-only search statement")
+            return []
+        }
+        let files = readSearchResults(statement)
+        sqlite3_finalize(statement)
+        return files
     }
 
     private func searchSimple(normalizedQuery: String, pattern: String, prefixPattern: String, pathPattern: String, filterClause: String = "") -> [FileItem] {

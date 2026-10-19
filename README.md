@@ -19,6 +19,7 @@ A fast, modern macOS application for searching files in your home directory, ins
 - **Path and name search**: Search by filename or full path
 - **Modern UI**: Clean, native macOS interface with SwiftUI
 - **Smart filtering**: Intelligent search with exact matches prioritized
+- **Filters**: Narrow results with the Size, Kind and Modified menus. Or type filters in the search box: `size:>10mb`, `kind:pdf`, `ext:png,jpg`, `modified:week`
 - **Hierarchical settings**: Control indexing per folder, including cloud storage
 - **Cloud integration**: Index SharePoint, OneDrive, Google Drive, iCloud Drive by default
 - **Keyboard navigation**: Use arrow keys to navigate, Enter to open files

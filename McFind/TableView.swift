@@ -10,6 +10,8 @@ struct ResizableTableView: NSViewRepresentable {
     @Binding var files: [FileItem]
     @Binding var selectedIndices: Set<Int>
     @Binding var focusResults: Bool
+    /// The query the files were found with, used to highlight the matching part of each name.
+    var query: String = ""
     var onDoubleClick: () -> Void
     var onSelectionChange: (Set<Int>) -> Void
     var onRevealInFinder: (() -> Void)?
@@ -26,7 +28,9 @@ struct ResizableTableView: NSViewRepresentable {
 
         tableView.delegate = context.coordinator
         tableView.dataSource = context.coordinator
-        tableView.usesAlternatingRowBackgroundColors = true
+        tableView.usesAlternatingRowBackgroundColors = false
+        tableView.gridStyleMask = []
+        tableView.intercellSpacing = NSSize(width: 10, height: 0)
         tableView.columnAutoresizingStyle = .lastColumnOnlyAutoresizingStyle
         tableView.allowsColumnResizing = true
         tableView.allowsColumnReordering = true
@@ -43,32 +47,32 @@ struct ResizableTableView: NSViewRepresentable {
         // Name column
         let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
         nameColumn.title = "Name"
-        nameColumn.width = 250
+        nameColumn.width = 240
         nameColumn.minWidth = 100
-        nameColumn.maxWidth = 500
+        nameColumn.maxWidth = 600
         tableView.addTableColumn(nameColumn)
 
         // Path column
         let pathColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("path"))
-        pathColumn.title = "Path"
-        pathColumn.width = 400
-        pathColumn.minWidth = 150
+        pathColumn.title = "Folder"
+        pathColumn.width = 280
+        pathColumn.minWidth = 120
         pathColumn.maxWidth = 1000
         tableView.addTableColumn(pathColumn)
 
         // Size column
         let sizeColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("size"))
         sizeColumn.title = "Size"
-        sizeColumn.width = 100
-        sizeColumn.minWidth = 60
+        sizeColumn.width = 80
+        sizeColumn.minWidth = 56
         sizeColumn.maxWidth = 150
         tableView.addTableColumn(sizeColumn)
 
         // Modified column
         let modifiedColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("modified"))
         modifiedColumn.title = "Modified"
-        modifiedColumn.width = 150
-        modifiedColumn.minWidth = 100
+        modifiedColumn.width = 130
+        modifiedColumn.minWidth = 96
         modifiedColumn.maxWidth = 200
         tableView.addTableColumn(modifiedColumn)
 
@@ -95,6 +99,8 @@ struct ResizableTableView: NSViewRepresentable {
         let newFiles = files
 
         let filesChanged = !areFilesEqual(oldFiles, newFiles)
+        let queryChanged = context.coordinator.query != query
+        context.coordinator.query = query
 
         if filesChanged {
             Log.ui.debug("📊 TableView: Files changed (old: \(oldFiles.count), new: \(newFiles.count))")
@@ -114,6 +120,8 @@ struct ResizableTableView: NSViewRepresentable {
                 context.coordinator.files = newFiles
                 tableView.reloadData()
             }
+        } else if queryChanged {
+            tableView.reloadData(forRowIndexes: IndexSet(0..<newFiles.count), columnIndexes: IndexSet(integer: 0))
         }
 
         // Only update selection if it changed and is different from what we last set
@@ -149,6 +157,7 @@ struct ResizableTableView: NSViewRepresentable {
 
     class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSMenuDelegate, NSTextFieldDelegate {
         var files: [FileItem] = []
+        var query = ""
         @Binding var selectedIndices: Set<Int>
         var onDoubleClick: () -> Void
         var onSelectionChange: (Set<Int>) -> Void
@@ -398,6 +407,8 @@ struct ResizableTableView: NSViewRepresentable {
             tableView.scrollRowToVisible(row)
             renamingRow = row
             originalName = files[row].name
+            textField.stringValue = originalName
+            textField.font = .systemFont(ofSize: 13)
             textField.isEditable = true
             textField.delegate = self
             textField.drawsBackground = true
@@ -493,7 +504,7 @@ struct ResizableTableView: NSViewRepresentable {
                 textField.isBordered = false
                 textField.drawsBackground = false
                 textField.isEditable = false
-                textField.font = NSFont.systemFont(ofSize: 12)
+                textField.font = NSFont.systemFont(ofSize: 13)
                 textField.lineBreakMode = .byTruncatingMiddle
                 textField.translatesAutoresizingMaskIntoConstraints = false
 
@@ -527,7 +538,9 @@ struct ResizableTableView: NSViewRepresentable {
                         textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -4),
                         textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
                     ])
-                    textField.textColor = .secondaryLabelColor
+                    textField.font = NSFont.systemFont(ofSize: 12)
+                    textField.textColor = .tertiaryLabelColor
+                    textField.lineBreakMode = .byTruncatingHead
 
                 case "size", "modified":
                     NSLayoutConstraint.activate([
@@ -535,6 +548,7 @@ struct ResizableTableView: NSViewRepresentable {
                         textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
                     ])
                     textField.alignment = .right
+                    textField.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
                     textField.textColor = .secondaryLabelColor
 
                 default:
@@ -545,7 +559,8 @@ struct ResizableTableView: NSViewRepresentable {
             // Update content (for both new and reused cells)
             switch identifier.rawValue {
             case "name":
-                cellView.textField?.stringValue = file.name
+                cellView.textField?.attributedStringValue = QueryHighlighter.attributed(
+                    file.name, query: query, font: .systemFont(ofSize: 13), color: .labelColor)
                 cellView.imageView?.image = file.fileIcon
 
             case "path":
@@ -579,7 +594,11 @@ struct ResizableTableView: NSViewRepresentable {
         }
 
         func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
-            return 22
+            return 30
+        }
+
+        func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+            return SoftSelectionRowView()
         }
 
         func tableViewSelectionDidChange(_ notification: Notification) {
@@ -600,7 +619,8 @@ struct ResizableTableView: NSViewRepresentable {
             guard !columns.isEmpty else { return }
             let visibleWidth = tableView.enclosingScrollView?.contentView.bounds.width ?? tableView.visibleRect.width
 
-            var overflow = columns.reduce(0) { $0 + $1.width } - visibleWidth
+            let spacing = tableView.intercellSpacing.width * CGFloat(columns.count)
+            var overflow = columns.reduce(0) { $0 + $1.width } + spacing - visibleWidth
             guard overflow > 0 else { return }
 
             // Always constrain from last column first
@@ -621,5 +641,20 @@ struct ResizableTableView: NSViewRepresentable {
                 onDoubleClick()
             }
         }
+    }
+}
+
+/// Draws a soft rounded selection instead of the saturated system bar.
+/// Row text keeps its normal color, so the match highlight stays readable when selected.
+final class SoftSelectionRowView: NSTableRowView {
+    override var interiorBackgroundStyle: NSView.BackgroundStyle { .normal }
+
+    override func drawSelection(in dirtyRect: NSRect) {
+        let rect = bounds.insetBy(dx: 8, dy: 1)
+        let color = isEmphasized
+            ? NSColor.controlAccentColor.withAlphaComponent(0.16)
+            : NSColor.labelColor.withAlphaComponent(0.07)
+        color.setFill()
+        NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6).fill()
     }
 }

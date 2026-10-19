@@ -9,6 +9,13 @@ class FileIndexer: ObservableObject {
     @Published var indexedCount = 0
     @Published var totalFiles = 0
     @Published var isLoadingFromDisk = false
+    @Published var lastIndexedAt: Date? = UserDefaults.standard.object(forKey: "lastIndexedAt") as? Date
+
+    private func markIndexUpdated() {
+        let now = Date()
+        lastIndexedAt = now
+        UserDefaults.standard.set(now, forKey: "lastIndexedAt")
+    }
 
     private let database = IndexDatabase()
     private var fileMonitor: FileMonitor?
@@ -330,6 +337,7 @@ class FileIndexer: ObservableObject {
             self.isIncremental = false
             self.progress = 1.0
             self.totalFiles = count
+            self.markIndexUpdated()
         }
     }
 
@@ -480,6 +488,7 @@ class FileIndexer: ObservableObject {
             self.isIncremental = false
             self.progress = 1.0
             self.totalFiles = self.database.getFileCount()
+            self.markIndexUpdated()
         }
     }
 
@@ -538,8 +547,8 @@ class FileIndexer: ObservableObject {
         return packageExtensions.contains(pathExtension)
     }
 
-    func search(_ query: String, sizeFilter: SizeFilter = .any) -> [FileItem] {
-        return database.search(query, filterDotFiles: !indexDotFiles, sizeFilter: sizeFilter)
+    func search(_ query: String, filters: SearchFilters = .none) -> [FileItem] {
+        return database.search(query, filterDotFiles: !indexDotFiles, filters: filters)
     }
 
     func removeDotFilesFromIndex() {
