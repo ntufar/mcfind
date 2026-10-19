@@ -17,10 +17,10 @@ class FileIndexer: ObservableObject {
         UserDefaults.standard.set(now, forKey: "lastIndexedAt")
     }
 
-    private let database = IndexDatabase()
+    private let database: IndexDatabase
     private var fileMonitor: FileMonitor?
     private let fileManager = FileManager.default
-    private let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
+    private let homeDirectory: URL
     private let indexingQueue = DispatchQueue(label: "com.mcfind.indexing", qos: .utility)
     private var isCancelled = false
     private let settings = IndexSettings.shared
@@ -42,8 +42,22 @@ class FileIndexer: ObservableObject {
     }
 
     init() {
+        self.homeDirectory = FileManager.default.homeDirectoryForCurrentUser
+        self.database = IndexDatabase()
         loadIndexFromDisk()
         startFileMonitoring()
+    }
+
+    /// Tests set their own root and database, and skip the monitor and auto scan.
+    init(homeDirectory: URL, database: IndexDatabase, enableMonitoring: Bool = true, autoStartIndexing: Bool = true) {
+        self.homeDirectory = homeDirectory
+        self.database = database
+        if autoStartIndexing {
+            loadIndexFromDisk()
+        }
+        if enableMonitoring {
+            startFileMonitoring()
+        }
     }
 
     deinit {
@@ -341,7 +355,8 @@ class FileIndexer: ObservableObject {
         }
     }
 
-    private func incrementalIndexDirectory(estimatedTotal: Int, generation: Int64) {
+    /// Tests drive this directly against a throwaway root and database.
+    func incrementalIndexDirectory(estimatedTotal: Int, generation: Int64) {
         Log.indexing.debug("🔍 Incremental scanning from: \(self.homeDirectory.path)")
 
         let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey, .isPackageKey]
@@ -367,6 +382,10 @@ class FileIndexer: ObservableObject {
         var checkedCount = 0
         let batchSize = 1000
         var changedDirs: [(path: String, mtime: Double)] = []
+        // Directories whose own mtime matches the stored one. Files directly
+        // under them need a per-file check, but the scan still descends:
+        // nested changes never move an ancestor's mtime.
+        var unchangedDirPaths = Set<String>()
 
         for case let fileURL as URL in enumerator {
             checkedCount += 1
@@ -407,8 +426,8 @@ class FileIndexer: ObservableObject {
                 let storedMtime = database.getDirMtime(path)
 
                 if let stored = storedMtime, abs(currentMtime - stored) < 0.001 {
-                    database.updateGeneration(path: path, generation: generation)
-                    enumerator.skipDescendants()
+                    database.updateGenerationShallow(dirPath: path, generation: generation)
+                    unchangedDirPaths.insert(path)
                     continue
                 }
 
@@ -420,6 +439,11 @@ class FileIndexer: ObservableObject {
             } else if !isPackage {
                 let size = resourceValues.fileSize ?? 0
                 let date = resourceValues.contentModificationDate ?? Date()
+                let parent = (path as NSString).deletingLastPathComponent
+                if unchangedDirPaths.contains(parent),
+                   !database.fileNeedsUpdate(path: path, size: Int64(size), mtime: date.timeIntervalSince1970) {
+                    continue
+                }
                 batch.append(FileItem(url: fileURL, isDir: false, size: Int64(size), dateModified: date))
                 count += 1
             }

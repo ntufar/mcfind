@@ -839,6 +839,53 @@ class IndexDatabase {
 
     // MARK: - Generation helpers for incremental indexing
 
+    /// Mark a directory and its immediate children as current for the given generation.
+    /// Nested paths are left alone: the scan still visits them, because an
+    /// ancestor's mtime never reflects nested changes.
+    func updateGenerationShallow(dirPath: String, generation: Int64) {
+        dbQueue.sync {
+            let singleQuery = "UPDATE files SET generation = ? WHERE path = ?;"
+            var singleStmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, singleQuery, -1, &singleStmt, nil) == SQLITE_OK, let s = singleStmt {
+                let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+                sqlite3_bind_int64(s, 1, generation)
+                dirPath.withCString { sqlite3_bind_text(s, 2, $0, -1, SQLITE_TRANSIENT) }
+                sqlite3_step(s)
+                sqlite3_finalize(s)
+            }
+
+            let childrenQuery = "UPDATE files SET generation = ? WHERE path LIKE ? ESCAPE '\\' AND path NOT LIKE ? ESCAPE '\\';"
+            var childrenStmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, childrenQuery, -1, &childrenStmt, nil) == SQLITE_OK, let c = childrenStmt else { return }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            sqlite3_bind_int64(c, 1, generation)
+            let escaped = dirPath.replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "%", with: "\\%")
+                .replacingOccurrences(of: "_", with: "\\_")
+            (escaped + "/%").withCString { sqlite3_bind_text(c, 2, $0, -1, SQLITE_TRANSIENT) }
+            (escaped + "/%/%").withCString { sqlite3_bind_text(c, 3, $0, -1, SQLITE_TRANSIENT) }
+            sqlite3_step(c)
+            sqlite3_finalize(c)
+        }
+    }
+
+    /// True when the database has no row for the path, or the stored size or
+    /// mtime differs from what the scan just saw on disk.
+    func fileNeedsUpdate(path: String, size: Int64, mtime: Double) -> Bool {
+        dbQueue.sync {
+            let query = "SELECT size, modified_date FROM files WHERE path = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK, let s = stmt else { return true }
+            defer { sqlite3_finalize(s) }
+            let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            path.withCString { sqlite3_bind_text(s, 1, $0, -1, SQLITE_TRANSIENT) }
+            guard sqlite3_step(s) == SQLITE_ROW else { return true }
+            let storedSize = sqlite3_column_int64(s, 0)
+            let storedMtime = sqlite3_column_double(s, 1)
+            return storedSize != size || abs(storedMtime - mtime) > 0.001
+        }
+    }
+
     /// Mark all files under `dirPath` (and the dir itself) as current for the given generation.
     func updateGeneration(path dirPath: String, generation: Int64) {
         dbQueue.sync {

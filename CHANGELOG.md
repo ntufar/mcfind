@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-10-20
+
+### Fixed
+- Incremental scans missed files when only a nested folder changed. The scan skipped a whole folder tree when the top folder time was old. A folder time does not show nested changes. The scan now still opens these folders and checks each file for changes.
+
 ## [0.3.5] - 2026-10-19
 
 ### Added

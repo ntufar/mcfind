@@ -35,6 +35,7 @@
 		BB000003 /* SearchViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000022 /* SearchViewModelTests.swift */; };
 		BB000004 /* FileItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000023 /* FileItemTests.swift */; };
 		BB000005 /* McFindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000024 /* McFindTests.swift */; };
+		BB000006 /* FileIndexerIncrementalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000026 /* FileIndexerIncrementalTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		BB000022 /* SearchViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModelTests.swift; sourceTree = "<group>"; };
 		BB000023 /* FileItemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItemTests.swift; sourceTree = "<group>"; };
 		BB000024 /* McFindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McFindTests.swift; sourceTree = "<group>"; };
+		BB000026 /* FileIndexerIncrementalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIndexerIncrementalTests.swift; sourceTree = "<group>"; };
 		BB000025 /* McFindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = McFindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -148,6 +150,7 @@
 				BB000023 /* FileItemTests.swift */,
 				DD0000000000000000000005 /* SearchFiltersTests.swift */,
 				BB000024 /* McFindTests.swift */,
+				BB000026 /* FileIndexerIncrementalTests.swift */,
 			);
 			path = McFindTests;
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 				BB000004 /* FileItemTests.swift in Sources */,
 				DD0000000000000000000006 /* SearchFiltersTests.swift in Sources */,
 				BB000005 /* McFindTests.swift in Sources */,
+				BB000006 /* FileIndexerIncrementalTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.3.5;
+				MARKETING_VERSION = 0.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -477,7 +481,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.3.5;
+				MARKETING_VERSION = 0.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcfind.McFind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
