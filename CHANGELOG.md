@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-10-19
+
+### Changed
+- McFind has a new app icon. The icon is a retro pixel-art folder with a magnifying glass.
+
 ## [0.3.3] - 2026-09-26
 
 ### Changed
